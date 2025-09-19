@@ -1,4 +1,4 @@
-# Frozen (AlimentAPP) test
+# Frozen (AlimentAPP)
 
 Proyecto estudiantil para un sistema web de trazabilidad y producción usando únicamente: Route 53, CloudFront, S3, API Gateway (HTTP API), VPC, Lambda (Python) y RDS (PostgreSQL/MySQL). Lambdas en VPC sin acceso a internet, invocadas solo por API Gateway.
 
