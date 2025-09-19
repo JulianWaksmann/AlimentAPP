@@ -69,5 +69,5 @@ Luego subí el build del frontend a S3 (bucket output `SiteBucketName`).
 - Definir motor de RDS (PostgreSQL recomendado para usar `pg8000`).
 - Completar helpers de DB en `src/layers/common/python/common/db.py` según el motor.
 - Crear migraciones SQL iniciales (users, materials, etc.).
-- Conectar endpoints reales en cada Lambda.
+- Conectar endpoints reales en cada una de las Lambda.
 
