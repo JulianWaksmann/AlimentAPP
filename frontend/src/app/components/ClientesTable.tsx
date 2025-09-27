@@ -4,7 +4,7 @@ import { Cliente } from "../models/Cliente";
 interface ClienteTableProps {
   clientes: Cliente[];
   onEdit: (cliente: Cliente) => void;
-  onDelete: (mail: string) => void;  // Usamos mail como id único aquí
+  onDelete: (mail: string) => void;
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -14,83 +14,87 @@ const ClienteTable: React.FC<ClienteTableProps> = ({ clientes, onEdit, onDelete 
   const [filterProvincia, setFilterProvincia] = useState("Todos");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Filtrado
-  const filteredClientes = clientes.filter((cli) => {
-    const ciudadMatch = filterCiudad === "Todos" || cli.ciudad.toLowerCase() === filterCiudad.toLowerCase();
-    const provinciaMatch = filterProvincia === "Todos" || cli.provincia.toLowerCase() === filterProvincia.toLowerCase();
+  const filteredClientes = clientes.filter((cliente) => {
+    const ciudadMatch =
+      filterCiudad === "Todos" || cliente.ciudad.toLowerCase() === filterCiudad.toLowerCase();
+    const provinciaMatch =
+      filterProvincia === "Todos" || cliente.provincia.toLowerCase() === filterProvincia.toLowerCase();
     return ciudadMatch && provinciaMatch;
   });
 
-  // Paginación
   const totalPages = Math.ceil(filteredClientes.length / ITEMS_PER_PAGE);
   const paginatedClientes = filteredClientes.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   return (
     <div>
-      {/* Filtros */}
-      <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex gap-2">
           <select
             value={filterCiudad}
-            onChange={(e) => setFilterCiudad(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2"
+            onChange={(event) => {
+              setFilterCiudad(event.target.value);
+              setCurrentPage(1);
+            }}
+            className="rounded border border-gray-300 px-3 py-2"
           >
             <option>Todos</option>
-            {[...new Set(clientes.map((c) => c.ciudad))].map((ciudad) => (
+            {[...new Set(clientes.map((cliente) => cliente.ciudad))].map((ciudad) => (
               <option key={ciudad}>{ciudad}</option>
             ))}
           </select>
           <select
             value={filterProvincia}
-            onChange={(e) => setFilterProvincia(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2"
+            onChange={(event) => {
+              setFilterProvincia(event.target.value);
+              setCurrentPage(1);
+            }}
+            className="rounded border border-gray-300 px-3 py-2"
           >
             <option>Todos</option>
-            {[...new Set(clientes.map((c) => c.provincia))].map((provincia) => (
+            {[...new Set(clientes.map((cliente) => cliente.provincia))].map((provincia) => (
               <option key={provincia}>{provincia}</option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Tabla */}
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded-lg shadow">
+        <table className="min-w-full rounded-lg bg-white shadow">
           <thead className="bg-primary text-white">
             <tr>
               <th className="px-6 py-3 text-left">Nombre</th>
               <th className="px-6 py-3 text-left">Apellido</th>
-              <th className="px-6 py-3 text-left">Teléfono</th>
+              <th className="px-6 py-3 text-left">Telefono</th>
               <th className="px-6 py-3 text-left">Mail</th>
               <th className="px-6 py-3 text-left">Ciudad</th>
-              <th className="px-6 py-3 text-left">Dirección</th>
+              <th className="px-6 py-3 text-left">Direccion</th>
               <th className="px-6 py-3 text-left">Provincia</th>
               <th className="px-6 py-3 text-left">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {paginatedClientes.map((cli) => (
-              <tr key={cli.mail} className="odd:bg-neutral-light even:bg-white">
-                <td className="px-6 py-3">{cli.nombre}</td>
-                <td className="px-6 py-3">{cli.apellido}</td>
-                <td className="px-6 py-3">{cli.telefono}</td>
-                <td className="px-6 py-3">{cli.mail}</td>
-                <td className="px-6 py-3">{cli.ciudad}</td>
-                <td className="px-6 py-3">{cli.direccion}</td>
-                <td className="px-6 py-3">{cli.provincia}</td>
-                <td className="px-6 py-3 flex gap-2">
+            {paginatedClientes.map((cliente) => (
+              <tr key={cliente.mail} className="odd:bg-neutral-light even:bg-white">
+                <td className="px-6 py-3">{cliente.nombre}</td>
+                <td className="px-6 py-3">{cliente.apellido}</td>
+                <td className="px-6 py-3">{cliente.telefono}</td>
+                <td className="px-6 py-3">{cliente.mail}</td>
+                <td className="px-6 py-3">{cliente.ciudad}</td>
+                <td className="px-6 py-3">{cliente.direccion}</td>
+                <td className="px-6 py-3">{cliente.provincia}</td>
+                <td className="flex gap-2 px-6 py-3">
                   <button
-                    className="bg-success text-white px-2 py-1 rounded hover:opacity-90 transition"
-                    onClick={() => onEdit(cli)}
+                    className="rounded bg-success px-2 py-1 text-white transition hover:opacity-90"
+                    onClick={() => onEdit(cliente)}
                   >
                     Editar
                   </button>
                   <button
-                    className="bg-error text-white px-2 py-1 rounded hover:opacity-90 transition"
-                    onClick={() => onDelete(cli.mail)}
+                    className="rounded bg-error px-2 py-1 text-white transition hover:opacity-90"
+                    onClick={() => onDelete(cliente.mail)}
                   >
                     Eliminar
                   </button>
@@ -99,7 +103,7 @@ const ClienteTable: React.FC<ClienteTableProps> = ({ clientes, onEdit, onDelete 
             ))}
             {paginatedClientes.length === 0 && (
               <tr>
-                <td colSpan={8} className="text-center py-4 text-gray-500">
+                <td colSpan={8} className="py-4 text-center text-gray-500">
                   No hay clientes para mostrar.
                 </td>
               </tr>
@@ -108,22 +112,21 @@ const ClienteTable: React.FC<ClienteTableProps> = ({ clientes, onEdit, onDelete 
         </table>
       </div>
 
-      {/* Paginación */}
-      <div className="flex justify-end gap-2 mt-4">
+      <div className="mt-4 flex justify-end gap-2">
         <button
           disabled={currentPage === 1}
-          onClick={() => setCurrentPage(currentPage - 1)}
-          className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
+          onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+          className="rounded bg-gray-300 px-3 py-1 transition hover:bg-gray-400 disabled:opacity-50"
         >
           Anterior
         </button>
         <span className="px-3 py-1">
-          Página {currentPage} de {totalPages || 1}
+          Pagina {currentPage} de {totalPages || 1}
         </span>
         <button
           disabled={currentPage === totalPages || totalPages === 0}
-          onClick={() => setCurrentPage(currentPage + 1)}
-          className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
+          onClick={() => setCurrentPage((page) => Math.min(totalPages || 1, page + 1))}
+          className="rounded bg-gray-300 px-3 py-1 transition hover:bg-gray-400 disabled:opacity-50"
         >
           Siguiente
         </button>

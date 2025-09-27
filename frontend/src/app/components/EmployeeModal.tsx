@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Employee } from "../models/Employee";
 
-
-// interface Employee {
-//   id?: number;
-//   nombre: string;
-//   apellido: string;
-//   rol: string;
-//   area: string;
-//   turno: string;
-// }
-
 interface EmployeeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,8 +9,8 @@ interface EmployeeModalProps {
 }
 
 const ROLES = ["Operario", "Supervisor", "Calidad", "Jefe"];
-const AREAS = ["Producción", "Envasado", "Depósito", "Calidad"];
-const TURNOS = ["Mañana", "Tarde", "Noche"];
+const AREAS = ["Produccion", "Envasado", "Deposito", "Calidad"];
+const TURNOS = ["Manana", "Tarde", "Noche"];
 
 const EmployeeModal: React.FC<EmployeeModalProps> = ({
   isOpen,
@@ -44,22 +34,26 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({
     }
   }, [editingEmployee]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    setForm({ ...form, [event.target.name]: event.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     onSave(form);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg w-96 shadow-md">
-        <h2 className="text-xl font-bold mb-4">
-          {editingEmployee ? "Editar Empleado" : "Agregar Empleado"}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-96 rounded-lg bg-white p-6 shadow-md">
+        <h2 className="mb-4 text-xl font-bold">
+          {editingEmployee ? "Editar empleado" : "Agregar empleado"}
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
@@ -68,7 +62,7 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({
             placeholder="Nombre"
             value={form.nombre}
             onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2"
             required
           />
           <input
@@ -77,69 +71,62 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({
             placeholder="Apellido"
             value={form.apellido}
             onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2"
             required
           />
-
-          {/* Select Rol */}
           <select
             name="rol"
             value={form.rol}
             onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2"
             required
           >
-            <option value="">Seleccionar Rol</option>
-            {ROLES.map((r) => (
-              <option key={r} value={r}>
-                {r}
+            <option value="">Seleccionar rol</option>
+            {ROLES.map((role) => (
+              <option key={role} value={role}>
+                {role}
               </option>
             ))}
           </select>
-
-          {/* Select Área */}
           <select
             name="area"
             value={form.area}
             onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2"
             required
           >
-            <option value="">Seleccionar Área</option>
-            {AREAS.map((a) => (
-              <option key={a} value={a}>
-                {a}
+            <option value="">Seleccionar area</option>
+            {AREAS.map((area) => (
+              <option key={area} value={area}>
+                {area}
               </option>
             ))}
           </select>
-
-          {/* Select Turno */}
           <select
             name="turno"
             value={form.turno}
             onChange={handleChange}
-            className="border border-gray-300 rounded px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2"
             required
           >
-            <option value="">Seleccionar Turno</option>
-            {TURNOS.map((t) => (
-              <option key={t} value={t}>
-                {t}
+            <option value="">Seleccionar turno</option>
+            {TURNOS.map((shift) => (
+              <option key={shift} value={shift}>
+                {shift}
               </option>
             ))}
           </select>
-
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="mt-4 flex justify-end gap-2">
             <button
               type="button"
-              className="bg-neutral-dark text-white px-4 py-2 rounded hover:opacity-90 transition"
+              className="rounded bg-neutral-dark px-4 py-2 text-white transition hover:opacity-90"
               onClick={onClose}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="bg-success text-white px-4 py-2 rounded hover:opacity-90 transition"
+              className="rounded bg-success px-4 py-2 text-white transition hover:opacity-90"
             >
               Guardar
             </button>

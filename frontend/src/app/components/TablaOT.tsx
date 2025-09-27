@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 
 type OrdenTrabajo = {
@@ -7,13 +8,13 @@ type OrdenTrabajo = {
   producto: string;
   cantidad: number;
   fechaEntrega: string;
-  estado: string // "Pendiente" | "Asignada" | "En Proceso";
+  estado: string;
 };
 
 type LineaProduccion = {
   id: number;
   nombre: string;
-  estado: string //"Disponible" | "Ocupada";
+  estado: string;
 };
 
 type MateriaPrima = {
@@ -32,8 +33,6 @@ type Props = {
 const TablaOT: React.FC<Props> = ({ ordenes, lineas, materiasPrimas }) => {
   const [selectedOrden, setSelectedOrden] = useState<OrdenTrabajo | null>(null);
   const [selectedLinea, setSelectedLinea] = useState<number | null>(null);
-
-  // 🔹 Estado para ordenamiento
   const [sortConfig, setSortConfig] = useState<{
     key: keyof OrdenTrabajo;
     direction: "asc" | "desc";
@@ -47,7 +46,7 @@ const TablaOT: React.FC<Props> = ({ ordenes, lineas, materiasPrimas }) => {
   const confirmarAsignacion = () => {
     if (selectedOrden && selectedLinea !== null) {
       alert(
-        `Orden ${selectedOrden.id} asignada a línea ${selectedLinea}. Queda en cola si la línea está ocupada.`
+        `Orden ${selectedOrden.id} asignada a la linea ${selectedLinea}. Se coloca en cola si la linea esta ocupada.`,
       );
       setSelectedOrden(null);
       setSelectedLinea(null);
@@ -55,25 +54,27 @@ const TablaOT: React.FC<Props> = ({ ordenes, lineas, materiasPrimas }) => {
   };
 
   const verificarStock = (idOrden: number) => {
-    return materiasPrimas[idOrden].every((mp) => mp.stock >= mp.requerido);
+    const materias = materiasPrimas[idOrden];
+    if (!materias) {
+      return false;
+    }
+    return materias.every((materia) => materia.stock >= materia.requerido);
   };
 
-  // 🔹 Función de ordenamiento
   const sortedOrdenes = [...ordenes].sort((a, b) => {
-    if (!sortConfig) return 0;
-    const { key, direction } = sortConfig;
-
-    let valA = a[key];
-    let valB = b[key];
-
-    // Si es fecha, convertir a Date
-    if (key === "fechaEntrega") {
-      valA = new Date(valA as string).getTime();
-      valB = new Date(valB as string).getTime();
+    if (!sortConfig) {
+      return 0;
     }
+    const { key, direction } = sortConfig;
+    const valueA = key === "fechaEntrega" ? new Date(a[key]).getTime() : (a[key] as string | number);
+    const valueB = key === "fechaEntrega" ? new Date(b[key]).getTime() : (b[key] as string | number);
 
-    if (valA < valB) return direction === "asc" ? -1 : 1;
-    if (valA > valB) return direction === "asc" ? 1 : -1;
+    if (valueA < valueB) {
+      return direction === "asc" ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return direction === "asc" ? 1 : -1;
+    }
     return 0;
   });
 
@@ -86,62 +87,51 @@ const TablaOT: React.FC<Props> = ({ ordenes, lineas, materiasPrimas }) => {
   };
 
   const renderSortArrow = (key: keyof OrdenTrabajo) => {
-    if (!sortConfig || sortConfig.key !== key) return "↕";
-    return sortConfig.direction === "asc" ? "↑" : "↓";
+    if (!sortConfig || sortConfig.key !== key) {
+      return "";
+    }
+    return sortConfig.direction === "asc" ? " ^" : " v";
   };
 
+  const materiasSeleccionadas = selectedOrden ? materiasPrimas[selectedOrden.id] ?? [] : [];
+
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Órdenes de Trabajo</h2>
-      <table className="min-w-full border text-sm">
-        <thead className="bg-gray-100">
+    <div className="rounded-lg bg-white p-4 shadow">
+      <h2 className="mb-4 text-xl font-bold">Ordenes de trabajo</h2>
+      <table className="min-w-full text-sm">
+        <thead className="bg-primary text-white">
           <tr>
-            <th
-              className="border px-2 py-1 cursor-pointer"
-              onClick={() => requestSort("id")}
-            >
-              ID {renderSortArrow("id")}
+            <th className="cursor-pointer px-3 py-2 text-left" onClick={() => requestSort("id")}>
+              ID{renderSortArrow("id")}
             </th>
-            <th
-              className="border px-2 py-1 cursor-pointer"
-              onClick={() => requestSort("cliente")}
-            >
-              Cliente {renderSortArrow("cliente")}
+            <th className="cursor-pointer px-3 py-2 text-left" onClick={() => requestSort("cliente")}>
+              Cliente{renderSortArrow("cliente")}
             </th>
-            <th
-              className="border px-2 py-1 cursor-pointer"
-              onClick={() => requestSort("producto")}
-            >
-              Producto {renderSortArrow("producto")}
+            <th className="cursor-pointer px-3 py-2 text-left" onClick={() => requestSort("producto")}>
+              Producto{renderSortArrow("producto")}
             </th>
-            <th className="border px-2 py-1">Cantidad</th>
-            <th
-              className="border px-2 py-1 cursor-pointer"
-              onClick={() => requestSort("fechaEntrega")}
-            >
-              Entrega {renderSortArrow("fechaEntrega")}
+            <th className="px-3 py-2 text-left">Cantidad</th>
+            <th className="cursor-pointer px-3 py-2 text-left" onClick={() => requestSort("fechaEntrega")}>
+              Entrega{renderSortArrow("fechaEntrega")}
             </th>
-            <th
-              className="border px-2 py-1 cursor-pointer"
-              onClick={() => requestSort("estado")}
-            >
-              Estado {renderSortArrow("estado")}
+            <th className="cursor-pointer px-3 py-2 text-left" onClick={() => requestSort("estado")}>
+              Estado{renderSortArrow("estado")}
             </th>
-            <th className="border px-2 py-1">Acciones</th>
+            <th className="px-3 py-2 text-left">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {sortedOrdenes.map((orden) => (
-            <tr key={orden.id}>
-              <td className="border px-2 py-1">{orden.id}</td>
-              <td className="border px-2 py-1">{orden.cliente}</td>
-              <td className="border px-2 py-1">{orden.producto}</td>
-              <td className="border px-2 py-1">{orden.cantidad}</td>
-              <td className="border px-2 py-1">{orden.fechaEntrega}</td>
-              <td className="border px-2 py-1">{orden.estado}</td>
-              <td className="border px-2 py-1">
+            <tr key={orden.id} className="odd:bg-neutral-light">
+              <td className="px-3 py-2">{orden.id}</td>
+              <td className="px-3 py-2">{orden.cliente}</td>
+              <td className="px-3 py-2">{orden.producto}</td>
+              <td className="px-3 py-2">{orden.cantidad}</td>
+              <td className="px-3 py-2">{orden.fechaEntrega}</td>
+              <td className="px-3 py-2">{orden.estado}</td>
+              <td className="px-3 py-2">
                 <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                  className="rounded bg-success px-3 py-1 text-white transition hover:opacity-90"
                   onClick={() => handleAsignar(orden)}
                 >
                   Asignar
@@ -152,24 +142,17 @@ const TablaOT: React.FC<Props> = ({ ordenes, lineas, materiasPrimas }) => {
         </tbody>
       </table>
 
-      {/* Modal */}
       {selectedOrden && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <h3 className="text-lg font-bold mb-4">
-              Asignar Orden #{selectedOrden.id}
-            </h3>
-
-            {/* Selección de línea */}
-            <label className="block font-semibold mb-2">
-              Línea de Producción:
-            </label>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="w-96 rounded-lg bg-white p-6 shadow-lg">
+            <h3 className="mb-4 text-lg font-bold">Asignar orden #{selectedOrden.id}</h3>
+            <label className="mb-2 block font-semibold">Linea de produccion</label>
             <select
-              className="w-full border rounded px-2 py-1 mb-4"
+              className="mb-4 w-full rounded border px-2 py-2"
               value={selectedLinea ?? ""}
-              onChange={(e) => setSelectedLinea(Number(e.target.value))}
+              onChange={(event) => setSelectedLinea(Number(event.target.value))}
             >
-              <option value="">-- Seleccionar línea --</option>
+              <option value="">Selecciona una linea</option>
               {lineas.map((linea) => (
                 <option key={linea.id} value={linea.id}>
                   {linea.nombre} ({linea.estado})
@@ -177,30 +160,30 @@ const TablaOT: React.FC<Props> = ({ ordenes, lineas, materiasPrimas }) => {
               ))}
             </select>
 
-            {/* Materias primas */}
-            <h4 className="font-semibold mb-2">Materias Primas necesarias:</h4>
-            <ul className="mb-4 text-sm">
-              {materiasPrimas[selectedOrden.id].map((mp) => (
-                <li key={mp.id}>
-                  {mp.nombre}: {mp.requerido} (Stock: {mp.stock}){" "}
-                  {mp.stock >= mp.requerido ? (
-                    <span className="text-green-600">✅</span>
-                  ) : (
-                    <span className="text-red-600">❌</span>
-                  )}
+            <h4 className="mb-2 font-semibold">Materias primas requeridas</h4>
+            <ul className="mb-4 space-y-1 text-sm">
+              {materiasSeleccionadas.map((materia) => (
+                <li
+                  key={materia.id}
+                  className={materia.stock >= materia.requerido ? "text-success" : "text-error"}
+                >
+                  {materia.nombre}: {materia.requerido} (stock {materia.stock})
                 </li>
               ))}
+              {materiasSeleccionadas.length === 0 && (
+                <li className="text-neutral-dark">No hay recursos definidos para esta orden.</li>
+              )}
             </ul>
 
             <div className="flex justify-end gap-2">
               <button
-                className="bg-gray-400 text-white px-3 py-1 rounded"
+                className="rounded bg-gray-300 px-3 py-1 transition hover:bg-gray-400"
                 onClick={() => setSelectedOrden(null)}
               >
                 Cancelar
               </button>
               <button
-                className="bg-green-600 text-white px-3 py-1 rounded disabled:bg-gray-400"
+                className="rounded bg-success px-3 py-1 text-white transition hover:opacity-90 disabled:bg-gray-400"
                 disabled={!verificarStock(selectedOrden.id) || selectedLinea === null}
                 onClick={confirmarAsignacion}
               >
@@ -215,5 +198,3 @@ const TablaOT: React.FC<Props> = ({ ordenes, lineas, materiasPrimas }) => {
 };
 
 export default TablaOT;
-
-

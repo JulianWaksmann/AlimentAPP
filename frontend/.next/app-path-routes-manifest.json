@@ -1,0 +1,21 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/pages/gerente/page": "/pages/gerente",
+  "/page": "/",
+  "/pages/gerente/login/page": "/pages/gerente/login",
+  "/pages/operario/login/page": "/pages/operario/login",
+  "/pages/rrhh/inicio/page": "/pages/rrhh/inicio",
+  "/pages/supervisor/page": "/pages/supervisor",
+  "/pages/operario/page": "/pages/operario",
+  "/pages/rrhh/login/page": "/pages/rrhh/login",
+  "/pages/supervisor/login/page": "/pages/supervisor/login",
+  "/pages/vendedor/login/page": "/pages/vendedor/login",
+  "/pages/supervisor/inicio/materia-prima/page": "/pages/supervisor/inicio/materia-prima",
+  "/pages/supervisor/inicio/ordenes-trabajo/page": "/pages/supervisor/inicio/ordenes-trabajo",
+  "/pages/supervisor/inicio/produccion/page": "/pages/supervisor/inicio/produccion",
+  "/pages/vendedor/inicio/gestion-ventas/page": "/pages/vendedor/inicio/gestion-ventas",
+  "/pages/supervisor/inicio/productos/page": "/pages/supervisor/inicio/productos",
+  "/pages/vendedor/inicio/page": "/pages/vendedor/inicio",
+  "/pages/supervisor/inicio/page": "/pages/supervisor/inicio",
+  "/pages/vendedor/inicio/administracion-clientes/page": "/pages/vendedor/inicio/administracion-clientes"
+}

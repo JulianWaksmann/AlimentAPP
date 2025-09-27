@@ -1,23 +1,23 @@
-"use client";
+'use client';
 import React, { useState } from "react";
 
 interface EstadoCuadradito {
-  color: string;// "verde" | "amarillo" | "rojo" | "violeta" | "gris";
+  color: string;
   descripcion: string;
 }
 
 interface ChartLineaProduccionProps {
   estados: EstadoCuadradito[];
-  anchoMaximo?: number; // opcional, para limitar ancho total
-  sizeCuadrado?: number; // tamaño en px de cada cuadrado
+  anchoMaximo?: number;
+  sizeCuadrado?: number;
 }
 
 const coloresHex: Record<string, string> = {
-  verde: "#22c55e", // trabajando
-  amarillo: "#eab308", // esperando materia prima
-  rojo: "#ef4444", // detenido
-  violeta: "#8b5cf6", // mantenimiento
-  gris: "#9ca3af", // apagado
+  verde: "#22c55e",
+  amarillo: "#eab308",
+  rojo: "#ef4444",
+  violeta: "#8b5cf6",
+  gris: "#9ca3af",
 };
 
 const ChartLineaProduccion: React.FC<ChartLineaProduccionProps> = ({
@@ -28,43 +28,42 @@ const ChartLineaProduccion: React.FC<ChartLineaProduccionProps> = ({
   const [tooltipIndex, setTooltipIndex] = useState<number | null>(null);
 
   return (
-    <div className="bg-neutral-light p-4 rounded-lg shadow-md"
+    <div
+      className="bg-neutral-light p-4"
       style={{
         display: "flex",
         gap: 6,
         flexWrap: "wrap",
         maxWidth: anchoMaximo,
-        position: "relative", 
+        position: "relative",
+        borderRadius: 12,
+        boxShadow: "0 0 8px rgba(0,0,0,0.1)",
       }}
     >
-      {estados.map((estado, idx) => (
+      {estados.map((estado, index) => (
         <div
-          className="mx-0"
-          key={idx}
+          key={index}
           style={{
-            width: sizeCuadrado/2,
+            width: sizeCuadrado,
             height: sizeCuadrado,
             backgroundColor: coloresHex[estado.color] || "#ccc",
             borderRadius: 4,
-            boxShadow: "0 0 4px rgba(0,0,0,0.1)",
             position: "relative",
             cursor: "pointer",
           }}
-          onMouseEnter={() => setTooltipIndex(idx)}
+          onMouseEnter={() => setTooltipIndex(index)}
           onMouseLeave={() => setTooltipIndex(null)}
-          onClick={() =>
-            setTooltipIndex((cur) => (cur === idx ? null : idx))
-          }
+          onClick={() => setTooltipIndex((current) => (current === index ? null : index))}
           aria-label={estado.descripcion}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              setTooltipIndex((cur) => (cur === idx ? null : idx));
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              setTooltipIndex((current) => (current === index ? null : index));
             }
           }}
         >
-          {tooltipIndex === idx && (
+          {tooltipIndex === index && (
             <div
               style={{
                 position: "absolute",

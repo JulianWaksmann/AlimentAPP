@@ -1,0 +1,66 @@
+Plan de Pruebas AlimentAPP Frontend
+===================================
+
+Objetivo
+- Validar que la build estatica generada por Next.js funciona correctamente antes de subirla al bucket S3 y que las integraciones con API Gateway responden como se espera.
+
+Pre-requisitos
+1. Node 18+ y npm instalados (verificar con 
+ode --version, 
+pm --version).
+2. Dependencias instaladas: 
+pm install en rontend/.
+3. Variables de entorno definidas según el ambiente:
+   - NEXT_PUBLIC_API_URL apuntando al endpoint de API Gateway (ejemplo: https://xxxx.execute-api.us-east-1.amazonaws.com/prod).
+   - Otras necesarias (tokens, flags) en .env.local.
+
+Plan Paso a Paso
+
+1. Lint y tipos
+   - Comando: 
+pm run lint.
+   - Resultado esperado: sin errores (warnings opcionales documentados).
+
+2. Build de produccion
+   - Comando: 
+pm run build.
+   - Resultado esperado: build exitosa, carpeta out/ generada, sin errores de tipos.
+
+3. Smoke test estatico local
+   - Lanzar servidor local: 
+px serve out o cualquier servidor HTTP estatico.
+   - Navegar a http://localhost:3000 y comprobar:
+     * Landing renderiza botones de roles y navega a cada login.
+     * Cada login redirige a su dashboard correspondiente.
+     * Vistas de RRHH (tabla, modal), Supervisor (menu lateral, graficos), Vendedor (tabs pedidos/clientes) cargan sin errores en consola.
+
+4. Pruebas funcionales básicas
+   - **RRHH**: crear, editar y eliminar un empleado (verificar tabla, filtros y modal).
+   - **Vendedor**: crear un nuevo pedido (agregar producto, guardar) y editar/crear un cliente.
+   - **Supervisor**: navegar entre todas las secciones; probar asignar orden y revisar validaciones de stock.
+   - **Operario / Gerente**: revisar contenidos placeholders y enlaces.
+
+5. Integracion con API Gateway (si aplica)
+   - Actualizar NEXT_PUBLIC_API_URL a la URL real.
+   - Limpieza: 
+pm run build (reemplaza los assets con la URL correcta).
+   - Servir out/ nuevamente y desde el navegador:
+     * Ejecutar acciones que disparen fetch hacia API Gateway.
+     * Verificar respuestas en la consola de DevTools (Status 200) o mensajes de error manejados.
+     * Confirmar que CORS esté habilitado en API Gateway (sin errores de CORS en DevTools).
+
+6. Pruebas de regresión rápida en mobile
+   - Usar herramientas de navegador (Device Toolbar) para revisar responsividad básica en teléfonos (landing, tablas).
+
+7. Validación final antes de subir a S3
+   - Confirmar que out/ contiene los archivos actualizados.
+   - Registrar versión de API utilizada y direccionamiento en un changelog interno.
+
+Post-despliegue (opcional)
+- Tras sincronizar con S3 (ws s3 sync ./out s3://webapp-core-system --delete), verificar el endpoint público.
+- Revisar que las interacciones con API Gateway funcionen desde la URL de S3/Dominio.
+
+Notas
+- Si hay cambios de datos mock, repetir el paso 3 para asegurar que las vistas rendericen correctamente.
+- Para automatizar, se pueden crear scripts npm (
+pm run test:e2e) en un futuro con Playwright o Cypress.

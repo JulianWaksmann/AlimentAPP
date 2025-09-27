@@ -1,4 +1,4 @@
-// export const ordenes = [
+﻿// export const ordenes = [
 //   {
 //     id: 1,
 //     cliente: "Cliente A",
@@ -10,7 +10,7 @@
 //   {
 //     id: 2,
 //     cliente: "Cliente B",
-//     producto: "Pantalón",
+//     producto: "Pantalon",
 //     cantidad: 50,
 //     fechaEntrega: "2025-10-05",
 //     estado: "Pendiente",
@@ -18,8 +18,8 @@
 // ];
 
 // export const lineas = [
-//   { id: 1, nombre: "Línea 1", estado: "Disponible" },
-//   { id: 2, nombre: "Línea 2", estado: "Ocupada" },
+//   { id: 1, nombre: "Linea 1", estado: "Disponible" },
+//   { id: 2, nombre: "Linea 2", estado: "Ocupada" },
 // ];
 
 // export const materiasPrimas: Record<number, any[]> = {

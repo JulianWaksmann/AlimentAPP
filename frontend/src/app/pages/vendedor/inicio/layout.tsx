@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Header from "../../../components/Header";
+import Header from "@/app/components/Header";
 
 //Layout del dashboard con la barra de navegacion
 export default function VendedorLayout({
@@ -44,3 +44,4 @@ export default function VendedorLayout({
     </div>
   );
 }
+

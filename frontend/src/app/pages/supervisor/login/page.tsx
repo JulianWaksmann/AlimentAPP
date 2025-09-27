@@ -1,8 +1,8 @@
 import React from "react";
-import RoleLogin from "../../../components/RoleLogin";
+import RoleLogin from "@/app/components/RoleLogin";
 
-const LoginSupervisor: React.FC = () => {
-  return <RoleLogin roleName="Supervisor" colorClass="bg-yellow-500" redirectPath="/pages/supervisor/inicio" />;
-};
+const LoginSupervisor: React.FC = () => (
+  <RoleLogin roleName="Supervisor" colorClass="bg-yellow-500" redirectPath="/pages/supervisor/inicio" />
+);
 
 export default LoginSupervisor;

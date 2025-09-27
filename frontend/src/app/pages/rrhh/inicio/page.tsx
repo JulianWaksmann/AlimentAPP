@@ -1,11 +1,11 @@
-'use client'
-import React, { useState, useEffect } from "react";
-import Header from "../../../components/Header";
-import EmployeeTable from "../../../components/EmployeeTable";
-import EmployeeModal from "../../../components/EmployeeModal";
-import employeesData from "../../../../data/employees.json";
-import { Employee } from "../../../models/Employee";
+'use client';
 
+import React, { useEffect, useState } from "react";
+import Header from "@/app/components/Header";
+import EmployeeModal from "@/app/components/EmployeeModal";
+import EmployeeTable from "@/app/components/EmployeeTable";
+import employeesData from "@/data/employees.json";
+import { Employee } from "@/app/models/Employee";
 
 const RRHHInicio: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -27,52 +27,43 @@ const RRHHInicio: React.FC = () => {
   };
 
   const handleDelete = (id: number) => {
-    setEmployees(employees.filter((e) => e.id !== id));
+    setEmployees((current) => current.filter((employee) => employee.id !== id));
   };
 
   const handleSave = (employee: Employee) => {
-    if (editingEmployee) {
-      setEmployees(
-        employees.map((emp) =>
-          emp.id === editingEmployee.id ? { ...emp, ...employee } : emp
-        )
-      );
-    } else {
-      const newEmployee: Employee = {
-        ...employee,
-        id: employees.length
-          ? Math.max(...employees.map((e) => e.id).filter((id): id is number => typeof id === "number")) + 1
-          : 1,
-      };
-      setEmployees([...employees, newEmployee]);
-    }
+    setEmployees((current) => {
+      if (editingEmployee?.id) {
+        return current.map((item) => (item.id === editingEmployee.id ? { ...item, ...employee } : item));
+      }
+
+      const nextId = current.length ? Math.max(...current.map((item) => item.id ?? 0)) + 1 : 1;
+      return [...current, { ...employee, id: nextId }];
+    });
+
     setModalOpen(false);
+    setEditingEmployee(null);
   };
 
   return (
     <div className="min-h-screen bg-neutral-light">
       <Header />
-
       <main className="p-6">
-        <div className="flex justify-end mb-4">
+        <div className="mb-4 flex justify-end">
           <button
-            className="bg-success text-white px-4 py-2 rounded hover:opacity-90 transition"
+            className="rounded bg-success px-4 py-2 text-white transition hover:opacity-90"
             onClick={openAddModal}
           >
-            Agregar Empleado
+            Agregar empleado
           </button>
         </div>
-
-        <EmployeeTable
-          employees={employees}
-          onEdit={openEditModal}
-          onDelete={handleDelete}
-        />
+        <EmployeeTable employees={employees} onEdit={openEditModal} onDelete={handleDelete} />
       </main>
-
       <EmployeeModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingEmployee(null);
+        }}
         onSave={handleSave}
         editingEmployee={editingEmployee}
       />

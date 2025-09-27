@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Cliente } from '../models/Cliente';
+import React, { useState } from "react";
+import { Cliente } from "../models/Cliente";
 
 interface FormNuevoClienteProps {
   onClose: () => void;
@@ -7,35 +7,35 @@ interface FormNuevoClienteProps {
 }
 
 const FormNuevoCliente: React.FC<FormNuevoClienteProps> = ({ onClose, onSave }) => {
-  const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    telefono: '',
-    mail: '',
-    ciudad: '',
-    direccion: '',
-    provincia: '',
+  const [formData, setFormData] = useState<Cliente>({
+    nombre: "",
+    apellido: "",
+    telefono: "",
+    mail: "",
+    ciudad: "",
+    direccion: "",
+    provincia: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [event.target.name]: event.target.value,
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     onSave(formData);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">Nuevo Cliente</h2>
-        <form onSubmit={handleSubmit}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+        <h2 className="mb-4 text-xl font-semibold">Nuevo cliente</h2>
+        <form onSubmit={handleSubmit} className="space-y-3">
           <input
-            className="border p-2 w-full mb-2"
+            className="w-full rounded border px-3 py-2"
             placeholder="Nombre"
             name="nombre"
             value={formData.nombre}
@@ -43,7 +43,7 @@ const FormNuevoCliente: React.FC<FormNuevoClienteProps> = ({ onClose, onSave }) 
             required
           />
           <input
-            className="border p-2 w-full mb-2"
+            className="w-full rounded border px-3 py-2"
             placeholder="Apellido"
             name="apellido"
             value={formData.apellido}
@@ -51,8 +51,8 @@ const FormNuevoCliente: React.FC<FormNuevoClienteProps> = ({ onClose, onSave }) 
             required
           />
           <input
-            className="border p-2 w-full mb-2"
-            placeholder="Número de Teléfono"
+            className="w-full rounded border px-3 py-2"
+            placeholder="Numero de telefono"
             name="telefono"
             value={formData.telefono}
             onChange={handleChange}
@@ -60,7 +60,7 @@ const FormNuevoCliente: React.FC<FormNuevoClienteProps> = ({ onClose, onSave }) 
             type="tel"
           />
           <input
-            className="border p-2 w-full mb-2"
+            className="w-full rounded border px-3 py-2"
             placeholder="Mail"
             name="mail"
             value={formData.mail}
@@ -69,7 +69,7 @@ const FormNuevoCliente: React.FC<FormNuevoClienteProps> = ({ onClose, onSave }) 
             type="email"
           />
           <input
-            className="border p-2 w-full mb-2"
+            className="w-full rounded border px-3 py-2"
             placeholder="Ciudad"
             name="ciudad"
             value={formData.ciudad}
@@ -77,15 +77,15 @@ const FormNuevoCliente: React.FC<FormNuevoClienteProps> = ({ onClose, onSave }) 
             required
           />
           <input
-            className="border p-2 w-full mb-2"
-            placeholder="Dirección"
+            className="w-full rounded border px-3 py-2"
+            placeholder="Direccion"
             name="direccion"
             value={formData.direccion}
             onChange={handleChange}
             required
           />
           <input
-            className="border p-2 w-full mb-4"
+            className="w-full rounded border px-3 py-2"
             placeholder="Provincia"
             name="provincia"
             value={formData.provincia}
@@ -96,13 +96,13 @@ const FormNuevoCliente: React.FC<FormNuevoClienteProps> = ({ onClose, onSave }) 
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border rounded hover:bg-gray-200"
+              className="rounded border px-4 py-2 transition hover:bg-gray-100"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="rounded bg-success px-4 py-2 text-white transition hover:opacity-90"
             >
               Guardar
             </button>

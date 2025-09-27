@@ -1,0 +1,47 @@
+AlimentAPP Frontend Overview
+============================
+
+Tecnologia principal
+- Framework: Next.js 15 (app router) con React 19 y TypeScript.
+- Estilos: TailwindCSS 3 con un tema personalizado en tailwind.config.js.
+- Linter: ESLint 9 con la configuracion de Next por defecto.
+
+Estructura general
+- public/: activos estaticos (svg) servidos sin transformaciones.
+- src/app/: arbol de rutas de la app router. Incluye layout global, estilos globales y las vistas por rol.
+  - page.tsx: landing con selector de roles.
+  - layout.tsx: envolvente HTML basico que importa globals.css.
+  - components/: componentes reutilizables (tablas, modales, header, graficos, login generico de roles).
+  - pages/: subcarpetas por rol (rrhh, operario, supervisor, gerente, vendedor) con sus flujos internos.
+  - models/: definiciones TypeScript para entidades compartidas (Employee, Cliente).
+- src/data/: datasets JSON mock (employees, clientes, pedidos, ordenes) usados para prototipos locales.
+
+Flujos destacados por rol
+- Landing: el usuario elige el rol y se redirige al login especifico con RoleLogin.tsx.
+- RRHH: listados CRUD simulados para empleados (EmployeeTable + EmployeeModal + employees.json).
+- Operario: dashboard placeholder informativo para tareas diarias.
+- Supervisor: dashboard con layout lateral, pagina de produccion con ChartLineaProduccion, gestion simulada de OT.
+- Gerente: accesos rapidos a modulos clave (RRHH, Ventas) y vista placeholder.
+- Vendedor: dashboard con tabs para pedidos (GestionVentasPage) y administracion de clientes.
+
+Datos mock
+- employees.json y clientes.json fueron normalizados a ASCII para evitar problemas de build.
+- pedidosVenta.json alimenta el flujo de ventas; los tipos se ajustan al enum EstadoPedido.
+
+Configuracion y scripts
+- next.config.ts fuerza output "export", images sin optimizar y trailingSlash para hosting S3.
+- package.json scripts relevantes:
+  - npm run dev: servidor local con hot reload.
+  - npm run lint: analisis ESLint.
+  - npm run build: genera la version estatica (carpeta out/). No se usa 
+ext export porque Next 15 ya realiza el export automaticamente.
+
+Buenas practicas actuales
+- Imports relativos largos reemplazados por alias @/ para mantener claridad.
+- Componentes personalizados con Tailwind y comentarios minimos solo donde aportan contexto.
+- Todos los textos estan en ASCII (sin tildes) para facilitar despliegues en plataformas sensibles a encoding.
+
+Pasos para entrega estatica
+1. npm install (primera vez o cuando cambie package-lock.json).
+2. npm run build para producir la carpeta out/ con el sitio estatico.
+3. Subir el contenido de out/ al bucket S3 webapp-core-system y habilitar hosting estatico.

@@ -1,92 +1,12 @@
-[
-  {
-    "nombre": "Carlos",
-    "apellido": "González",
-    "telefono": "123456789",
-    "mail": "carlos.gonzalez@mail.com",
-    "ciudad": "Buenos Aires",
-    "direccion": "Av. Corrientes 1234",
-    "provincia": "Buenos Aires"
-  },
-  {
-    "nombre": "María",
-    "apellido": "López",
-    "telefono": "987654321",
-    "mail": "maria.lopez@mail.com",
-    "ciudad": "Córdoba",
-    "direccion": "Calle 9 de Julio 567",
-    "provincia": "Córdoba"
-  },
-  {
-    "nombre": "José",
-    "apellido": "Ramírez",
-    "telefono": "555555555",
-    "mail": "jose.ramirez@mail.com",
-    "ciudad": "Rosario",
-    "direccion": "Bv. Oroño 890",
-    "provincia": "Santa Fe"
-  },
-  {
-    "nombre": "Ana",
-    "apellido": "Pérez",
-    "telefono": "444444444",
-    "mail": "ana.perez@mail.com",
-    "ciudad": "Mendoza",
-    "direccion": "Calle San Martín 222",
-    "provincia": "Mendoza"
-  },
-  {
-    "nombre": "Juan",
-    "apellido": "Fernández",
-    "telefono": "333333333",
-    "mail": "juan.fernandez@mail.com",
-    "ciudad": "Salta",
-    "direccion": "Av. Bolivia 1450",
-    "provincia": "Salta"
-  },
-  {
-    "nombre": "Lucía",
-    "apellido": "Martínez",
-    "telefono": "222222222",
-    "mail": "lucia.martinez@mail.com",
-    "ciudad": "La Plata",
-    "direccion": "Calle 12 345",
-    "provincia": "Buenos Aires"
-  },
-  {
-    "nombre": "Diego",
-    "apellido": "Sánchez",
-    "telefono": "111111111",
-    "mail": "diego.sanchez@mail.com",
-    "ciudad": "Santa Fe",
-    "direccion": "Av. Freyre 600",
-    "provincia": "Santa Fe"
-  },
-  {
-    "nombre": "Sofía",
-    "apellido": "Rojas",
-    "telefono": "666666666",
-    "mail": "sofia.rojas@mail.com",
-    "ciudad": "Neuquén",
-    "direccion": "Calle Lanín 789",
-    "provincia": "Neuquén"
-  },
-  {
-    "nombre": "Martín",
-    "apellido": "Vega",
-    "telefono": "777777777",
-    "mail": "martin.vega@mail.com",
-    "ciudad": "Resistencia",
-    "direccion": "Av. 9 de Julio 321",
-    "provincia": "Chaco"
-  },
-  {
-    "nombre": "Gabriela",
-    "apellido": "Torres",
-    "telefono": "888888888",
-    "mail": "gabriela.torres@mail.com",
-    "ciudad": "San Juan",
-    "direccion": "Calle Rivadavia 1001",
-    "provincia": "San Juan"
-  }
+﻿[
+  {"nombre": "Carlos", "apellido": "Gonzalez", "telefono": "123456789", "mail": "carlos.gonzalez@mail.com", "ciudad": "Buenos Aires", "direccion": "Av. Corrientes 1234", "provincia": "Buenos Aires"},
+  {"nombre": "Maria", "apellido": "Lopez", "telefono": "987654321", "mail": "maria.lopez@mail.com", "ciudad": "Cordoba", "direccion": "Calle 9 de Julio 567", "provincia": "Cordoba"},
+  {"nombre": "Jose", "apellido": "Ramirez", "telefono": "555555555", "mail": "jose.ramirez@mail.com", "ciudad": "Rosario", "direccion": "Bv. Orono 890", "provincia": "Santa Fe"},
+  {"nombre": "Ana", "apellido": "Perez", "telefono": "444444444", "mail": "ana.perez@mail.com", "ciudad": "Mendoza", "direccion": "Calle San Martin 222", "provincia": "Mendoza"},
+  {"nombre": "Juan", "apellido": "Fernandez", "telefono": "333333333", "mail": "juan.fernandez@mail.com", "ciudad": "Salta", "direccion": "Av. Bolivia 1450", "provincia": "Salta"},
+  {"nombre": "Lucia", "apellido": "Martinez", "telefono": "222222222", "mail": "lucia.martinez@mail.com", "ciudad": "La Plata", "direccion": "Calle 12 345", "provincia": "Buenos Aires"},
+  {"nombre": "Diego", "apellido": "Sanchez", "telefono": "111111111", "mail": "diego.sanchez@mail.com", "ciudad": "Santa Fe", "direccion": "Av. Freyre 600", "provincia": "Santa Fe"},
+  {"nombre": "Sofia", "apellido": "Rojas", "telefono": "666666666", "mail": "sofia.rojas@mail.com", "ciudad": "Neuquen", "direccion": "Calle Lanin 789", "provincia": "Neuquen"},
+  {"nombre": "Martin", "apellido": "Vega", "telefono": "777777777", "mail": "martin.vega@mail.com", "ciudad": "Resistencia", "direccion": "Av. 9 de Julio 321", "provincia": "Chaco"},
+  {"nombre": "Gabriela", "apellido": "Torres", "telefono": "888888888", "mail": "gabriela.torres@mail.com", "ciudad": "San Juan", "direccion": "Calle Rivadavia 1001", "provincia": "San Juan"}
 ]

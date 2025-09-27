@@ -3,61 +3,55 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu } from "lucide-react"; // icono de menú (opcional, instalá lucide-react)
+import { Menu } from "lucide-react";
 
 const menuItems = [
-  { name: "Control de Producción", href: "/pages/supervisor/inicio/produccion" },
-  { name: "Gestión de Productos", href: "/pages/supervisor/inicio/productos" },
-  { name: "Órdenes de Trabajo", href: "/pages/supervisor/inicio/ordenes-trabajo" },
+  { name: "Control de Produccion", href: "/pages/supervisor/inicio/produccion" },
+  { name: "Gestion de Productos", href: "/pages/supervisor/inicio/productos" },
+  { name: "Ordenes de Trabajo", href: "/pages/supervisor/inicio/ordenes-trabajo" },
   { name: "Materia Prima", href: "/pages/supervisor/inicio/materia-prima" },
 ];
 
-export default function SupervisorLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const SupervisorLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-neutral-light">
-      {/* Sidebar */}
-      
       <div
-        className={`fixed md:static top-0 left-0 h-full bg-primary text-white w-64 p-4 transform ${
+        className={`fixed top-0 left-0 z-50 h-full w-64 transform bg-primary p-4 text-white transition-transform md:static ${
           open ? "translate-x-0" : "-translate-x-full"
-        } transition-transform md:translate-x-0 z-50`}
+        } md:translate-x-0`}
       >
-        <h2 className="text-xl text-center font-bold mb-6">SUPERVISOR</h2>
+        <h2 className="mb-6 text-center text-xl font-bold">SUPERVISOR</h2>
         <nav className="flex flex-col gap-2">
-          {menuItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`p-2 rounded ${
-                pathname === item.href
-                  ? "bg-primary-light"
-                  : "hover:bg-primary-softer"
-              }`}
-              onClick={() => setOpen(false)} // cerrar en mobile
-            >
-              {item.name}
-            </Link>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`rounded p-2 ${isActive ? "bg-primary-light" : "hover:bg-primary-softer"}`}
+                onClick={() => setOpen(false)}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
-      {/* Botón menú mobile */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 bg-primary text-white p-2 rounded"
-        onClick={() => setOpen(!open)}
+        className="fixed left-4 top-4 z-50 rounded bg-primary p-2 text-white md:hidden"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-label="Abrir menu"
       >
         <Menu />
       </button>
 
-      {/* Contenido principal */}
-      <main className="flex-1 ">{children}</main>
+      <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
   );
-}
+};
+
+export default SupervisorLayout;

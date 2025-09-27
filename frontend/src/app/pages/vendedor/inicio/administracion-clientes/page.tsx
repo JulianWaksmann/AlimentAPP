@@ -1,18 +1,20 @@
 'use client';
-import React, { useState, useEffect } from "react";
-import FormNuevoCliente from "../../../../components/FormNuevoCliente";
-import { Cliente } from "@/app/models/Cliente";
-import ClienteTable from "@/app/components/ClientesTable";
-import clientesData from "../../../../../data/clientes.json";
+
+import React, { useEffect, useState } from "react";
+import Header from "@/app/components/Header";
 import ClienteModal from "@/app/components/ClienteModal";
+import ClienteTable from "@/app/components/ClientesTable";
+import FormNuevoCliente from "@/app/components/FormNuevoCliente";
+import { Cliente } from "@/app/models/Cliente";
+import clientesData from "@/data/clientes.json";
 
 const GestionClientesPage = () => {
-  const [modalVisible, setModalVisible] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const [modalNuevoClienteVisible, setModalNuevoClienteVisible] = useState(false);
+  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
 
-    useEffect(() => {
+  useEffect(() => {
     setClientes(clientesData);
   }, []);
 
@@ -21,36 +23,58 @@ const GestionClientesPage = () => {
     setModalVisible(true);
   };
 
-  const handleDelete = (mail : string) => {
-    setClientes(clientes.filter((c) => c.mail !== mail));
-  }
-
-  const guardarCliente = (data: Cliente) => {
-    console.log("Datos guardados", data);
-    setModalNuevoClienteVisible(false);
+  const handleDelete = (mail: string) => {
+    setClientes((actuales) => actuales.filter((cliente) => cliente.mail !== mail));
   };
+
+  const guardarCliente = (cliente: Cliente) => {
+    setClientes((actuales) => {
+      const existe = actuales.some((item) => item.mail === cliente.mail);
+      if (existe) {
+        return actuales.map((item) => (item.mail === cliente.mail ? cliente : item));
+      }
+      return [...actuales, cliente];
+    });
+    setModalNuevoClienteVisible(false);
+    setModalVisible(false);
+    setEditingCliente(null);
+  };
+
   return (
+    <div className="min-h-screen bg-neutral-light">
+      <Header />
+      <main className="p-6 space-y-6">
+        <div className="flex justify-end">
+          <button
+            className="rounded bg-success px-4 py-2 font-semibold text-white transition hover:opacity-90"
+            onClick={() => setModalNuevoClienteVisible(true)}
+          >
+            Agregar nuevo cliente
+          </button>
+        </div>
 
-    <>
-      <button
-        className="px-4 py-2 my-5 bg-success text-white rounded"
-        onClick={() => setModalNuevoClienteVisible(true)}
-      >
-        Agregar nuevo cliente
-      </button>
+        <ClienteTable clientes={clientes} onEdit={openEditModal} onDelete={handleDelete} />
 
-      <ClienteTable clientes={clientes} onEdit={openEditModal} onDelete={handleDelete} />
+        {modalNuevoClienteVisible && (
+          <FormNuevoCliente
+            onClose={() => setModalNuevoClienteVisible(false)}
+            onSave={guardarCliente}
+          />
+        )}
 
-      {modalNuevoClienteVisible && (
-        <FormNuevoCliente
-          onClose={() => setModalNuevoClienteVisible(false)}
+        <ClienteModal
+          isOpen={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            setEditingCliente(null);
+          }}
           onSave={guardarCliente}
+          editingCliente={editingCliente}
         />
-      )}
-
-      <ClienteModal  isOpen={modalVisible} onClose={() => setModalVisible(false)} onSave={guardarCliente} editingCliente={editingCliente}/>
-    </>
+      </main>
+    </div>
   );
 };
 
 export default GestionClientesPage;
+
