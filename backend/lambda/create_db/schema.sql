@@ -12,7 +12,8 @@ DROP TYPE IF EXISTS estado_orden_produccion;
 CREATE TYPE estado_orden_produccion AS ENUM (
     'planificada',
     'en_proceso',
-    'cancelada'
+    'cancelada',
+    'finalizada'
 );
 
 CREATE TABLE IF NOT EXISTS rol (
