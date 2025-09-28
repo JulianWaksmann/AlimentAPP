@@ -1,4 +1,4 @@
-// File: C:\Users\Julian Waksmann\Documents\03 UNIVERSIDAD\AlimentAPP\frontend\src\app\pages\vendedor\inicio\gestion-ventas\page.tsx
+// File: /home/lautaro/Documentos/ungs/labo/TPFINAL/AlimentAPP/frontend/src/app/pages/vendedor/inicio/gestion-ventas/page.tsx
 import * as entry from '../../../../../../../src/app/pages/vendedor/inicio/gestion-ventas/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

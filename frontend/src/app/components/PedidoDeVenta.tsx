@@ -94,13 +94,13 @@ const PedidoVentaTable: React.FC<PedidoVentaTableProps> = ({ pedidos }) => {
       <table className="min-w-full rounded-lg bg-white shadow">
         <thead className="bg-primary text-white">
           <tr>
-            <th className="px-6 py-3 text-left">{renderSortLabel("idPedido", "ID Pedido")}</th>
-            <th className="px-6 py-3 text-left">{renderSortLabel("idVendedor", "ID Vendedor")}</th>
-            <th className="px-6 py-3 text-left">{renderSortLabel("idCliente", "ID Cliente")}</th>
-            <th className="px-6 py-3 text-left">Productos (cantidad)</th>
-            <th className="px-6 py-3 text-left">{renderSortLabel("fechaPedido", "Fecha pedido")}</th>
-            <th className="px-6 py-3 text-left">{renderSortLabel("fechaEntrega", "Fecha entrega")}</th>
-            <th className="px-6 py-3 text-left">{renderSortLabel("estado", "Estado")}</th>
+            <th className="px-3 py-3 text-left">{renderSortLabel("idPedido", "ID Pedido")}</th>
+            <th className="px-3 py-3 text-left">{renderSortLabel("idVendedor", "ID Vendedor")}</th>
+            <th className="px-3 py-3 text-left">{renderSortLabel("idCliente", "ID Cliente")}</th>
+            <th className="px-3 py-3 text-left">Productos (cantidad)</th>
+            <th className="px-3 py-3 text-left">{renderSortLabel("fechaPedido", "Fecha pedido")}</th>
+            <th className="px-3 py-3 text-left">{renderSortLabel("fechaEntrega", "Fecha entrega")}</th>
+            <th className="px-3 py-3 text-left">{renderSortLabel("estado", "Estado")}</th>
           </tr>
         </thead>
         <tbody>
