@@ -1,4 +1,5 @@
 import { PedidosVentas } from "../models/PedidosVentas";
+import { SolicitudVenta } from "../models/SolicitudVenta";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -39,6 +40,44 @@ export async function CreateNuevoPedido(data: {
     const errorData = await response.json();
     throw new Error(
       `Error creating pedido: ${response.status} - ${JSON.stringify(
+        errorData,
+      )}`,
+    );
+  }
+  return response.json();
+}
+
+export async function GetSolicitudVenta(): Promise<SolicitudVenta[]> {
+  const response = await fetch(`${apiUrl}/get-orden-venta`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Error fetching solicitudes de venta");
+  }
+   const data = await response.json();
+return data.orden_ventas_pendientes;
+}
+
+export async function updateEstadoSolicitudVenta(id: number, estado: "confirmada" | "cancelada") {
+  const data = {
+    id_pedido: id,
+    estado: estado
+  }
+  console.log(data);
+  const response = await fetch(`${apiUrl}/crear-orden-venta/update-estado-orden-venta`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify( data ),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Error updating estado: ${response.status} - ${JSON.stringify(
         errorData,
       )}`,
     );

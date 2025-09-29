@@ -1,9 +1,8 @@
-import { Producto } from "./Producto";
-
 export interface SolicitudVenta {
-  clienteId: number;
-  productos: Producto[];
+  id: number;
+  id_orden_venta: number;
+  nombre: string;
   cantidad: number;
-  fechaSolicitud: string; // ISO date string
-  estado: string// 'pendiente' | 'aprobada' | 'rechazada';
+  fecha_pedido: string; // ISO date string
+  fecha_entrega_solicitada: string; // ISO date string}
 }

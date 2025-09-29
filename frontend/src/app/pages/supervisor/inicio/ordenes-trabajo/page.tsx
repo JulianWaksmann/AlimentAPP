@@ -4,15 +4,28 @@ import React, { useEffect, useState } from "react";
 import { OrdenProduccion } from "@/app/models/OrdenProduccion";
 import { GetOrdenesProduccion } from "@/app/api/produccion";
 import OrdenesDeProduccionTable from "@/app/components/OrdenesDeProduccionTable";
+import { SolicitudVenta } from "@/app/models/SolicitudVenta";
+import { GetSolicitudVenta } from "@/app/api/pedidosVenta";
+import SolicitudDeVentaTable from "@/app/components/SolicitudDeVentaTable";
 
 const OrdenesDeTrabajoPage = () => {
   const [ordenes, setOrdenes] = useState<OrdenProduccion[]>([]);
+  const [solicitudes, setSolicitudes] = useState<SolicitudVenta[]>([]); // Ajusta el tipo según tu modelo de datos
+
+  useEffect(() => {
+    async function fetchSolicitudes() {
+      const res = await GetSolicitudVenta();
+      setSolicitudes(res);
+      // console.log(res);
+    }
+    fetchSolicitudes();
+  }, []);
 
   useEffect(() => {
     async function fetchOrdenes() {
       const res = await GetOrdenesProduccion();
       setOrdenes(res);
-      console.log(res);
+      // console.log(res);
     }
     fetchOrdenes();
   }, []);
@@ -20,7 +33,10 @@ const OrdenesDeTrabajoPage = () => {
   return (
     <div>
       <Header />
-
+      <div>
+        <h2 className="text-2xl font-bold mb-4 text-center m-2">Solicitudes de venta</h2>
+        <SolicitudDeVentaTable solicitudes={solicitudes} />
+      </div>
       <div className="flex items-center p-6 bg-white border-b border-gray-200">
         <OrdenesDeProduccionTable ordenes={ordenes} />
       </div>
