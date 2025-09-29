@@ -28,7 +28,13 @@ export default function VendedorLayout({
             href="/pages/vendedor/inicio/gestion-ventas"
             className={navLinkClasses("/pages/vendedor/inicio/gestion-ventas")}
           >
-            PEDIDOS DE VENTAS
+            PEDIDOS
+          </Link>
+                    <Link
+            href="/pages/vendedor/inicio/nuevo"
+            className={navLinkClasses("/pages/vendedor/inicio/nuevo")}
+          >
+            NUEVO
           </Link>
           <Link
             href="/pages/vendedor/inicio/administracion-clientes"

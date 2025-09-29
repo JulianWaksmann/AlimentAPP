@@ -1,21 +1,7 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/pages/gerente/page": "app/pages/gerente/page.js",
-  "/page": "app/page.js",
-  "/pages/gerente/login/page": "app/pages/gerente/login/page.js",
-  "/pages/operario/login/page": "app/pages/operario/login/page.js",
-  "/pages/rrhh/inicio/page": "app/pages/rrhh/inicio/page.js",
-  "/pages/supervisor/page": "app/pages/supervisor/page.js",
-  "/pages/operario/page": "app/pages/operario/page.js",
-  "/pages/rrhh/login/page": "app/pages/rrhh/login/page.js",
-  "/pages/supervisor/login/page": "app/pages/supervisor/login/page.js",
   "/pages/vendedor/login/page": "app/pages/vendedor/login/page.js",
-  "/pages/supervisor/inicio/materia-prima/page": "app/pages/supervisor/inicio/materia-prima/page.js",
+  "/page": "app/page.js",
+  "/pages/vendedor/inicio/nuevo/page": "app/pages/vendedor/inicio/nuevo/page.js",
   "/pages/supervisor/inicio/ordenes-trabajo/page": "app/pages/supervisor/inicio/ordenes-trabajo/page.js",
-  "/pages/supervisor/inicio/produccion/page": "app/pages/supervisor/inicio/produccion/page.js",
-  "/pages/vendedor/inicio/gestion-ventas/page": "app/pages/vendedor/inicio/gestion-ventas/page.js",
-  "/pages/supervisor/inicio/productos/page": "app/pages/supervisor/inicio/productos/page.js",
-  "/pages/vendedor/inicio/page": "app/pages/vendedor/inicio/page.js",
-  "/pages/supervisor/inicio/page": "app/pages/supervisor/inicio/page.js",
-  "/pages/vendedor/inicio/administracion-clientes/page": "app/pages/vendedor/inicio/administracion-clientes/page.js"
+  "/pages/vendedor/inicio/gestion-ventas/page": "app/pages/vendedor/inicio/gestion-ventas/page.js"
 }

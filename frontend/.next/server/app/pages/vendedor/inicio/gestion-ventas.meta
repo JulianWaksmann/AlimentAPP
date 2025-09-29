@@ -1,7 +1,0 @@
-{
-  "headers": {
-    "x-nextjs-stale-time": "300",
-    "x-nextjs-prerender": "1",
-    "x-next-cache-tags": "_N_T_/layout,_N_T_/pages/layout,_N_T_/pages/vendedor/layout,_N_T_/pages/vendedor/inicio/layout,_N_T_/pages/vendedor/inicio/gestion-ventas/layout,_N_T_/pages/vendedor/inicio/gestion-ventas/page,_N_T_/pages/vendedor/inicio/gestion-ventas/"
-  }
-}
