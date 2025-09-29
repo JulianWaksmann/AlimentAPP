@@ -13,7 +13,8 @@ CREATE TYPE estado_orden_produccion AS ENUM (
     'planificada',
     'en_proceso',
     'cancelada',
-    'finalizada'
+    'finalizada',
+    'pendiente'
 );
 
 CREATE TABLE IF NOT EXISTS rol (
