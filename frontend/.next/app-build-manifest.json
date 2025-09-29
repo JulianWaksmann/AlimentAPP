@@ -1,0 +1,85 @@
+{
+  "pages": {
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
+    "/pages/supervisor/inicio/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/supervisor/inicio/layout.js"
+    ],
+    "/pages/supervisor/inicio/ordenes-trabajo/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/supervisor/inicio/ordenes-trabajo/page.js"
+    ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
+    "/pages/vendedor/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/vendedor/login/page.js"
+    ],
+    "/pages/vendedor/inicio/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/vendedor/inicio/layout.js"
+    ],
+    "/pages/vendedor/inicio/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/vendedor/inicio/page.js"
+    ],
+    "/pages/vendedor/inicio/gestion-ventas/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/vendedor/inicio/gestion-ventas/page.js"
+    ],
+    "/pages/vendedor/inicio/nuevo/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/vendedor/inicio/nuevo/page.js"
+    ],
+    "/pages/supervisor/inicio/materia-prima/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/supervisor/inicio/materia-prima/page.js"
+    ],
+    "/pages/supervisor/inicio/produccion/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/supervisor/inicio/produccion/page.js"
+    ],
+    "/pages/supervisor/inicio/productos/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/supervisor/inicio/productos/page.js"
+    ],
+    "/pages/rrhh/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/rrhh/login/page.js"
+    ],
+    "/pages/rrhh/inicio/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/rrhh/inicio/page.js"
+    ],
+    "/pages/supervisor/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/supervisor/login/page.js"
+    ],
+    "/pages/vendedor/inicio/administracion-clientes/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/vendedor/inicio/administracion-clientes/page.js"
+    ]
+  }
+}

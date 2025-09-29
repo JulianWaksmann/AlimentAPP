@@ -14,9 +14,9 @@ const GestionClientesPage = () => {
   const [modalNuevoClienteVisible, setModalNuevoClienteVisible] = useState(false);
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
 
-  useEffect(() => {
-    setClientes(clientesData);
-  }, []);
+  // useEffect(() => {
+  //   setClientes(clientesData);
+  // }, []);
 
   const openEditModal = (cliente: Cliente) => {
     setEditingCliente(cliente);
@@ -24,14 +24,14 @@ const GestionClientesPage = () => {
   };
 
   const handleDelete = (mail: string) => {
-    setClientes((actuales) => actuales.filter((cliente) => cliente.mail !== mail));
+    setClientes((actuales) => actuales.filter((cliente) => cliente.email !== mail));
   };
 
   const guardarCliente = (cliente: Cliente) => {
     setClientes((actuales) => {
-      const existe = actuales.some((item) => item.mail === cliente.mail);
+      const existe = actuales.some((item) => item.email === cliente.email);
       if (existe) {
-        return actuales.map((item) => (item.mail === cliente.mail ? cliente : item));
+        return actuales.map((item) => (item.email === cliente.email ? cliente : item));
       }
       return [...actuales, cliente];
     });
