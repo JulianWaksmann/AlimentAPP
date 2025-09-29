@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { OrdenProduccion } from "../models/OrdenProduccion";
+import { UpdateEstadoOrdenProduccion, GetOrdenesProduccion } from "../api/produccion";
+
 
 type Props = {
   ordenes: OrdenProduccion[];
@@ -72,10 +74,21 @@ export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Pr
     setNuevoEstado(estadoActual);
   };
 
-  const handleConfirm = (id: number) => {
-    if (onEstadoChange) onEstadoChange(id, nuevoEstado);
+  const handleConfirm = async (id: number) => {
+  if (onEstadoChange) onEstadoChange(id, nuevoEstado); // Si usas el callback externo
+  try {
+    console.log("actualizar ot a: "+ id + " estado: " + nuevoEstado);
+    await UpdateEstadoOrdenProduccion(id, nuevoEstado);
     setEditId(null);
-  };
+    setNuevoEstado("");
+
+    window.location.reload(); // Alternativa rápida si el estado está en el padre
+  } catch (error) {
+    alert("Error al actualizar el estado");
+    console.log("error al actualizar estado de OP: "+ error);
+    setEditId(null);
+  }
+};
 
   const handleCancel = () => {
     setEditId(null);

@@ -33,11 +33,10 @@ const OrdenesDeTrabajoPage = () => {
   return (
     <div>
       <Header />
-      <div>
-        <h2 className="text-2xl font-bold mb-4 text-center m-2">Solicitudes de venta</h2>
+      <div className=" items-center p-6 bg-white border-b border-details">
         <SolicitudDeVentaTable solicitudes={solicitudes} />
       </div>
-      <div className="flex items-center p-6 bg-white border-b border-gray-200">
+      <div className="flex items-center p-6 bg-white border-b border-details">
         <OrdenesDeProduccionTable ordenes={ordenes} />
       </div>
     </div>

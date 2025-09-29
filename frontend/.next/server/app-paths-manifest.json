@@ -1,4 +1,9 @@
 {
+  "/pages/rrhh/login/page": "app/pages/rrhh/login/page.js",
+  "/pages/rrhh/inicio/page": "app/pages/rrhh/inicio/page.js",
+  "/pages/supervisor/login/page": "app/pages/supervisor/login/page.js",
   "/pages/vendedor/inicio/gestion-ventas/page": "app/pages/vendedor/inicio/gestion-ventas/page.js",
-  "/pages/supervisor/inicio/ordenes-trabajo/page": "app/pages/supervisor/inicio/ordenes-trabajo/page.js"
+  "/pages/vendedor/inicio/page": "app/pages/vendedor/inicio/page.js",
+  "/pages/vendedor/inicio/administracion-clientes/page": "app/pages/vendedor/inicio/administracion-clientes/page.js",
+  "/pages/vendedor/inicio/nuevo/page": "app/pages/vendedor/inicio/nuevo/page.js"
 }
