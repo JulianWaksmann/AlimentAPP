@@ -3,10 +3,10 @@ export interface Cliente {
   nombre_contacto: string;
   apellido_contacto: string;
   telefono?: string;
-  email?: string;
-  ciudad?: string;
+  email: string;
+  ciudad: string;
   direccion?: string;
-  provincia?: string;
+  provincia: string;
   razon_social?: string;
   cuil?: string;
   activo?: boolean;

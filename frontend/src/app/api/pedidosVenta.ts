@@ -66,7 +66,7 @@ export async function updateEstadoSolicitudVenta(id: number, estado: "confirmada
     id_pedido: id,
     estado: estado
   }
-  console.log(data);
+  // console.log(data);
   const response = await fetch(`${apiUrl}/crear-orden-venta/update-estado-orden-venta`, {
     method: "POST",
     headers: {

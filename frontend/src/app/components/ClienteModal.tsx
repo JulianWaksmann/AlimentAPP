@@ -9,6 +9,8 @@
 // }
 
 // const ClienteModal: React.FC<ClienteModalProps> = ({ isOpen, onClose, onSave, editingCliente }) => {
+  const ClienteModal = () => {
+    return <div>Cliente Modal</div>;
 //   const [form, setForm] = useState<Cliente>({
 //     nombre_contacto: "",
 //     apellido_contacto: "",
@@ -137,6 +139,6 @@
 //       </div>
 //     </div>
 //   );
-// };
+};
 
-// export default ClienteModal;
+export default ClienteModal;

@@ -8,7 +8,8 @@
 // import { Cliente } from "@/app/models/Cliente";
 // import clientesData from "@/data/clientes.json";
 
-// const GestionClientesPage = () => {
+const GestionClientesPage = () => {
+  return <div>Gestión de Clientes - En construcción</div>;
 //   const [clientes, setClientes] = useState<Cliente[]>([]);
 //   const [modalVisible, setModalVisible] = useState(false);
 //   const [modalNuevoClienteVisible, setModalNuevoClienteVisible] = useState(false);
@@ -74,7 +75,7 @@
 //       </main>
 //     </div>
 //   );
-// };
+};
 
-// export default GestionClientesPage;
+export default GestionClientesPage;
 

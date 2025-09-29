@@ -77,11 +77,11 @@ const ClienteTable: React.FC<ClienteTableProps> = ({ clientes, onEdit, onDelete 
           </thead>
           <tbody>
             {paginatedClientes.map((cliente) => (
-              <tr key={cliente.mail} className="odd:bg-neutral-light even:bg-white">
-                <td className="px-6 py-3">{cliente.nombre}</td>
-                <td className="px-6 py-3">{cliente.apellido}</td>
+              <tr key={cliente.email} className="odd:bg-neutral-light even:bg-white">
+                <td className="px-6 py-3">{cliente.nombre_contacto}</td>
+                <td className="px-6 py-3">{cliente.apellido_contacto}</td>
                 <td className="px-6 py-3">{cliente.telefono}</td>
-                <td className="px-6 py-3">{cliente.mail}</td>
+                <td className="px-6 py-3">{cliente.email}</td>
                 <td className="px-6 py-3">{cliente.ciudad}</td>
                 <td className="px-6 py-3">{cliente.direccion}</td>
                 <td className="px-6 py-3">{cliente.provincia}</td>
@@ -94,7 +94,7 @@ const ClienteTable: React.FC<ClienteTableProps> = ({ clientes, onEdit, onDelete 
                   </button>
                   <button
                     className="rounded bg-error px-2 py-1 text-white transition hover:opacity-90"
-                    onClick={() => onDelete(cliente.mail)}
+                    onClick={() => onDelete(cliente.email)}
                   >
                     Eliminar
                   </button>

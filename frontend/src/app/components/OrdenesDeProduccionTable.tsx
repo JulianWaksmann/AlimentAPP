@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { OrdenProduccion } from "../models/OrdenProduccion";
-import { UpdateEstadoOrdenProduccion, GetOrdenesProduccion } from "../api/produccion";
+import { UpdateEstadoOrdenProduccion } from "../api/produccion";
 
 
 type Props = {

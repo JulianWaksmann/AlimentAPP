@@ -462,9 +462,6 @@ video {
 .z-50 {
   z-index: 50;
 }
-.m-2 {
-  margin: 0.5rem;
-}
 .m-4 {
   margin: 1rem;
 }
@@ -493,9 +490,6 @@ video {
 }
 .ml-2 {
   margin-left: 0.5rem;
-}
-.mr-2 {
-  margin-right: 0.5rem;
 }
 .mt-1 {
   margin-top: 0.25rem;
@@ -695,10 +689,6 @@ video {
 .border-details {
   --tw-border-opacity: 1;
   border-color: rgb(0 216 196 / var(--tw-border-opacity, 1));
-}
-.border-gray-200 {
-  --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
 }
 .border-gray-300 {
   --tw-border-opacity: 1;
