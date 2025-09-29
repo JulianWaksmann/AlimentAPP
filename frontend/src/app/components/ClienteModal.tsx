@@ -10,10 +10,10 @@ interface ClienteModalProps {
 
 const ClienteModal: React.FC<ClienteModalProps> = ({ isOpen, onClose, onSave, editingCliente }) => {
   const [form, setForm] = useState<Cliente>({
-    nombre: "",
-    apellido: "",
+    nombre_contacto: "",
+    apellido_contacto: "",
     telefono: "",
-    mail: "",
+    email: "",
     ciudad: "",
     direccion: "",
     provincia: "",
@@ -24,10 +24,10 @@ const ClienteModal: React.FC<ClienteModalProps> = ({ isOpen, onClose, onSave, ed
       setForm(editingCliente);
     } else {
       setForm({
-        nombre: "",
-        apellido: "",
+        nombre_contacto: "",
+        apellido_contacto: "",
         telefono: "",
-        mail: "",
+        email: "",
         ciudad: "",
         direccion: "",
         provincia: "",
@@ -59,7 +59,7 @@ const ClienteModal: React.FC<ClienteModalProps> = ({ isOpen, onClose, onSave, ed
             type="text"
             name="nombre"
             placeholder="Nombre"
-            value={form.nombre}
+            value={form.nombre_contacto}
             onChange={handleChange}
             className="rounded border border-gray-300 px-3 py-2"
             required
@@ -68,7 +68,7 @@ const ClienteModal: React.FC<ClienteModalProps> = ({ isOpen, onClose, onSave, ed
             type="text"
             name="apellido"
             placeholder="Apellido"
-            value={form.apellido}
+            value={form.apellido_contacto}
             onChange={handleChange}
             className="rounded border border-gray-300 px-3 py-2"
             required
@@ -86,7 +86,7 @@ const ClienteModal: React.FC<ClienteModalProps> = ({ isOpen, onClose, onSave, ed
             type="email"
             name="mail"
             placeholder="Mail"
-            value={form.mail}
+            value={form.email}
             onChange={handleChange}
             className="rounded border border-gray-300 px-3 py-2"
             required

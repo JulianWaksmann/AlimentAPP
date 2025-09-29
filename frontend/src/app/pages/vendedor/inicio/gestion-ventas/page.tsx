@@ -1,20 +1,24 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import pedidosData from "@/data/pedidosVenta.json";
-import PedidoVentaTable, { PedidoVenta, Producto, EstadoPedido } from "@/app/components/PedidoDeVenta";
+import { GetPedidosVenta } from "@/app/api/pedidosVenta";
+import { PedidosVentas } from "@/app/models/PedidosVentas";
+import PedidoVenta from "@/app/components/PedidoDeVenta";
 
 
 const GestionVentasPage = () => {
-  // const pedidosIniciales: PedidoVenta[] = pedidosData.map((pedido) => ({
-  //   ...pedido,
-  //   estado: pedido.estado as EstadoPedido,
-  // }));
-  const [pedidos, setPedidos] = useState<PedidoVenta[]>([]);
+  const [pedidos, setPedidos] = useState<PedidosVentas[]>([]);
 
-  // useEffect(() => {
-    // const fetchPedidos = async () => {
-      // const pedidos = await 
+  
+
+  useEffect(() => {
+    async function fetchPedidos() {
+      const res = await GetPedidosVenta();
+      setPedidos(res);
+      console.log(res);
+    };
+    fetchPedidos();
+  }, []);
     
 
 
@@ -24,7 +28,7 @@ const GestionVentasPage = () => {
 
 
 
-      <PedidoVentaTable pedidos={pedidos} />
+      <PedidoVenta pedidos={pedidos} />
     </div>
   );
 };

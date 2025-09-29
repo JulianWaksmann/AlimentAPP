@@ -1,12 +1,20 @@
+import { PedidosVentas } from "../models/PedidosVentas";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-export async function GetPedidosVenta(): Promise<[]> {
-    const response = await fetch(`${apiUrl}/`);
+export async function GetPedidosVenta(): Promise<PedidosVentas[]> {
+    const response = await fetch(`${apiUrl}/crear-orden-venta`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+    );
     if (!response.ok) {
       throw new Error("Error fetching productos");
     }
-    return response.json();
+     const data = await response.json();
+  return data.data;
   }
 
 //metodo post para crear un nuevo pedido de venta
