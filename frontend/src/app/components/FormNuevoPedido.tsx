@@ -20,6 +20,7 @@ const FormNuevoPedido = () => {
   const [idCliente, setIdCliente] = useState<string>("");
   const [fechaEntrega, setFechaEntrega] = useState<string>("");
   const [productosPedido, setProductosPedido] = useState<ProductoPedido[]>([]);
+  const today = new Date().toISOString().split("T")[0];
 
 
   useEffect(() => {
@@ -54,7 +55,11 @@ const FormNuevoPedido = () => {
     const cantidad = Number(productoActual.cantidad);
 
     if (!productoSeleccionado || !cantidad || cantidad <= 0) {
-      alert("Por favor, selecciona un producto y una cantidad valida.");
+      alert("Por favor, selecciona un producto y una cantidad válida.");
+      return;
+    }
+    if (cantidad > 100) {
+      alert("La cantidad máxima permitida es 100.");
       return;
     }
 
@@ -128,19 +133,19 @@ const FormNuevoPedido = () => {
       </h2>
 
       {/* --- Datos Generales del Pedido --- */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+      <div className="grid grid-cols-1 gap-4 ">
         <div>
           <label htmlFor="cliente" className="mb-1 block text-sm font-medium">Cliente</label>
           <select id="cliente" value={idCliente} onChange={(e) => setIdCliente(e.target.value)} className="w-full rounded border px-3 py-2">
             <option value="" disabled>Selecciona un cliente</option>
             {nombreClientes.map((c) => (
-              <option key={c.id} value={c.id}>{c.nombre_contacto + " " + c.apellido_contacto}</option>
+              <option key={c.id} value={c.id}>{c.id + " - " + c.nombre_contacto + " " + c.apellido_contacto + " - " + c.razon_social + " - " + c.cuil}</option>
             ))}
           </select>
         </div>
         <div>
           <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium">Fecha de entrega</label>
-          <input id="fechaEntrega" type="date" value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} className="w-full rounded border px-3 py-2" />
+          <input id="fechaEntrega" type="date" min={today} value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} className="w-full rounded border px-3 py-2" />
         </div>
       </div>
 
@@ -159,7 +164,7 @@ const FormNuevoPedido = () => {
           </div>
           <div className="w-full md:w-32">
             <label htmlFor="cantidad" className="mb-1 block text-sm font-medium">Cantidad</label>
-            <input id="cantidad" type="number" min="1" placeholder="Cant." value={productoActual.cantidad} onChange={(e) => setProductoActual({ ...productoActual, cantidad: e.target.value })} className="w-full rounded border px-3 py-2" />
+            <input id="cantidad" type="number" min="1" max="100" placeholder="Cant." value={productoActual.cantidad} onChange={(e) => setProductoActual({ ...productoActual, cantidad: e.target.value })} className="w-full rounded border px-3 py-2" />
           </div>
           <button onClick={handleAgregarProducto} className="rounded bg-primary px-4 py-2 text-white transition hover:opacity-90">
             + Agregar
