@@ -121,9 +121,9 @@ const FormNuevoPedido = () => {
 
     // Aquí iría la lógica para enviar 'nuevoPedido' al backend o manejarlo según sea necesario
 
-    console.log("Pedido a guardar:", nuevoPedido);
-    alert("Pedido guardado con exito (revisa la consola).");
-    limpiarFormulario();
+    // console.log("Pedido a guardar:", nuevoPedido);
+    // alert("Pedido guardado con exito (revisa la consola).");
+    // limpiarFormulario();
   };
 
   return (

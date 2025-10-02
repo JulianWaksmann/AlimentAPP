@@ -1,6 +1,8 @@
 import React from "react";
 import { PedidosVentas } from "../models/PedidosVentas";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { Cliente } from "app/models/Cliente";
+import { GetNombreApellidoClientes } from "../api/clientes";
 
 type Props = {
   pedidos: PedidosVentas[];
@@ -22,11 +24,25 @@ const sortOptions = [
 ];
 
 export default function PedidoVenta({ pedidos }: Props) {
-    const [sortKey, setSortKey] = useState<string>("fechaEntrega");
-  const [sortAsc, setSortAsc] = useState<boolean>(true);
+  const [nombreClientes, setNombreClientes] = useState<Cliente[]>([]);
+  const [idCliente, setIdCliente] = useState<string>("");
+  const [estadoFiltro, setEstadoFiltro] = useState<string>("");
 
+  const [sortKey, setSortKey] = useState<string>("idPedido");
+  const [sortAsc, setSortAsc] = useState<boolean>(false);
+
+  // Filtrar pedidos por cliente y estado
+  const pedidosFiltrados = useMemo(() => {
+    return pedidos.filter(p => {
+      const clienteMatch = idCliente ? String(p.idCliente) === idCliente : true;
+      const estadoMatch = estadoFiltro ? p.estado === estadoFiltro : true;
+      return clienteMatch && estadoMatch;
+    });
+  }, [pedidos, idCliente, estadoFiltro]);
+
+  // Ordenar los pedidos filtrados
   const sortedPedidos = useMemo(() => {
-    const clone = [...pedidos];
+    const clone = [...pedidosFiltrados];
     clone.sort((a, b) => {
       let valueA = a[sortKey as keyof PedidosVentas];
       let valueB = b[sortKey as keyof PedidosVentas];
@@ -46,12 +62,21 @@ export default function PedidoVenta({ pedidos }: Props) {
         : String(valueB).localeCompare(String(valueA));
     });
     return clone;
-  }, [pedidos, sortKey, sortAsc]);
+  }, [pedidosFiltrados, sortKey, sortAsc]);
+    useEffect(() => {
+      const fetchClientes = async () => {
+        const clientes= await GetNombreApellidoClientes();
+        // console.log(clientes);
+          setNombreClientes(clientes);
+      };
+      fetchClientes();
+    }, []);
 
   return (
     <div className="overflow-x-auto rounded-lg shadow-lg bg-white p-4">
       <h2 className="text-xl font-bold mb-4 text-primary">Pedidos de Venta</h2>
-              <div className="flex items-center gap-2">
+      <div className="flex flex-col md:flex-row md:items-center gap-2">
+        <div className="flex items-center gap-2">
           <label htmlFor="ordenar" className="text-sm font-medium">Ordenar por:</label>
           <select
             id="ordenar"
@@ -64,13 +89,30 @@ export default function PedidoVenta({ pedidos }: Props) {
             ))}
           </select>
           <button
-            className="ml-2 px-2 py-1 rounded bg-neutral-light text-xs"
+            className=" px-2 py-1 rounded bg-neutral-light text-xs"
             onClick={() => setSortAsc(a => !a)}
             title="Invertir orden"
           >
-            {sortAsc ? "Ascendente ↑" : "Descendente ↓"}
+            {sortAsc ?"Ascendente ↑" :"Descendente ↓"}
           </button>
         </div>
+        <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
+          <label htmlFor="filtrar" className="text-sm font-medium">Filtros:</label>
+          <select id="cliente" value={idCliente} onChange={(e) => setIdCliente(e.target.value)} className="w-full rounded border px-3 py-2">
+            <option value="">Todos los clientes</option>
+            {nombreClientes.map((c) => (
+              <option key={c.id} value={String(c.id)}>{c.id + " - " + c.nombre_contacto + " " + c.apellido_contacto}</option>
+            ))}
+          </select>
+          <select id="estado" value={estadoFiltro} onChange={e => setEstadoFiltro(e.target.value)} className="w-full rounded border px-3 py-2">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="confirmada">Confirmada</option>
+            <option value="cancelada">Cancelada</option>
+            <option value="entregada">Entregada</option>
+          </select>
+        </div>
+      </div>
 
       <div className=" mt-6 space-y-4">
         {sortedPedidos.map((pedido) => (
@@ -83,7 +125,8 @@ export default function PedidoVenta({ pedidos }: Props) {
             </div>
             <div className="mb-1 text-sm"><span className="font-semibold">Cliente:</span> {pedido.idCliente}</div>
             <div className="mb-1 text-sm"><span className="font-semibold">Fecha Pedido:</span> {new Date(pedido.fechaPedido).toLocaleDateString()}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Entrega:</span> {new Date(pedido.fechaEntrega).toLocaleDateString()}</div>
+            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Solicitada:</span> {new Date(pedido.fechaEntrega).toLocaleDateString()}</div>
+            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Entrega:</span></div>
             <div className="mb-1 text-sm font-semibold">Productos:</div>
             <ul className="list-disc pl-5 text-sm">
               {pedido.productos.map((prod) => (

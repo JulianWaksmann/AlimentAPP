@@ -15,6 +15,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/pages/vendedor/inicio/nuevo/page.js"
+    ],
+    "/pages/vendedor/inicio/gestion-ventas/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/pages/vendedor/inicio/gestion-ventas/page.js"
     ]
   }
 }
