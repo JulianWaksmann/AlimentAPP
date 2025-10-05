@@ -47,6 +47,8 @@ const RoleLogin: React.FC<RoleLoginProps> = ({ roleName, colorClass, redirectPat
         >
           Ingresar
         </button>
+      <a href="../../../pages/recuperar-credenciales" className=" text-blue-500 underline ">Olvide mis credenciales</a>
+
       </form>
     </div>
   );

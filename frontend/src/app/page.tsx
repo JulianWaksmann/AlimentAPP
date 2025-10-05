@@ -6,10 +6,11 @@ import Header from "@/app/components/Header";
 
 const roles = [
   { name: "RRHH", color: "bg-blue-500", path: "/pages/rrhh/login" },
-  { name: "Empleados", color: "bg-green-500", path: "/pages/operario/login" },
+  { name: "Operario", color: "bg-green-500", path: "/pages/operario/login" },
   { name: "Supervisor", color: "bg-yellow-500", path: "/pages/supervisor/login" },
   { name: "Gerente", color: "bg-red-500", path: "/pages/gerente/login" },
   { name: "Vendedor", color: "bg-purple-500", path: "/pages/vendedor/login" },
+  { name: "Calidad", color: "bg-pink-500", path: "/pages/calidad/login" },
 ];
 
 const LandingPage: React.FC = () => {
