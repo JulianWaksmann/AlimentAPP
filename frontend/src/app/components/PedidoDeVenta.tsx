@@ -123,10 +123,10 @@ export default function PedidoVenta({ pedidos }: Props) {
                 {pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1)}
               </span>
             </div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Cliente:</span> {pedido.idCliente}</div>
+            <div className="mb-1 text-sm"><span className="font-semibold">Cliente {pedido.idCliente} :</span> {pedido.nombreCliente} {pedido.apellidoCliente}</div>
             <div className="mb-1 text-sm"><span className="font-semibold">Fecha Pedido:</span> {new Date(pedido.fechaPedido).toLocaleDateString()}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Solicitada:</span> {new Date(pedido.fechaEntrega).toLocaleDateString()}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Entrega:</span></div>
+            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Solicitada:</span> {new Date(pedido.fechaSolicitada).toLocaleDateString()}</div>
+            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Entrega:</span> {new Date(pedido.fechaEntrega).toLocaleDateString()}</div>
             <div className="mb-1 text-sm font-semibold">Productos:</div>
             <ul className="list-disc pl-5 text-sm">
               {pedido.productos.map((prod) => (
@@ -135,6 +135,7 @@ export default function PedidoVenta({ pedidos }: Props) {
                 </li>
               ))}
             </ul>
+            <div className="mt-2 text-sm"><span className="font-semibold">Valor Total:</span> ${pedido.valorPedido}</div>
           </div>
         ))}
       </div>
