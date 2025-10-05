@@ -1,6 +1,7 @@
 DROP TYPE IF EXISTS estado_orden_venta;
 CREATE TYPE estado_orden_venta AS ENUM (
     'pendiente',
+    'pendiente_supervision',
     'confirmada',
     'cancelada',
     'en_produccion',
@@ -19,11 +20,12 @@ CREATE TYPE estado_lote_materia_prima AS ENUM (
 
 DROP TYPE IF EXISTS estado_orden_produccion;
 CREATE TYPE estado_orden_produccion AS ENUM (
+    'pendiente',
     'planificada',
+    'lista_para_produccion',
     'en_proceso',
     'cancelada',
-    'finalizada',
-    'pendiente'
+    'finalizada'
 );
 
 CREATE TABLE IF NOT EXISTS rol (
@@ -156,3 +158,4 @@ CREATE TABLE IF NOT EXISTS sesion (
     id_empleado INTEGER PRIMARY KEY REFERENCES empleado(id) ON DELETE CASCADE,
     password VARCHAR(255) NOT NULL
 );
+

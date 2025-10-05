@@ -3,9 +3,9 @@ AlimentAPP Data Dictionary
 
 Tipos Enumerados
 ----------------
-- estado_orden_venta: pendiente | confirmada | cancelada | en_produccion | lista | entregada. Describe el ciclo de vida comercial de una orden de venta.
+- estado_orden_venta: pendiente | pendiente_supervision | confirmada | cancelada | en_produccion | lista | entregada. Pendiente_supervision indica ordenes que necesitan aprobacion del supervisor antes de confirmarse.
 - estado_lote_materia_prima: en_cuarentena | disponible | agotado | vencido | rechazado. Indica disponibilidad y aprobacion de cada lote.
-- estado_orden_produccion: planificada | en_proceso | cancelada | finalizada | pendiente. Representa el avance operativo de la orden de produccion.
+- estado_orden_produccion: pendiente | planificada | lista_para_produccion | en_proceso | cancelada | finalizada. Lista_para_produccion indica que el lote requerido ya fue reservado.
 
 Tablas
 ------
@@ -83,7 +83,7 @@ orden_venta
 - fecha_pedido: TIMESTAMP TZ, creacion del pedido.
 - fecha_entrega_solicitada: TIMESTAMP TZ, compromiso solicitado.
 - fecha_entrega_real: TIMESTAMP TZ, fecha efectiva de entrega.
-- estado: estado_orden_venta, situacion comercial.
+- estado: estado_orden_venta, situacion comercial (incluye pendiente_supervision para ordenes que requieren visto bueno del supervisor).
 - valor_total_pedido: NUMERIC(10,2), importe calculado.
 - observaciones: TEXT, notas adicionales.
 - created_at: TIMESTAMP TZ, fecha de registro.
@@ -94,7 +94,7 @@ orden_produccion
 - id_producto: FK a producto(id), articulo a fabricar.
 - fecha_creacion: DATE, planificacion de la OP.
 - fecha_fin: TIMESTAMP TZ, cierre real.
-- estado: estado_orden_produccion, ciclo operativo.
+- estado: estado_orden_produccion, ciclo operativo (lista_para_produccion cuando tiene materias primas asignadas).
 - cantidad: INTEGER, unidades a producir.
 - observaciones: TEXT, notas de produccion.
 
@@ -126,3 +126,4 @@ proveedor_por_materia_prima
 sesion
 - id_empleado: FK y llave primaria a empleado(id), usuario autenticado.
 - password: VARCHAR(255), contrasena temporal o legacy (pendiente de reemplazar por hash).
+
