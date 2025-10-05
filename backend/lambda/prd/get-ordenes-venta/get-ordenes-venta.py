@@ -102,14 +102,19 @@ def lambda_handler(event, context):
 
         query_pedidos = f"""
             SELECT 
-                id as "idPedido",
-                id_empleado as "idVendedor", 
-                id_cliente as "idCliente",
-                fecha_pedido as "fechaPedido",
-                fecha_entrega_solicitada as "fechaEntrega",
-                estado
-            FROM {ENV}.orden_venta
-            ORDER BY id
+                ov.id as "idPedido",
+                ov.id_empleado as "idVendedor", 
+                ov.id_cliente as "idCliente",
+                c.nombre_contacto as "nombreCliente",
+                c.apellido_contacto as "apellidoCliente",
+                ov.fecha_pedido as "fechaPedido",
+                ov.fecha_entrega_solicitada as "fechaSolicitada",
+                ov.fecha_entrega_real as "fechaEntrega",
+                ov.valor_total_pedido as "valorPedido",
+                ov.estado
+            FROM {ENV}.orden_venta ov
+            LEFT JOIN {ENV}.cliente c ON ov.id_cliente = c.id
+            ORDER BY ov.id
             """
         
         pedidos = run_query(cur, query_pedidos)
@@ -135,9 +140,13 @@ def lambda_handler(event, context):
                 "idPedido": pedido['idPedido'],
                 "idVendedor": pedido['idVendedor'],
                 "idCliente": pedido['idCliente'],
+                "nombreCliente": pedido['nombreCliente'],
+                "apellidoCliente": pedido['apellidoCliente'],
                 "productos": productos,
                 "fechaPedido": pedido['fechaPedido'].isoformat() if pedido['fechaPedido'] else None,
+                "fechaSolicitada": pedido['fechaSolicitada'].isoformat() if pedido['fechaSolicitada'] else None,
                 "fechaEntrega": pedido['fechaEntrega'].isoformat() if pedido['fechaEntrega'] else None,
+                "valorPedido": pedido['valorPedido'],
                 "estado": pedido['estado']
             }
             
