@@ -25,3 +25,4 @@ backend/layers/**/*.zip
 .vscode/
 .DS_Store
 Thumbs.db
+frontend/.next/
