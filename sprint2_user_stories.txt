@@ -1,0 +1,24 @@
+feature: Gestion materia prima + Rol de calidad
+uh1 (16h, Alta) Modelar y aplicar la migracion del esquema de materia prima creando tablas como lote_materia_prima, historial_calidad y triggers de stock en la lambda create_db para que RDS quede listo en dev y prod.
+uh2 (14h, Alta) Extender la lambda post-update-orden-venta-estado para validar stock disponible, generar automaticamente requisiciones de materia prima y disparar eventos para el nuevo flujo cuando la orden de venta pasa a confirmada.
+uh3 (12h, Media) Construir la lambda CRUD de calidad que permita al nuevo rol registrar lotes recibidos, adjuntar controles e integrar el pipeline de verificacion de defectos.
+uh4 (10h, Media) Disenar en Next.js la vista del encargado de calidad con formularios de lote, visibilidad de stock y alertas, reutilizando los componentes Tailwind existentes.
+uh5 (8h, Media) Elaborar plan de pruebas manuales end-to-end del flujo de materia prima, coordinar sesiones con el equipo y documentar riesgos para el scrum master.
+
+feature: Login por UI
+uh1 (12h, Alta) Desarrollar lambda de autenticacion centralizada con contrasenas hasheadas, sesiones por rol y tokens firmados siguiendo el stack API Gateway + Lambda.
+uh2 (10h, Alta) Implementar flujo de recuperacion de credenciales via email con codigo unico, almacen y expiracion usando SSM/Secrets y servicios de correo mockeados.
+uh3 (8h, Media) Integrar en Next.js los formularios de login por rol, manejo de estados y redireccion a cada dashboard con feedback de errores.
+uh4 (6h, Baja) Ejecutar pruebas manuales de autenticacion, recuperacion y expiracion de sesiones documentando matrices de resultados.
+uh5 (4h, Baja) Coordinar checklist de comunicacion a stakeholders y actualizacion de manuales internos desde la perspectiva de scrum master.
+
+feature: Operario cambio de estados de las ordenes de prd
+uh1 (10h, Media) Crear endpoint lambda para transicionar ordenes de produccion entre en_proceso y finalizada con validaciones de negocio y logging.
+uh2 (8h, Media) Actualizar la UI de operario en Next.js para ejecutar cambios de estado en tiempo real y visualizar el historial.
+uh3 (8h, Media) Preparar vista de supervisor para aprobar excepciones y monitorear ordenes bloqueadas por limites de stock.
+uh4 (6h, Baja) Preparar casos de prueba manuales, coordinar checklist de despliegue y documentar hallazgos para el supervisor.
+
+feature: Mock de data al 50%
+uh1 (12h, Media) Desarrollar script de seeding (lambda/script local) que cubra cerca del 50% del alcance total con datasets realistas de ordenes de venta y produccion.
+uh2 (8h, Media) Definir y documentar escenarios de negocio cubiertos por el dataset parcial para que QA y stakeholders sepan sus limites.
+uh3 (8h, Baja) Validar manualmente la coherencia del dataset parcial versus el modelo, registrar hallazgos y preparar informe para el profesor.

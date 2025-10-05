@@ -1,0 +1,33 @@
+AlimentAPP Frontend Prompt
+==========================
+
+Stack
+- Next.js 15 (App Router) con React 19 y TypeScript.
+- Estilos con TailwindCSS 3 y tema custom en tailwind.config.ts.
+- ESLint 9 con configuracion base de Next; formateo via prettier opcional.
+- Deploy estatico a S3 detras de CloudFront (output export, trailingSlash habilitado).
+
+Estructura base (carpeta src/app)
+- layout.tsx: shell global que importa globals.css y provee providers.
+- page.tsx: landing con selector de roles.
+- components/: tabla, modal, header, role login, charts.
+- pages/: subcarpetas por rol (rrhh, operario, supervisor, gerente, vendedor) con rutas internas.
+- models/ y data/ para tipos y datasets mock.
+
+Lineamientos
+- Mantener texto ASCII para evitar problemas en CI/S3.
+- Usar alias @/ para imports; no usar paths relativos largos.
+- Formularios controlados, validacion en cliente y uso de toasts o banners de error cuando aplique.
+- Consumir APIs via fetch con endpoints /api/<dominio>/<recurso>; manejar estados loading y vacio.
+- Actualizar componentes compartidos si el nuevo flujo aplica a multiples roles (por ejemplo tablas de ordenes).
+
+Tareas actuales prioritarias
+- Rol de calidad: nueva UI para registrar lotes, ver stock de materia prima y estado de controles.
+- Operario: permitir transiciones de estado en ordenes de produccion (en_proceso, finalizada) con feedback inmediato.
+- Login por rol: integrar el backend de autenticacion con manejadores de session y recuperacion de password (codigo por correo).
+- Mock de datos: datasets parciales (~50% del alcance) para ordenes y lotes, consistentes con el modelo actualizado.
+
+Testing
+- Pruebas manuales guiadas; documentar pasos y resultados.
+- Ejecutar npm run lint y npm run build antes de entregar.
+- Verificar que el build exportado genere carpetas out/ listas para S3.

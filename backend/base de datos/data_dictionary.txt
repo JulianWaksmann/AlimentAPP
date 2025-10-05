@@ -1,0 +1,128 @@
+AlimentAPP Data Dictionary
+==========================
+
+Tipos Enumerados
+----------------
+- estado_orden_venta: pendiente | confirmada | cancelada | en_produccion | lista | entregada. Describe el ciclo de vida comercial de una orden de venta.
+- estado_lote_materia_prima: en_cuarentena | disponible | agotado | vencido | rechazado. Indica disponibilidad y aprobacion de cada lote.
+- estado_orden_produccion: planificada | en_proceso | cancelada | finalizada | pendiente. Representa el avance operativo de la orden de produccion.
+
+Tablas
+------
+
+rol
+- id: SERIAL, llave primaria.
+- nombre: VARCHAR(15), identificador unico del rol (ventas, operario, calidad, etc.).
+
+empleado
+- id: SERIAL, llave primaria.
+- dni: INTEGER, documento nacional unico.
+- email: VARCHAR(50), correo institucional unico.
+- password_hash: VARCHAR(255), hash de la contrasena.
+- id_rol: FK a rol(id), define permisos.
+- nombre: VARCHAR(20), nombre de pila.
+- apellido: VARCHAR(20), apellido del empleado.
+- telefono: VARCHAR(20), contacto opcional.
+- activo: BOOLEAN, indica si puede autenticarse.
+- ultimo_login: TIMESTAMP TZ, marca de tiempo del ultimo acceso exitoso.
+
+cliente
+- id: SERIAL, llave primaria.
+- razon_social: VARCHAR(50), nombre legal o comercial.
+- email: VARCHAR(50), contacto principal (unico).
+- cuil: VARCHAR(50), identificador fiscal del cliente.
+- nombre_contacto: VARCHAR(20), persona de referencia.
+- apellido_contacto: VARCHAR(20), apellido del contacto.
+- telefono: VARCHAR(20), telefono del contacto.
+- activo: BOOLEAN, estado comercial.
+- created_at: TIMESTAMP TZ, fecha de alta en el sistema.
+
+producto
+- id: SERIAL, llave primaria.
+- nombre: VARCHAR(50), nombre del producto terminado.
+- descripcion: TEXT, detalle opcional.
+- unidad_medida: VARCHAR(20), unidad base (kg, unidad, litro).
+- stock_actual: NUMERIC(10,2), inventario disponible.
+- precio_venta: NUMERIC(10,2), precio vigent.
+- activo: BOOLEAN, indica si se ofrece al mercado.
+- created_at: TIMESTAMP TZ, fecha de alta.
+
+materia_prima
+- id: SERIAL, llave primaria.
+- nombre: VARCHAR(50), nombre unico de la materia prima.
+- expirabile: BOOLEAN, si requiere control de vencimiento.
+- created_at: TIMESTAMP TZ, fecha de creacion del registro.
+
+proveedor
+- id: SERIAL, llave primaria.
+- razon_social: VARCHAR(50), denominacion del proveedor.
+- cuil: VARCHAR(50), identificador fiscal (unico).
+- nombre_contacto: VARCHAR(50), persona de referencia.
+- direccion: VARCHAR(255), domicilio.
+- telefono: VARCHAR(50), telefono general.
+- email: VARCHAR(150), correo principal.
+- activo: BOOLEAN, si esta habilitado.
+- created_at: TIMESTAMP TZ, fecha de registro.
+
+lote_materia_prima
+- id: SERIAL, llave primaria.
+- id_materia_prima: FK a materia_prima(id), insumo al que pertenece.
+- id_proveedor: FK opcional a proveedor(id), origen del lote.
+- codigo_lote: VARCHAR(50), identificador del lote (unico por materia prima).
+- fecha_ingreso: TIMESTAMP TZ, ingreso al almacen.
+- fecha_vencimiento: DATE, fecha limite de uso.
+- cantidad_total: NUMERIC(10,2), cantidad recepcionada.
+- cantidad_disponible: NUMERIC(10,2), saldo no consumido.
+- estado: estado_lote_materia_prima, situacion operational.
+- observaciones: TEXT, notas de inspeccion o manejo.
+
+orden_venta
+- id: SERIAL, llave primaria.
+- id_cliente: FK a cliente(id), comprador.
+- id_empleado: FK a empleado(id), vendedor responsable.
+- fecha_pedido: TIMESTAMP TZ, creacion del pedido.
+- fecha_entrega_solicitada: TIMESTAMP TZ, compromiso solicitado.
+- fecha_entrega_real: TIMESTAMP TZ, fecha efectiva de entrega.
+- estado: estado_orden_venta, situacion comercial.
+- valor_total_pedido: NUMERIC(10,2), importe calculado.
+- observaciones: TEXT, notas adicionales.
+- created_at: TIMESTAMP TZ, fecha de registro.
+
+orden_produccion
+- id: SERIAL, llave primaria.
+- id_orden_venta: FK opcional a orden_venta(id), pedido asociado.
+- id_producto: FK a producto(id), articulo a fabricar.
+- fecha_creacion: DATE, planificacion de la OP.
+- fecha_fin: TIMESTAMP TZ, cierre real.
+- estado: estado_orden_produccion, ciclo operativo.
+- cantidad: INTEGER, unidades a producir.
+- observaciones: TEXT, notas de produccion.
+
+materia_prima_por_orden_produccion
+- id: SERIAL, llave primaria.
+- id_lote_materia_prima: FK a lote_materia_prima(id), lote consumido.
+- id_orden_produccion: FK a orden_produccion(id), OP afectada.
+- cantidad_utilizada: NUMERIC(10,2), consumo del lote.
+- created_at: TIMESTAMP TZ, registro del movimiento.
+- UNIQUE (id_orden_produccion, id_lote_materia_prima): evita duplicados por lote en la misma OP.
+
+materia_prima_por_producto
+- id: SERIAL, llave primaria.
+- id_producto: FK a producto(id), producto objetivo.
+- id_materia_prima: FK a materia_prima(id), insumo requerido.
+- cantidad: INTEGER, cantidad nominal de unidades (puede representar piezas).
+- kilogramos: NUMERIC(10,2), equivalencia en peso u otra unidad.
+- UNIQUE (id_producto, id_materia_prima): evita definiciones duplicadas.
+
+proveedor_por_materia_prima
+- id: SERIAL, llave primaria.
+- id_proveedor: FK a proveedor(id), proveedor habilitado.
+- id_materia_prima: FK a materia_prima(id), materia suministrada.
+- precio: NUMERIC(10,2), precio negociado.
+- tiempo_entrega_promedio: INTEGER, dias de entrega estimados.
+- activo: BOOLEAN, si la relacion esta vigente.
+- UNIQUE (id_proveedor, id_materia_prima): relacion uno a uno a nivel proveedor-materia.
+
+sesion
+- id_empleado: FK y llave primaria a empleado(id), usuario autenticado.
+- password: VARCHAR(255), contrasena temporal o legacy (pendiente de reemplazar por hash).

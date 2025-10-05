@@ -1,0 +1,31 @@
+AlimentAPP Backend Prompt
+=========================
+
+Stack y contexto
+- AWS: Route 53, CloudFront, S3, API Gateway HTTP, VPC, Lambda Python dentro de subredes privadas sin salida a internet.
+- Base de datos: RDS PostgreSQL accesible para desarrollo; credenciales leidas desde AWS SSM Parameter Store, driver pg8000 con SSL obligatorio.
+- Esquema actual: tablas para roles, empleados, clientes, productos, materia prima, proveedores, ordenes de venta y produccion; proximas tablas incluiran lote_materia_prima e historial de controles.
+- Las lambdas productivas viven en backend/lambda/prd y hoy repiten utilitarios de conexion y manejo de errores.
+
+Lineamientos de codigo
+- Python 3.12, estilo PEP8, preferir black e isort (opcional) y type hints donde aporten claridad.
+- Nunca interpolar strings en SQL; usar cur.execute(sql, params) para evitar injection.
+- Manejar commits y rollbacks explicitos; cerrar cursores/conexiones en finally.
+- Reutilizar un helper comun para SSM + conexion a RDS (crear en src/layers/common si aplica).
+- Propagar respuestas HTTP con headers CORS coherentes (Allow-Origin *, Allow-Methods GET,POST,OPTIONS, Allow-Headers Content-Type,Authorization).
+
+Buenas practicas de dominio
+- Cuando una orden de venta pasa a confirmada validar stock de materia prima y generar requisiciones automaticas si falta.
+- El nuevo rol de calidad registra lotes de materia prima y controla defectos; preparar endpoints CRUD y auditoria.
+- Las ordenes de produccion deben reflejar estados planificada -> en_proceso -> finalizada, sincronizadas con orden_venta.
+- Los flujo automaticos deben respetar el umbral definido: si la reposicion supera el umbral escalamos a supervisor.
+
+Testing y despliegue
+- En proyecto educativo priorizamos pruebas manuales documentadas; dejar pasos claros en README o carpetas de QA.
+- Logs de lambdas via CloudWatch (usar logger en vez de print para mensajes importantes).
+- Configurar variables de entorno: DB_SCHEMA, DB_NAME, y banderas especificas por entorno.
+
+Entregables frecuentes
+- Scripts de migracion/migracion inicial en backend/lambda/create_db.
+- Endpoints expuestos via API Gateway deben responder JSON consistente y codigos 2xx/4xx/5xx adecuados.
+- Documentar supuestos y contratos de payload en los prompts o README cuando cambien.

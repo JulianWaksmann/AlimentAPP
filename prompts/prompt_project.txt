@@ -1,0 +1,31 @@
+AlimentAPP Proyecto Prompt
+==========================
+
+Alcance
+- Sistema universitario de trazabilidad y produccion con foco en automatizar ordenes de venta, produccion y gestion de materia prima.
+- Infraestructura objetivo: Route 53, CloudFront, S3 (frontend), API Gateway HTTP + Lambda (backend), RDS PostgreSQL.
+- Lambdas corren en VPC privada sin acceso a internet; dependen de SSM Parameter Store para secretos.
+
+Flujo de trabajo
+- Ramas: master (release), develop (integracion) y feature/*.
+- Commits tipo Conventional Commits.
+- Pull requests con descripcion clara, checklist de pruebas manuales e inclusion de cambios en README/prompts si aplica.
+- Versionado SemVer y tags vMAJOR.MINOR.PATCH en master.
+
+Seguridad y datos
+- No commitear secretos; usar variables o parametros NoEcho.
+- RDS privado; solo SG de Lambdas.
+- S3 sin publico; acceso via CloudFront Origin Access Control.
+- Passwords almacenadas hasheadas (bcrypt o similar); nada en texto plano.
+
+Backlog inmediato
+1. Gestion materia prima + rol de calidad.
+2. Login por UI con recuperacion de credenciales.
+3. Cambios de estado de ordenes de produccion por operario.
+4. Dataset mock parcial (50% del alcance total).
+
+Buenas practicas
+- Documentar supuestos en la carpeta prompts y en README cuando cambie el dominio.
+- Escribir helpers reutilizables en src/layers/common (backend) y components compartidos (frontend).
+- Mantener consistencia entre mock data y esquema real; sincronizar con testers.
+- Registrar tareas de gestion (scrum master) cuando haya coordinaciones clave.
