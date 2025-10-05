@@ -11,6 +11,7 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
     const confirmacion = window.confirm(`Confirmar acción`);
     if (confirmacion) {
       updateEstadoSolicitudVenta(id, accion);
+          window.location.reload(); // Alternativa rápida si el estado está en el padre
 
       console.log("ID solicitud:", id, "Acción:", accion);
       // Aquí podrías llamar a una función para actualizar el estado en el backend
