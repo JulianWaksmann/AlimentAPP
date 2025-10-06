@@ -3,6 +3,7 @@ export interface Employee {
   nombre: string;
   apellido: string;
   rol: string;
-  area: string;
-  turno: string;
+  telefono: string;
+  email: string;
+  password?: string;
 }

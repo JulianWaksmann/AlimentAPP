@@ -7,81 +7,90 @@ interface EmployeeTableProps {
   onDelete: (id: number) => void;
 }
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const EmployeeTable: React.FC<EmployeeTableProps> = ({ employees, onEdit, onDelete }) => {
+  
   const [filterRol, setFilterRol] = useState("Todos");
-  const [filterArea, setFilterArea] = useState("Todos");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortKey, setSortKey] = useState<"id"|"nombre"|"apellido"|"rol">("id");
+  const [sortAsc, setSortAsc] = useState(true);
 
+  // Obtener roles únicos
+  const uniqueRoles = Array.from(new Set(employees.map(e => e.rol))).filter(Boolean);
+
+  // Filtrar por rol
   const filteredEmployees = employees.filter((employee) => {
-    const roleMatch = filterRol === "Todos" || employee.rol.toLowerCase() === filterRol.toLowerCase();
-    const areaMatch = filterArea === "Todos" || employee.area.toLowerCase() === filterArea.toLowerCase();
-    return roleMatch && areaMatch;
+    return filterRol === "Todos" || employee.rol.toLowerCase() === filterRol.toLowerCase();
   });
 
-  const totalPages = Math.ceil(filteredEmployees.length / ITEMS_PER_PAGE);
-  const paginatedEmployees = filteredEmployees.slice(
+  // Ordenar
+  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
+    let valueA = a[sortKey] ?? "";
+    let valueB = b[sortKey] ?? "";
+    if (sortKey === "id") {
+      valueA = Number(valueA);
+      valueB = Number(valueB);
+      return sortAsc ? valueA - valueB : valueB - valueA;
+    }
+    return sortAsc
+      ? String(valueA).localeCompare(String(valueB))
+      : String(valueB).localeCompare(String(valueA));
+  });
+
+  const totalPages = Math.ceil(sortedEmployees.length / ITEMS_PER_PAGE);
+  const paginatedEmployees = sortedEmployees.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
 
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex gap-2">
+    <div className="w-full  mx-auto p-2 md:p-4">
+      <div className="mb-4 flex flex-col md:flex-row items-center justify-between gap-2">
+        <div className="flex gap-2 w-full md:w-auto">
           <select
             value={filterRol}
             onChange={(event) => {
               setFilterRol(event.target.value);
               setCurrentPage(1);
             }}
-            className="rounded border border-gray-300 px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2 w-full md:w-auto"
           >
-            <option>Todos</option>
-            <option>Operario</option>
-            <option>Supervisor</option>
-            <option>Calidad</option>
-            <option>Jefe</option>
-          </select>
-          <select
-            value={filterArea}
-            onChange={(event) => {
-              setFilterArea(event.target.value);
-              setCurrentPage(1);
-            }}
-            className="rounded border border-gray-300 px-3 py-2"
-          >
-            <option>Todos</option>
-            <option>Produccion</option>
-            <option>Envasado</option>
-            <option>Deposito</option>
-            <option>Calidad</option>
+            <option value="Todos">Todos los roles</option>
+            {uniqueRoles.map((rol) => (
+              <option key={rol} value={rol}>{rol}</option>
+            ))}
           </select>
         </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full rounded-lg bg-white shadow">
+        <table className="min-w-full rounded-lg bg-white shadow text-xs md:text-sm">
           <thead className="bg-primary text-white">
             <tr>
-              <th className="px-6 py-3 text-left">Nombre</th>
-              <th className="px-6 py-3 text-left">Apellido</th>
-              <th className="px-6 py-3 text-left">Rol</th>
-              <th className="px-6 py-3 text-left">Area</th>
-              <th className="px-6 py-3 text-left">Turno</th>
-              <th className="px-6 py-3 text-left">Acciones</th>
+              <th className="px-2 py-2 cursor-pointer" onClick={() => {setSortKey('id');setSortAsc(sortKey==='id'? !sortAsc : true);}}>
+                ID {sortKey==='id' ? (sortAsc ? '▲':'▼') : ''}
+              </th>
+              <th className="px-2 py-2 cursor-pointer" onClick={() => {setSortKey('nombre');setSortAsc(sortKey==='nombre'? !sortAsc : true);}}>
+                Nombre {sortKey==='nombre' ? (sortAsc ? '▲':'▼') : ''}
+              </th>
+              <th className="px-2 py-2 cursor-pointer" onClick={() => {setSortKey('apellido');setSortAsc(sortKey==='apellido'? !sortAsc : true);}}>
+                Apellido {sortKey==='apellido' ? (sortAsc ? '▲':'▼') : ''}
+              </th>
+              <th className="px-2 py-2 cursor-pointer" onClick={() => {setSortKey('rol');setSortAsc(sortKey==='rol'? !sortAsc : true);}}>
+                Rol {sortKey==='rol' ? (sortAsc ? '▲':'▼') : ''}
+              </th>
+              <th className="px-2 py-2">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {paginatedEmployees.map((employee) => (
               <tr key={employee.id} className="odd:bg-neutral-light even:bg-white">
-                <td className="px-6 py-3">{employee.nombre}</td>
-                <td className="px-6 py-3">{employee.apellido}</td>
-                <td className="px-6 py-3">{employee.rol}</td>
-                <td className="px-6 py-3">{employee.area}</td>
-                <td className="px-6 py-3">{employee.turno}</td>
-                <td className="flex gap-2 px-6 py-3">
+                <td className="px-2 py-2">{employee.id}</td>
+                <td className="px-2 py-2">{employee.nombre}</td>
+                <td className="px-2 py-2">{employee.apellido}</td>
+                <td className="px-2 py-2">{employee.rol}</td>
+                <td className="flex gap-2 px-2 py-2">
                   <button
                     className="rounded bg-success px-2 py-1 text-white transition hover:opacity-90"
                     onClick={() => onEdit(employee)}
@@ -99,7 +108,7 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({ employees, onEdit, onDele
             ))}
             {paginatedEmployees.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-4 text-center text-gray-500">
+                <td colSpan={5} className="py-4 text-center text-gray-500">
                   No hay empleados para mostrar.
                 </td>
               </tr>
@@ -108,7 +117,7 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({ employees, onEdit, onDele
         </table>
       </div>
 
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="mt-4 flex flex-col md:flex-row justify-end items-center gap-2">
         <button
           disabled={currentPage === 1}
           onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
@@ -117,7 +126,7 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({ employees, onEdit, onDele
           Anterior
         </button>
         <span className="px-3 py-1">
-          Pagina {currentPage} de {totalPages || 1}
+          Página {currentPage} de {totalPages || 1}
         </span>
         <button
           disabled={currentPage === totalPages || totalPages === 0}
