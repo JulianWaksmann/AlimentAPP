@@ -13,6 +13,10 @@ interface ProductoPedido {
 }
 
 const FormNuevoPedido = () => {
+  // Modal states
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMsg, setModalMsg] = useState("");
+  const [modalType, setModalType] = useState<"error"|"success">("error");
   // --- Estados del formulario ---
   const [nombreProductos, setNombreProductos] = useState<Producto[]>([]);
   const [nombreClientes, setNombreClientes] = useState<Cliente[]>([]);
@@ -55,17 +59,23 @@ const FormNuevoPedido = () => {
     const cantidad = Number(productoActual.cantidad);
 
     if (!productoSeleccionado || !cantidad || cantidad <= 0) {
-      alert("Por favor, selecciona un producto y una cantidad válida.");
+      setModalMsg("Por favor, selecciona un producto y una cantidad válida.");
+      setModalType("error");
+      setModalOpen(true);
       return;
     }
     if (cantidad > 100) {
-      alert("La cantidad máxima permitida es 100.");
+      setModalMsg("La cantidad máxima permitida es 100.");
+      setModalType("error");
+      setModalOpen(true);
       return;
     }
 
     // Evitar duplicados
     if (productosPedido.some((p) => p.id === productoSeleccionado.id)) {
-      alert("El producto ya ha sido agregado. Puedes editarlo o eliminarlo.");
+      setModalMsg("El producto ya ha sido agregado. Puedes editarlo o eliminarlo.");
+      setModalType("error");
+      setModalOpen(true);
       return;
     }
 
@@ -95,7 +105,9 @@ const FormNuevoPedido = () => {
 
   const handleGuardar = async () => {
     if (!idCliente || !fechaEntrega || productosPedido.length === 0) {
-      alert("Completa todos los campos antes de guardar.");
+      setModalMsg("Completa todos los campos antes de guardar.");
+      setModalType("error");
+      setModalOpen(true);
       return;
     }
 
@@ -112,22 +124,32 @@ const FormNuevoPedido = () => {
     try{
       // Llamar a la función para crear el nuevo pedido
       await CreateNuevoPedido(nuevoPedido);
-      alert("Pedido creado con éxito.");
+      setModalMsg("Pedido creado con éxito.");
+      setModalType("success");
+      setModalOpen(true);
       limpiarFormulario();
     }catch(error){
       console.error("Error al crear el pedido:", error);
-      alert("Hubo un error al crear el pedido. Por favor, intenta nuevamente.");
+      setModalMsg("Hubo un error al crear el pedido. Por favor, intenta nuevamente.");
+      setModalType("error");
+      setModalOpen(true);
     }
-
-    // Aquí iría la lógica para enviar 'nuevoPedido' al backend o manejarlo según sea necesario
-
-    // console.log("Pedido a guardar:", nuevoPedido);
-    // alert("Pedido guardado con exito (revisa la consola).");
-    // limpiarFormulario();
   };
 
   return (
-    <div className="mx-auto max-w-4xl rounded-lg bg-white p-4 shadow-lg md:p-6">
+    <div className="mx-auto max-w-4xl rounded-lg bg-white p-4 shadow-lg md:p-6 relative">
+      {/* Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className={`rounded-lg p-6 shadow-lg w-80 text-center ${modalType === "error" ? "bg-red-50 border border-red-300" : "bg-green-50 border border-green-300"}`}>
+            <h3 className={`text-lg font-bold mb-2 ${modalType === "error" ? "text-red-600" : "text-green-600"}`}>{modalType === "error" ? "Error" : "Éxito"}</h3>
+            <p className="mb-4 text-sm">{modalMsg}</p>
+            <button onClick={() => setModalOpen(false)} className={`px-4 py-2 rounded font-semibold ${modalType === "error" ? "bg-red-600 text-white" : "bg-green-600 text-white"} hover:opacity-90 transition`}>
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
       <h2 className="mb-6 text-center text-xl font-bold text-primary">
         Formulario de Nuevo Pedido
       </h2>
