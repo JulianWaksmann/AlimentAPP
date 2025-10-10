@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+import { Login } from "../api/login";
 
 
 interface RoleLoginProps {
@@ -23,7 +23,7 @@ const RoleLogin: React.FC<RoleLoginProps> = ({ roleName, colorClass, redirectPat
   }
 
   const handleLogin = async (event: React.FormEvent) => {
-             router.push(redirectPath);
+    //  router.push(redirectPath);
 
     event.preventDefault();
     if (!validateEmail(username)) {
@@ -32,24 +32,18 @@ const RoleLogin: React.FC<RoleLoginProps> = ({ roleName, colorClass, redirectPat
       return;
     }
     try {
-      const res = await fetch(`${apiUrl}/login-empleado`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: username.toLowerCase(),
-          password: password.toLowerCase(),
-          rol: roleName.toLowerCase(),
-        }),
+      await Login({
+        email: username.toLowerCase(),
+        password: password.toLowerCase(),
+        role: roleName.toLowerCase(),
       });
-      const data = await res.json();
-      if (res.status === 200) {
-        router.push(redirectPath);
-      } else {
-        setModalMsg(data.error || "Error desconocido");
-        setModalOpen(true);
+      router.push(redirectPath);
+    } catch (err: unknown) {
+      let errorMsg = "Error desconocido";
+      if (err instanceof Error) {
+        errorMsg = err.message;
       }
-    } catch (err) {
-      setModalMsg("Error de red. Intenta nuevamente.");
+      setModalMsg(errorMsg);
       setModalOpen(true);
     }
   };
