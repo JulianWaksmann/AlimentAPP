@@ -51,7 +51,7 @@ Algoritmo de particion por capacidad
    - Si excede la capacidad, dividir la carga en bloques: crear ordenes de produccion hijas, cada una <= capacidad.
 4. Recalcular cantidad (unidades) por cada sub-orden usando peso_unitario_kg para mantener la equivalencia.
 5. Asignar la linea y kg_programados a cada sub-orden y ejecutar el proceso de asignacion de lotes sobre cada una.
-6. Registrar auditoria para vincular las sub-ordenes con el pedido original.
+6. Registrar en orden_produccion_linea cada bloque generado, manteniendo id_orden_produccion como vinculo con la cabecera.
 
 Reglas de negocio
 -----------------
@@ -144,4 +144,5 @@ Notas adicionales
 - Registrar logs y auditorias (orden, materia prima, lote, cantidades, usuario/servicio) para monitorear el proceso automatico.
 - Exponer estatus de asignacion en API para que Operario y Supervisor vean faltantes y divisiones.
 - Agregar alertas cuando una OP permanezca con faltante por encima de cierto SLA.
+
 

@@ -3,9 +3,10 @@ Core Data Dictionary
 
 Tipos Enumerados
 ----------------
-- estado_orden_venta: pendiente | pendiente_supervision | confirmada | cancelada | en_produccion | lista | entregada. Pendiente_supervision indica ordenes que necesitan aprobacion del supervisor antes de confirmarse.
-- estado_lote_materia_prima: en_cuarentena | disponible | agotado | vencido | rechazado. Indica disponibilidad y aprobacion de cada lote.
-- estado_orden_produccion: pendiente | planificada | lista_para_produccion | en_proceso | cancelada | finalizada. Lista_para_produccion indica que el lote requerido ya fue reservado.
+- estado_orden_venta: pendiente | pendiente_supervision | confirmada | cancelada | en_produccion | lista | entregada.
+- estado_lote_materia_prima: en_cuarentena | disponible | agotado | vencido | rechazado | pedido_generado.
+- estado_orden_produccion: pendiente | planificada | lista_para_produccion | en_proceso | cancelada | finalizada.
+- estado_produccion_linea: lista_para_produccion | en_proceso | finalizada.
 
 Tablas
 ------
@@ -41,9 +42,7 @@ producto
 - id: SERIAL, llave primaria.
 - nombre: VARCHAR(50), nombre del producto terminado.
 - descripcion: TEXT, detalle opcional.
-- unidad_medida: VARCHAR(20), unidad base (kg, unidad, litro).
 - peso_unitario_kg: NUMERIC(10,3), peso de una unidad del producto en kilogramos.
-- stock_actual: NUMERIC(10,2), inventario disponible.
 - precio_venta: NUMERIC(10,2), precio vigente.
 - activo: BOOLEAN, indica si se ofrece al mercado.
 - created_at: TIMESTAMP TZ, fecha de alta.
@@ -54,7 +53,7 @@ linea_produccion
 - descripcion: TEXT, detalle opcional.
 - capacidad_maxima_kg: NUMERIC(10,2), carga maxima simultanea permitida en kilogramos.
 - activa: BOOLEAN, indica si la linea esta disponible para recibir ordenes.
-- categoria: VARCHAR(30), etiqueta libre para agrupar (ej. 'masas', 'carnes').
+- categoria: VARCHAR(30), etiqueta libre para agrupar (ej. "masas", "carnes").
 
 producto_por_linea_produccion
 - id: SERIAL, llave primaria.
@@ -66,6 +65,7 @@ producto_por_linea_produccion
 materia_prima
 - id: SERIAL, llave primaria.
 - nombre: VARCHAR(50), nombre unico de la materia prima.
+- unidad_medida: VARCHAR(20), unidad base declarada (kg, litro, pack).
 - expirabile: BOOLEAN, si requiere control de vencimiento.
 - created_at: TIMESTAMP TZ, fecha de creacion del registro.
 
@@ -87,8 +87,9 @@ lote_materia_prima
 - codigo_lote: VARCHAR(50), identificador del lote (unico por materia prima).
 - fecha_ingreso: TIMESTAMP TZ, ingreso al almacen.
 - fecha_vencimiento: DATE, fecha limite de uso.
-- cantidad_total: NUMERIC(10,2), cantidad recepcionada.
-- cantidad_disponible: NUMERIC(10,2), saldo no consumido.
+- unidad_medida: VARCHAR(20), unidad declarada del lote.
+- cantidad_unitaria_total: NUMERIC(10,2), unidades totales recibidas.
+- cantidad_unitaria_disponible: NUMERIC(10,2), saldo disponible sin consumir.
 - estado: estado_lote_materia_prima, situacion operacional.
 - observaciones: TEXT, notas de inspeccion o manejo.
 
@@ -99,7 +100,7 @@ orden_venta
 - fecha_pedido: TIMESTAMP TZ, creacion del pedido.
 - fecha_entrega_solicitada: TIMESTAMP TZ, compromiso solicitado.
 - fecha_entrega_real: TIMESTAMP TZ, fecha efectiva de entrega.
-- estado: estado_orden_venta, situacion comercial (incluye pendiente_supervision para aprobacion de supervisor).
+- estado: estado_orden_venta, situacion comercial (incluye pendiente_supervision cuando requiere aprobacion de supervisor).
 - valor_total_pedido: NUMERIC(10,2), importe calculado.
 - observaciones: TEXT, notas adicionales.
 - created_at: TIMESTAMP TZ, fecha de registro.
@@ -108,13 +109,20 @@ orden_produccion
 - id: SERIAL, llave primaria.
 - id_orden_venta: FK opcional a orden_venta(id), pedido asociado.
 - id_producto: FK a producto(id), articulo a fabricar.
-- id_linea_produccion: FK a linea_produccion(id), linea asignada automaticamente.
 - fecha_creacion: DATE, planificacion de la OP.
 - fecha_fin: TIMESTAMP TZ, cierre real.
 - estado: estado_orden_produccion, ciclo operativo (lista_para_produccion cuando tiene materias primas asignadas).
 - cantidad: INTEGER, unidades a producir.
-- kg_programados: NUMERIC(10,2), carga en kilogramos reservada para la linea.
 - observaciones: TEXT, notas de produccion.
+
+orden_produccion_linea
+- id: SERIAL, llave primaria.
+- id_orden_produccion: FK a orden_produccion(id), cabecera a la que pertenece el bloque.
+- id_linea_produccion: FK a linea_produccion(id), linea asignada automaticamente o por recalculo.
+- cantidad_unitaria_asignada: NUMERIC(10,2), unidades del producto a fabricar en esa linea.
+- estado_produccion: estado_produccion_linea, controlado por el operario de la linea.
+- fecha_inicio: TIMESTAMP TZ, marca cuando el bloque entra en proceso.
+- fecha_fin: TIMESTAMP TZ, se completa al finalizar la tanda.
 
 materia_prima_por_orden_produccion
 - id: SERIAL, llave primaria.
@@ -128,8 +136,9 @@ materia_prima_por_producto
 - id: SERIAL, llave primaria.
 - id_producto: FK a producto(id), producto objetivo.
 - id_materia_prima: FK a materia_prima(id), insumo requerido.
-- cantidad: INTEGER, cantidad nominal de unidades (puede representar piezas).
-- kilogramos: NUMERIC(10,2), equivalencia en peso u otra unidad.
+- cantidad_unitaria: NUMERIC(10,2), unidades de materia prima requeridas por unidad de producto.
+- unidad_medida: VARCHAR(20), unidad en la que se expresa la cantidad.
+- kilogramos: NUMERIC(10,2), equivalencia en kg si aplica.
 - UNIQUE (id_producto, id_materia_prima) evita definiciones duplicadas.
 
 proveedor_por_materia_prima

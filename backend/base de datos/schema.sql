@@ -37,6 +37,13 @@ CREATE TYPE unidad_medida AS ENUM (
     'metros'
 );
 
+DROP TYPE IF EXISTS estado_produccion_linea;
+CREATE TYPE estado_produccion_linea AS ENUM (
+    'lista_para_produccion',
+    'en_proceso',
+    'finalizada'
+);
+
 CREATE TABLE IF NOT EXISTS rol (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(15) NOT NULL UNIQUE
@@ -148,7 +155,7 @@ CREATE TABLE IF NOT EXISTS orden_produccion (
     id SERIAL PRIMARY KEY,
     id_orden_venta INTEGER REFERENCES orden_venta(id) ON DELETE SET NULL,
     id_producto INTEGER NOT NULL REFERENCES producto(id),
-    id_linea_produccion INTEGER REFERENCES linea_produccion(id),
+    --id_linea_produccion INTEGER REFERENCES linea_produccion(id), no se usa mas ya que ahora orden_produccion_linea lo establece
     fecha_creacion DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_fin TIMESTAMP WITH TIME ZONE,
     estado estado_orden_produccion NOT NULL DEFAULT 'planificada',
@@ -183,6 +190,21 @@ CREATE TABLE IF NOT EXISTS proveedor_por_materia_prima (
     --dias_entrega_promedio INTEGER,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     UNIQUE (id_proveedor, id_materia_prima)
+);
+
+-- Tabla que reparte una orden de producción entre líneas compatibles
+CREATE TABLE IF NOT EXISTS orden_produccion_linea (
+    id SERIAL PRIMARY KEY,
+    id_orden_produccion INTEGER NOT NULL
+        REFERENCES orden_produccion(id) ON DELETE CASCADE,
+    id_linea_produccion INTEGER NOT NULL
+        REFERENCES linea_produccion(id),
+    cantidad_unitaria_asignada NUMERIC(10,2) NOT NULL
+        CHECK (cantidad_unitaria_asignada > 0),
+    estado_produccion estado_produccion_linea NOT NULL
+        DEFAULT 'lista_para_produccion',
+    fecha_inicio TIMESTAMP WITH TIME ZONE,
+    fecha_fin TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE IF NOT EXISTS sesion (
