@@ -15,7 +15,8 @@ CREATE TYPE estado_lote_materia_prima AS ENUM (
     'disponible',
     'agotado',
     'vencido',
-    'rechazado'
+    'rechazado',
+    'pedido_generado'
 );
 
 DROP TYPE IF EXISTS estado_orden_produccion;
