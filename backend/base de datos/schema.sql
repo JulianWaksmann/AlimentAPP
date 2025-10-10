@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS empleado (
     apellido VARCHAR(20) NOT NULL,
     telefono VARCHAR(20),
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    ultimo_login TIMESTAMP WITH TIME ZONE
+    --ultimo_login TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE IF NOT EXISTS cliente (
@@ -85,21 +85,20 @@ CREATE TABLE IF NOT EXISTS linea_produccion (
     descripcion TEXT,
     capacidad_maxima_kg NUMERIC(10,2) NOT NULL CHECK (capacidad_maxima_kg > 0),
     activa BOOLEAN NOT NULL DEFAULT TRUE,
-    categoria VARCHAR(30)
 );
 
+-- Tabla para matchear que productos son compatibles con que linea de produccion
 CREATE TABLE IF NOT EXISTS producto_por_linea_produccion (
     id SERIAL PRIMARY KEY,
     id_linea_produccion INTEGER NOT NULL REFERENCES linea_produccion(id) ON DELETE CASCADE,
     id_producto INTEGER NOT NULL REFERENCES producto(id) ON DELETE CASCADE,
-    prioridad SMALLINT,
     UNIQUE (id_linea_produccion, id_producto)
 );
 
 CREATE TABLE IF NOT EXISTS materia_prima (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
-    unidad_medida VARCHAR(20) NOT NULL,
+    unidad_medida unidad_medida NOT NULL,
     expirabile BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -123,11 +122,12 @@ CREATE TABLE IF NOT EXISTS lote_materia_prima (
     codigo_lote VARCHAR(50) NOT NULL,
     fecha_ingreso TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     fecha_vencimiento DATE,
-    unidad_medida VARCHAR(20) NOT NULL,
-    cantidad_unitaria_total NUMERIC(10,2) NOT NULL CHECK (cantidad_unitaria_total >= 0),
+    --unidad_medida unidad_medida NOT NULL, sale de materia prima
+    cantidad_total NUMERIC(10,2) NOT NULL CHECK (cantidad_unitaria_total >= 0),
     cantidad_unitaria_disponible NUMERIC(10,2) NOT NULL CHECK (cantidad_unitaria_disponible >= 0 AND cantidad_unitaria_disponible <= cantidad_unitaria_total),
     estado estado_lote_materia_prima NOT NULL DEFAULT 'en_cuarentena',
     observaciones TEXT,
+    fecha_generacion_pedido TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),    -- cuando el sistema automaticamente lo pide
     UNIQUE (codigo_lote, id_materia_prima)
 );
 
@@ -170,8 +170,8 @@ CREATE TABLE IF NOT EXISTS materia_prima_por_producto (
     id_producto INTEGER NOT NULL REFERENCES producto(id) ON DELETE CASCADE,
     id_materia_prima INTEGER NOT NULL REFERENCES materia_prima(id) ON DELETE RESTRICT,
     cantidad_unitaria NUMERIC(10,2),
-    unidad_medida VARCHAR(20) NOT NULL,
-    kilogramos NUMERIC(10,2),
+    --unidad_medida unidad_medida NOT NULL,
+    --kilogramos NUMERIC(10,2),
     UNIQUE (id_producto, id_materia_prima)
 );
 
@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS proveedor_por_materia_prima (
     id_proveedor INTEGER NOT NULL REFERENCES proveedor(id) ON DELETE CASCADE,
     id_materia_prima INTEGER NOT NULL REFERENCES materia_prima(id) ON DELETE RESTRICT,
     precio NUMERIC(10,2) NOT NULL,
-    tiempo_entrega_promedio INTEGER,
+    --dias_entrega_promedio INTEGER,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     UNIQUE (id_proveedor, id_materia_prima)
 );
