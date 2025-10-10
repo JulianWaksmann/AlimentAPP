@@ -10,37 +10,57 @@ Documentos relacionados
 
 Objetivo
 --------
-Reservar automaticamente la materia prima necesaria para cada orden de produccion (OP) garantizando trazabilidad por lote y manteniendo la disponibilidad del stock en lotes.
+Reservar automaticamente y sin intervencion manual la materia prima necesaria para cada orden de produccion (OP) garantizando trazabilidad por lote y manteniendo la disponibilidad del stock en lotes.
+
+Lineas de produccion
+--------------------
+- Existen dos lineas principales: "Masas" (tartas, pizzas y derivados de harina) y "Carnes" (rellenos o bases con carne).
+- Cada linea se modela en linea_produccion con su capacidad_maxima_kg y estado de disponibilidad.
+- La tabla producto_por_linea_produccion asigna cada producto a una linea (y permite priorizar cuando un producto puede correr en mas de una).
+- Solo el encargado de calidad interviene manualmente al dar de alta lotes; el resto del proceso es automatico.
 
 Entradas clave
 --------------
-- orden_produccion: cantidad de producto a fabricar y estado actual.
+- orden_produccion: cantidad solicitada, linea asignada y estado actual.
+- producto.peso_unitario_kg: peso por unidad para convertir unidades a kilogramos.
 - materia_prima_por_producto: receta que indica cuanta materia prima consume cada unidad del producto.
 - materia_prima_por_orden_produccion: asignaciones ya registradas (consumo historico o parcial).
 - lote_materia_prima: lotes disponibles con sus cantidades y fechas de vencimiento.
 
 Resumen del proceso
 -------------------
-1. Se activa cuando la orden de venta pasa a `confirmada` o cuando se libera un lote (`estado` pasa a `disponible`).
+1. Se activa automaticamente cuando la orden de venta pasa a confirmada o cuando calidad libera un lote (estado pasa a disponible).
 2. Para cada OP pendiente de materia prima:
-   - Calcular necesidad total (`cantidad_op * requerimiento_por_producto`).
+   - Calcular la carga total en kilogramos (cantidad * peso_unitario_kg).
+   - Calcular el requerimiento por materia prima aplicando la receta.
    - Obtener lo ya asignado en materia_prima_por_orden_produccion.
-   - Determinar el faltante por materia prima (`faltante = necesario - asignado`).
+   - Determinar el faltante por materia prima (altante = necesario - asignado).
 3. Si el faltante > 0, buscar lotes disponibles aplicando FEFO (fecha de vencimiento mas proxima, siempre >= hoy + 14 dias).
-4. Consumir lotes iterativamente hasta cubrir el faltante:
+4. Consumir lotes iterativamente (sin pasos manuales) hasta cubrir el faltante:
    - Registrar cada consumo en materia_prima_por_orden_produccion.
-   - Actualizar `cantidad_disponible` y estado del lote (a `agotado` si llega a 0).
-5. Si la suma de lotes no cubre el faltante, registrar requisicion y dejar la OP en estado pendiente.
-6. Si se cubre la necesidad, cambiar la OP a `lista_para_produccion`.
+   - Restar cantidad_disponible y actualizar estado del lote (a gotado si llega a 0).
+5. Si la suma de lotes no cubre el faltante, registrar requisicion y dejar la OP en estado pendiente; unicamente el alta de nuevos lotes (por calidad) reactivara el flujo.
+6. Si se cubre la necesidad, cambiar la OP a lista_para_produccion con el peso asignado en kg_programados.
+
+Algoritmo de particion por capacidad
+------------------------------------
+1. Obtener la linea candidata desde producto_por_linea_produccion (o categoria por defecto).
+2. Calcular la carga total en kg (cantidad * peso_unitario_kg).
+3. Comparar con capacidad_maxima_kg de la linea.
+   - Si la carga <= capacidad, registrar la OP con kg_programados igual a la carga.
+   - Si excede la capacidad, dividir la carga en bloques: crear ordenes de produccion hijas, cada una <= capacidad.
+4. Recalcular cantidad (unidades) por cada sub-orden usando peso_unitario_kg para mantener la equivalencia.
+5. Asignar la linea y kg_programados a cada sub-orden y ejecutar el proceso de asignacion de lotes sobre cada una.
+6. Registrar auditoria para vincular las sub-ordenes con el pedido original.
 
 Reglas de negocio
 -----------------
 - FEFO estricto: siempre consumir el lote con vencimiento mas cercano dentro del umbral aceptado (>= 14 dias).
-- Solo se consumen lotes `disponible`; lotes `en_cuarentena`, `rechazado`, `vencido` o `agotado` no participan.
-- El algoritmo debe ser idempotente: si se ejecuta dos veces con los mismos datos, no debe duplicar asignaciones.
-- Requiere transaccion/locking para evitar carreras cuando hay multiples asignaciones simultaneas.
-- Si un lote asignado queda sin stock, su estado pasa a `agotado`; si su fecha de vencimiento llega a hoy/queda atras, se marca `vencido`.
-- Si aparece un nuevo lote o se libera uno rechazado, el proceso retoma las OP con faltante.
+- Solo se consumen lotes disponible; lotes en_cuarentena, echazado, encido o gotado no participan.
+- Procesos idempotentes: ejecutar dos veces con los mismos datos no debe duplicar asignaciones.
+- Requiere transaccion/locking para evitar carreras cuando hay multiples asignaciones simultaneas; no requiere intervencion humana durante la asignacion.
+- Si un lote asignado queda sin stock, su estado pasa a gotado; si su fecha de vencimiento llega a hoy, se marca encido.
+- Si aparece un nuevo lote o se libera uno rechazado, el proceso retoma automaticamente las OP con faltante.
 
 Diagrama ASCII
 --------------
@@ -103,24 +123,24 @@ Diagrama ASCII
 Implementacion sugerida
 -----------------------
 - **Opcion Lambda (recomendada):**
-  - Lambda en Python ejecutada cuando se confirma una orden de venta y cuando un lote cambia a `disponible`.
-  - Usa transacciones con nivel de aislamiento apropiado (o locking por `SELECT FOR UPDATE`) para actualizar lotes y materia_prima_por_orden_produccion.
-  - Ventajas: logica versionada junto al codigo, facil de extender, centraliza auditoria, no requiere crear funciones complejas en la DB.
+  - Lambda en Python ejecutada cuando se confirma una orden de venta y cuando un lote cambia a disponible.
+  - Usa transacciones con nivel de aislamiento apropiado (o locking por SELECT FOR UPDATE) para actualizar lotes y materia_prima_por_orden_produccion.
+  - Ventajas: logica versionada junto al codigo, facil de extender, centraliza auditoria, no requiere funciones complejas en la base.
 
 - **Opcion stored procedure/trigger (alternativa):**
   - Stored procedure en PostgreSQL que se invoca desde la Lambda para encapsular consumo + actualizacion en la DB.
-  - Trigger directo no recomendado para toda la logica (sobre todo FEFO + requisiciones) porque es mas dificil de mantener y de auditar.
+  - Trigger directo no recomendado (por FEFO + requisiciones) porque es mas dificil de mantener y auditar.
 
 Recomendacion final
 -------------------
 Usar Lambdas como orquestadores:
-1. Lambda `handle_order_confirmation` invoca la asignacion al confirmar OV.
-2. Lambda `on_lot_released` se ejecuta cuando calidad marca un lote como disponible.
+1. Lambda handle_order_confirmation invoca la particion y asignacion al confirmar OV.
+2. Lambda on_lot_released se ejecuta cuando calidad marca un lote como disponible.
 3. Cada Lambda llama a un helper comun que ejecuta el algoritmo con transaccion y actualiza la DB via pg8000.
 4. Si se necesita mayor atomicidad, encapsular el bloque critico en un stored procedure pero mantener la orquestacion y las decisiones de negocio en Lambda.
 
 Notas adicionales
 -----------------
-- Registrar logs y auditorias (orden, materia prima, lote, cantidades, usuario/servicio).
-- Exponer estatus de asignacion en API para que Operario y Supervisor vean faltantes.
+- Registrar logs y auditorias (orden, materia prima, lote, cantidades, usuario/servicio) para monitorear el proceso automatico.
+- Exponer estatus de asignacion en API para que Operario y Supervisor vean faltantes y divisiones.
 - Agregar alertas cuando una OP permanezca con faltante por encima de cierto SLA.

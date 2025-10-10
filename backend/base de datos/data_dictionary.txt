@@ -1,4 +1,4 @@
-AlimentAPP Data Dictionary
+Core Data Dictionary
 ==========================
 
 Tipos Enumerados
@@ -42,10 +42,26 @@ producto
 - nombre: VARCHAR(50), nombre del producto terminado.
 - descripcion: TEXT, detalle opcional.
 - unidad_medida: VARCHAR(20), unidad base (kg, unidad, litro).
+- peso_unitario_kg: NUMERIC(10,3), peso de una unidad del producto en kilogramos.
 - stock_actual: NUMERIC(10,2), inventario disponible.
-- precio_venta: NUMERIC(10,2), precio vigent.
+- precio_venta: NUMERIC(10,2), precio vigente.
 - activo: BOOLEAN, indica si se ofrece al mercado.
 - created_at: TIMESTAMP TZ, fecha de alta.
+
+linea_produccion
+- id: SERIAL, llave primaria.
+- nombre: VARCHAR(50), identificador de la linea (ej. tartas/pizzas o carnes).
+- descripcion: TEXT, detalle opcional.
+- capacidad_maxima_kg: NUMERIC(10,2), carga maxima simultanea permitida en kilogramos.
+- activa: BOOLEAN, indica si la linea esta disponible para recibir ordenes.
+- categoria: VARCHAR(30), etiqueta libre para agrupar (ej. 'masas', 'carnes').
+
+producto_por_linea_produccion
+- id: SERIAL, llave primaria.
+- id_linea_produccion: FK a linea_produccion(id).
+- id_producto: FK a producto(id).
+- prioridad: SMALLINT, orden sugerido cuando varios productos compiten por la misma linea.
+- UNIQUE (id_linea_produccion, id_producto) asegura un unico registro por combinacion.
 
 materia_prima
 - id: SERIAL, llave primaria.
@@ -73,7 +89,7 @@ lote_materia_prima
 - fecha_vencimiento: DATE, fecha limite de uso.
 - cantidad_total: NUMERIC(10,2), cantidad recepcionada.
 - cantidad_disponible: NUMERIC(10,2), saldo no consumido.
-- estado: estado_lote_materia_prima, situacion operational.
+- estado: estado_lote_materia_prima, situacion operacional.
 - observaciones: TEXT, notas de inspeccion o manejo.
 
 orden_venta
@@ -83,7 +99,7 @@ orden_venta
 - fecha_pedido: TIMESTAMP TZ, creacion del pedido.
 - fecha_entrega_solicitada: TIMESTAMP TZ, compromiso solicitado.
 - fecha_entrega_real: TIMESTAMP TZ, fecha efectiva de entrega.
-- estado: estado_orden_venta, situacion comercial (incluye pendiente_supervision para ordenes que requieren visto bueno del supervisor).
+- estado: estado_orden_venta, situacion comercial (incluye pendiente_supervision para aprobacion de supervisor).
 - valor_total_pedido: NUMERIC(10,2), importe calculado.
 - observaciones: TEXT, notas adicionales.
 - created_at: TIMESTAMP TZ, fecha de registro.
@@ -92,10 +108,12 @@ orden_produccion
 - id: SERIAL, llave primaria.
 - id_orden_venta: FK opcional a orden_venta(id), pedido asociado.
 - id_producto: FK a producto(id), articulo a fabricar.
+- id_linea_produccion: FK a linea_produccion(id), linea asignada automaticamente.
 - fecha_creacion: DATE, planificacion de la OP.
 - fecha_fin: TIMESTAMP TZ, cierre real.
 - estado: estado_orden_produccion, ciclo operativo (lista_para_produccion cuando tiene materias primas asignadas).
 - cantidad: INTEGER, unidades a producir.
+- kg_programados: NUMERIC(10,2), carga en kilogramos reservada para la linea.
 - observaciones: TEXT, notas de produccion.
 
 materia_prima_por_orden_produccion
@@ -104,7 +122,7 @@ materia_prima_por_orden_produccion
 - id_orden_produccion: FK a orden_produccion(id), OP afectada.
 - cantidad_utilizada: NUMERIC(10,2), consumo del lote.
 - created_at: TIMESTAMP TZ, registro del movimiento.
-- UNIQUE (id_orden_produccion, id_lote_materia_prima): evita duplicados por lote en la misma OP.
+- UNIQUE (id_orden_produccion, id_lote_materia_prima) evita duplicados.
 
 materia_prima_por_producto
 - id: SERIAL, llave primaria.
@@ -112,7 +130,7 @@ materia_prima_por_producto
 - id_materia_prima: FK a materia_prima(id), insumo requerido.
 - cantidad: INTEGER, cantidad nominal de unidades (puede representar piezas).
 - kilogramos: NUMERIC(10,2), equivalencia en peso u otra unidad.
-- UNIQUE (id_producto, id_materia_prima): evita definiciones duplicadas.
+- UNIQUE (id_producto, id_materia_prima) evita definiciones duplicadas.
 
 proveedor_por_materia_prima
 - id: SERIAL, llave primaria.
@@ -121,9 +139,8 @@ proveedor_por_materia_prima
 - precio: NUMERIC(10,2), precio negociado.
 - tiempo_entrega_promedio: INTEGER, dias de entrega estimados.
 - activo: BOOLEAN, si la relacion esta vigente.
-- UNIQUE (id_proveedor, id_materia_prima): relacion uno a uno a nivel proveedor-materia.
+- UNIQUE (id_proveedor, id_materia_prima): relacion uno a uno.
 
 sesion
 - id_empleado: FK y llave primaria a empleado(id), usuario autenticado.
-- password: VARCHAR(255), contrasena temporal o legacy (pendiente de reemplazar por hash).
-
+- password: VARCHAR(255), contrasena temporal o legado (pendiente de reemplazar por hash robusto).
