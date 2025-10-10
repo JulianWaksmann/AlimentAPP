@@ -28,6 +28,14 @@ CREATE TYPE estado_orden_produccion AS ENUM (
     'finalizada'
 );
 
+DROP TYPE IF EXISTS unidad_medida;
+CREATE TYPE unidad_medida AS ENUM (
+    'unidad',
+    'kilogramos',
+    'litros',
+    'metros'
+);
+
 CREATE TABLE IF NOT EXISTS rol (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(15) NOT NULL UNIQUE
@@ -62,9 +70,9 @@ CREATE TABLE IF NOT EXISTS producto (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL,
     descripcion TEXT,
-    unidad_medida VARCHAR(20) NOT NULL,
+    --unidad_medida VARCHAR(20) NOT NULL, me conviene sacarlo porque me sirve el peso para establecerlo en la linea de prd pertinente
     peso_unitario_kg NUMERIC(10,3) NOT NULL CHECK (peso_unitario_kg > 0),
-    stock_actual NUMERIC(10,2) NOT NULL DEFAULT 0,
+    --stock_actual NUMERIC(10,2) NOT NULL DEFAULT 0,  no hace falta tenerlo aca, mejor un stock de producto
     precio_venta NUMERIC(10,2) NOT NULL DEFAULT 0,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
@@ -90,6 +98,7 @@ CREATE TABLE IF NOT EXISTS producto_por_linea_produccion (
 CREATE TABLE IF NOT EXISTS materia_prima (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
+    unidad_medida VARCHAR(20) NOT NULL,
     expirabile BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -113,8 +122,9 @@ CREATE TABLE IF NOT EXISTS lote_materia_prima (
     codigo_lote VARCHAR(50) NOT NULL,
     fecha_ingreso TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     fecha_vencimiento DATE,
-    cantidad_total NUMERIC(10,2) NOT NULL CHECK (cantidad_total >= 0),
-    cantidad_disponible NUMERIC(10,2) NOT NULL CHECK (cantidad_disponible >= 0 AND cantidad_disponible <= cantidad_total),
+    unidad_medida VARCHAR(20) NOT NULL,
+    cantidad_unitaria_total NUMERIC(10,2) NOT NULL CHECK (cantidad_unitaria_total >= 0),
+    cantidad_unitaria_disponible NUMERIC(10,2) NOT NULL CHECK (cantidad_unitaria_disponible >= 0 AND cantidad_unitaria_disponible <= cantidad_unitaria_total),
     estado estado_lote_materia_prima NOT NULL DEFAULT 'en_cuarentena',
     observaciones TEXT,
     UNIQUE (codigo_lote, id_materia_prima)
@@ -142,7 +152,7 @@ CREATE TABLE IF NOT EXISTS orden_produccion (
     fecha_fin TIMESTAMP WITH TIME ZONE,
     estado estado_orden_produccion NOT NULL DEFAULT 'planificada',
     cantidad INTEGER,
-    kg_programados NUMERIC(10,2) CHECK (kg_programados IS NULL OR kg_programados > 0),
+    --kg_programados NUMERIC(10,2) CHECK (kg_programados IS NULL OR kg_programados > 0), peso_unitario_kg de producto ya me resuelve esto.
     observaciones TEXT
 );
 CREATE TABLE IF NOT EXISTS materia_prima_por_orden_produccion (
@@ -158,7 +168,8 @@ CREATE TABLE IF NOT EXISTS materia_prima_por_producto (
     id SERIAL PRIMARY KEY,
     id_producto INTEGER NOT NULL REFERENCES producto(id) ON DELETE CASCADE,
     id_materia_prima INTEGER NOT NULL REFERENCES materia_prima(id) ON DELETE RESTRICT,
-    cantidad INTEGER,
+    cantidad_unitaria NUMERIC(10,2),
+    unidad_medida VARCHAR(20) NOT NULL,
     kilogramos NUMERIC(10,2),
     UNIQUE (id_producto, id_materia_prima)
 );
@@ -177,11 +188,5 @@ CREATE TABLE IF NOT EXISTS sesion (
     id_empleado INTEGER PRIMARY KEY REFERENCES empleado(id) ON DELETE CASCADE,
     password VARCHAR(255) NOT NULL
 );
-
-
-
-
-
-
 
 

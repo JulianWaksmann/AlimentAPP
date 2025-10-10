@@ -34,7 +34,7 @@ Resumen del proceso
    - Calcular la carga total en kilogramos (cantidad * peso_unitario_kg).
    - Calcular el requerimiento por materia prima aplicando la receta.
    - Obtener lo ya asignado en materia_prima_por_orden_produccion.
-   - Determinar el faltante por materia prima (altante = necesario - asignado).
+   - Determinar el faltante por materia prima (faltante = necesario - asignado).
 3. Si el faltante > 0, buscar lotes disponibles aplicando FEFO (fecha de vencimiento mas proxima, siempre >= hoy + 14 dias).
 4. Consumir lotes iterativamente (sin pasos manuales) hasta cubrir el faltante:
    - Registrar cada consumo en materia_prima_por_orden_produccion.
@@ -144,3 +144,4 @@ Notas adicionales
 - Registrar logs y auditorias (orden, materia prima, lote, cantidades, usuario/servicio) para monitorear el proceso automatico.
 - Exponer estatus de asignacion en API para que Operario y Supervisor vean faltantes y divisiones.
 - Agregar alertas cuando una OP permanezca con faltante por encima de cierto SLA.
+
