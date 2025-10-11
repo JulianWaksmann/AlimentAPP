@@ -6,9 +6,10 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 
 const menuItems = [
-  { name: "Pedidos de Materia Prima", href: "/pages/calidad/inicio/materia-prima" },
-  { name: "Gestion de Productos", href: "/pages/calidad/inicio/productos" },
-  { name: "Stock", href: "/pages/calidad/inicio/stock" },
+  { name: "Listas para produccion", href: "/pages/operario/inicio/ordenes-produccion-listas-para-produccion" },
+  { name: "En proceso", href: "/pages/operario/inicio/ordenes-produccion-en-proceso" },
+  { name: "Finalizadas", href: "/pages/operario/inicio/ordenes-produccion-finalizadas" },
+  { name: "Historial", href: "/pages/operario/inicio/ordenes-produccion-historial" },
 ];
 
 const CalidadLayout = ({ children }: { children: React.ReactNode }) => {
@@ -23,7 +24,7 @@ const CalidadLayout = ({ children }: { children: React.ReactNode }) => {
           open ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
-        <h2 className="mb-6 text-center text-xl font-bold">CALIDAD</h2>
+        <h2 className="mb-6 text-end text-m font-bold">Ordenes de Produccion</h2>
         <nav className="flex flex-col gap-2">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
