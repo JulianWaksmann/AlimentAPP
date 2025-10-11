@@ -16,7 +16,8 @@ CREATE TYPE estado_lote_materia_prima AS ENUM (
     'agotado',
     'vencido',
     'rechazado',
-    'pedido_generado'
+    'pedido_generado',
+    'cancelado'
 );
 
 DROP TYPE IF EXISTS estado_orden_produccion;
@@ -37,12 +38,12 @@ CREATE TYPE unidad_medida AS ENUM (
     'metros'
 );
 
-DROP TYPE IF EXISTS estado_produccion_linea;
-CREATE TYPE estado_produccion_linea AS ENUM (
-    'lista_para_produccion',
-    'en_proceso',
-    'finalizada'
-);
+--DROP TYPE IF EXISTS estado_produccion_linea;
+--CREATE TYPE estado_produccion_linea AS ENUM (
+--    'lista_para_produccion',
+--    'en_proceso',
+--    'finalizada'
+--);
 
 CREATE TABLE IF NOT EXISTS rol (
     id SERIAL PRIMARY KEY,
@@ -193,19 +194,19 @@ CREATE TABLE IF NOT EXISTS proveedor_por_materia_prima (
 );
 
 -- Tabla que reparte una orden de producción entre líneas compatibles
-CREATE TABLE IF NOT EXISTS orden_produccion_linea (
-    id SERIAL PRIMARY KEY,
-    id_orden_produccion INTEGER NOT NULL
-        REFERENCES orden_produccion(id) ON DELETE CASCADE,
-    id_linea_produccion INTEGER NOT NULL
-        REFERENCES linea_produccion(id),
-    cantidad_unitaria_asignada NUMERIC(10,2) NOT NULL
-        CHECK (cantidad_unitaria_asignada > 0),
-    estado_produccion estado_produccion_linea NOT NULL
-        DEFAULT 'lista_para_produccion',
-    fecha_inicio TIMESTAMP WITH TIME ZONE,
-    fecha_fin TIMESTAMP WITH TIME ZONE
-);
+--CREATE TABLE IF NOT EXISTS orden_produccion_linea (
+--    id SERIAL PRIMARY KEY,
+--    id_orden_produccion INTEGER NOT NULL
+--        REFERENCES orden_produccion(id) ON DELETE CASCADE,
+--    id_linea_produccion INTEGER NOT NULL
+--        REFERENCES linea_produccion(id),
+--    cantidad_unitaria_asignada NUMERIC(10,2) NOT NULL
+--        CHECK (cantidad_unitaria_asignada > 0),
+--    estado_produccion estado_produccion_linea NOT NULL
+--        DEFAULT 'lista_para_produccion',
+--    fecha_inicio TIMESTAMP WITH TIME ZONE,
+--    fecha_fin TIMESTAMP WITH TIME ZONE
+--);
 
 CREATE TABLE IF NOT EXISTS sesion (
     id_empleado INTEGER PRIMARY KEY REFERENCES empleado(id) ON DELETE CASCADE,

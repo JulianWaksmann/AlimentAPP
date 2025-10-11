@@ -1,86 +1,81 @@
-Flujo de Planificacion de Lineas
-================================
+Flujo de Planificacion de Ordenes
+=================================
 
 Documentos relacionados
 -----------------------
-- 03_flujo_orden_venta.txt (confirmacion de pedidos).
-- 04_flujo_materia_prima.txt (reservas de lotes).
-- 05_flujo_asignacion_materia_prima.txt (consumo automatico por bloque).
+- 03_flujo_orden_venta.txt (confirmacion y generacion de OP).
+- 04_flujo_materia_prima.txt (reservas de lotes por OP).
+- 05_flujo_asignacion_materia_prima.txt (consumo automatico por orden).
 - 01_schema_postgres.txt y 02_data_dictionary.txt.
 
 Objetivo
 --------
-Dividir cada orden de produccion en tandas de fabrica segun las lineas compatibles, respetando la capacidad maxima y asignando ventanas de tres horas de manera automatica.
+Permitir que el operario asigne una orden de produccion (OP) a una linea compatible y, si supera la capacidad, dividirla automaticamente en una nueva OP con la cantidad remanente.
 
 Entradas clave
 --------------
-- orden_produccion: cantidad total del producto y referencia a la orden de venta.
-- producto_por_linea_produccion: relacion de compatibilidad producto-linea (con prioridad).
-- linea_produccion: capacidad_maxima_kg, disponibilidad (activa) y categoria.
-- producto.peso_unitario_kg: peso de cada unidad comercial.
-- orden_produccion_linea: tabla destino donde se guardan los bloques por linea.
-- orden_produccion_linea.fecha_inicio/fin: definen las tandas de 3 horas.
+- orden_produccion: cabecera con cantidad total, producto y estado.
+- producto_por_linea_produccion: compatibilidad producto-linea y prioridades.
+- linea_produccion: capacidad_maxima_kg y estado (activa/inactiva).
+- producto.peso_unitario_kg: peso de cada unidad comercial para respetar la capacidad.
 
 Resumen del proceso
 -------------------
-1. La orden de venta es confirmada y se generan las ordenes de produccion (estado planificada).
-2. La lambda de planificacion recibe la referencia de la orden de venta u orden de produccion.
-3. Para cada orden de produccion:
-   - Se calcula la demanda total en kilogramos (`cantidad * peso_unitario_kg`).
-   - Se obtiene la lista de lineas compatibles (ordenada por prioridad y disponibilidad).
-   - Se determina la capacidad de cada linea en unidades (`capacidad_maxima_kg / peso_unitario_kg`).
-4. Se limpian las asignaciones previas (`orden_produccion_linea`) para evitar duplicados.
-5. Se reparte la carga en bloques:
-   - Para cada linea, se agenda un bloque con unidades <= capacidad de la linea.
-   - Si la demanda excede la capacidad, se repite la asignacion tantas veces como sea necesario (una sola linea recibe multiples tandas).
-   - Cada tanda recibe un `estado_produccion = lista_para_produccion`.
-6. Se asignan ventanas de tres horas: `fecha_inicio = max(now, ultima_fecha_fin_linea)` y `fecha_fin = fecha_inicio + 3h`.
-7. Al crear el bloque, se invoca el flujo de asignacion de materia prima para reservar lotes. Si no hay stock, el bloque queda pendiente y se reintentara cuando calidad agregue lotes.
-8. El operario ve los bloques por linea y cambia el estado a `en_proceso` cuando inicia y `finalizada` cuando termina. El estado global de la orden se deriva de sus bloques.
+1. El operario selecciona una OP y el sistema lista las lineas compatibles (desde producto_por_linea_produccion).
+2. Al elegir una linea, el sistema calcula la capacidad maxima en unidades (`floor(capacidad_maxima_kg / peso_unitario_kg)`).
+3. Si la cantidad de la OP <= capacidad, se registra la linea en la OP original (columna id_linea_produccion) y se deja `cantidad` intacta.
+4. Si la cantidad supera la capacidad:
+   - Se muestra un mensaje "excede la capacidad, ?deseas dividirla?".
+   - Si el operario confirma, se realiza un `split`:
+     * La OP original se actualiza con `cantidad = capacidad_en_unidades`.
+     * Se inserta una nueva OP con la cantidad restante, mismo producto, id_orden_venta, fechas y observaciones (nuevo id serial).
+     * La OP original queda asignada a la linea seleccionada; la nueva queda planificada y disponible para asignarse (posiblemente a la misma linea en un segundo turno u otra linea compatible).
+   - Si el operario cancela, no se modifica la OP.
+5. Siempre que se crea una OP nueva por division, se registra la observacion "Dividida desde OP <id_original>" para fines de trazabilidad.
+6. Ambas OP (la original ajustada y la nueva) siguen el flujo de asignacion de materia prima y cambio de estado habitual.
 
 Diagrama ASCII
 --------------
 
-               +---------------------------+
-               | Orden de produccion base  |
-               | cantidad total (unidades) |
-               +------------+--------------+
-                            |
-                            v
-               +---------------------------+
-               | Calcular demanda en kg    |
-               | y lineas compatibles      |
-               +------------+--------------+
-                            |
-                            v
-               +---------------------------+
-               | Repartir en bloques <=    |
-               | capacidad de cada linea   |
-               +------------+--------------+
-                            |
-                            v
-               +---------------------------+
-               | Crear registros en        |
-               | orden_produccion_linea    |
-               | con ventanas de 3 horas   |
-               +------------+--------------+
-                            |
-                            v
-               +---------------------------+
-               | Asignar materia prima     |
-               | (flujo automatico)        |
-               +------------+--------------+
-                            |
-                            v
-               +---------------------------+
-               | Operario ejecuta y        |
-               | actualiza estado          |
-               +---------------------------+
+             +---------------------------+
+             | OP seleccionada por       |
+             | operario                  |
+             +------------+--------------+
+                          |
+                          v
+             +---------------------------+
+             | Calcular capacidad        |
+             | unidades maximas         |
+             +------------+--------------+
+                          |
+            +-------------v-------------+
+            | Cantidad <= capacidad?    |
+            +---------+-----------------+
+                      |SI              |NO
+                      |               v
+                      |     +-------------------------+
+                      |     | Mostrar dialogo de      |
+                      |     | division y confirmar    |
+                      |     +-----------+-------------+
+                      |                 |
+                      |                 v
+                      |       +----------------------+      +------------------------+
+                      |       | Actualizar OP actual |      | Crear nueva OP con     |
+                      |       | (cantidad = capacidad)|      | cantidad restante      |
+                      |       | y asignar linea       |      | (estado planificada)   |
+                      |       +----------------------+      +------------------------+
+                      |
+                      v
+             +---------------------------+
+             | OP(s) listas para         |
+             | asignacion de materia     |
+             | prima y produccion        |
+             +---------------------------+
 
 Notas de negocio
 ----------------
-- La capacidad y la categoria de la linea permiten separar familias (masas vs carnes).
-- El algoritmo consume primero las lineas con mayor prioridad. Si solo existe una linea, se agendan tandas secuenciales en la misma.
-- Los bloques mantienen trazabilidad completa: fechas, estado y cantidad despues de cada tanda.
-- La duracion de 3 horas se puede parametrizar a futuro (columna configuracion o variable de entorno).
-- Si una orden necesita reorganizacion (por ejemplo, nueva capacidad), la lambda elimina y recalcula los bloques.
+- La division se realiza siempre en unidades, no en kilogramos, y evita que una linea se sature.
+- Permite que una parte se ejecute en la linea seleccionada sin perder la cantidad restante: esta puede asignarse a la misma linea mas tarde o a otra linea compatible.
+- Mantener un log de auditoria (observacion en la OP nueva) facilita rastrear las divisiones.
+- No se requiere tabla intermedia: las OP resultantes son ordenes completas con su propio ciclo de estados y reservas de materia prima.
+- El proceso de division puede invocarse desde la lambda de planificacion o desde la UI (segun se implemente).
