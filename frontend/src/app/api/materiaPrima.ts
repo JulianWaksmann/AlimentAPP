@@ -48,7 +48,7 @@ export async function GenerarPedidoMateriaPrima({ idMateriaPrima, idProveedor, c
 }
 
 export async function getAllPedidosMateriaPrima(): Promise<PedidoMateriaPrima[]>  {
-    const response = await fetch(`${apiUrl}/all-pedidos-materia-prima`, {
+    const response = await fetch(`${apiUrl}/gestion-materia-prima/pedido-materia-prima`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -59,8 +59,57 @@ export async function getAllPedidosMateriaPrima(): Promise<PedidoMateriaPrima[]>
   }
     const data = await response.json();
 
-    return data.PedidosMateriaPrima;
+    return data.pedidos_materia_prima;
 
   // return response.json();
 
 }
+
+export async function updateEstadoPedidoMateriaPrima(
+  id_lote: number,
+   fecha_vencimiento: string,
+  estado: string,
+  observaciones: string,
+  codigo_lote: string
+)
+
+{
+  console.log(id_lote, fecha_vencimiento, estado, observaciones, codigo_lote);
+  const response = await fetch(`${apiUrl}/gestion-materia-prima/update-actualizar-estado-lote`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id_lote: id_lote,
+      fecha_vencimiento: fecha_vencimiento,
+      nuevo_estado: estado,
+      observaciones: observaciones,
+      codigo_lote: codigo_lote,
+    }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Error al actualizar el estado del pedido");
+  }
+  return response.json();
+}
+
+export async function cancelarPedidoMateriaPrima(id_pedido: number) {
+  const response = await fetch(`${apiUrl}/gestion-materia-prima/rechazar-pedido-materia-prima`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id_pedido: id_pedido,
+    }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Error al cancelar el pedido");
+  }
+  return response.json();
+} 
+
+

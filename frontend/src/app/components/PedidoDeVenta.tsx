@@ -124,9 +124,9 @@ export default function PedidoVenta({ pedidos }: Props) {
               </span>
             </div>
             <div className="mb-1 text-sm"><span className="font-semibold">Cliente {pedido.idCliente} :</span> {pedido.nombreCliente} {pedido.apellidoCliente}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Pedido:</span> {new Date(pedido.fechaPedido).toLocaleDateString()}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Solicitada:</span> {new Date(pedido.fechaSolicitada).toLocaleDateString()}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Entrega:</span> {new Date(pedido.fechaEntrega).toLocaleDateString()}</div>
+            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Pedido:</span> {pedido.fechaPedido ? (new Date(pedido.fechaPedido).getTime() > 0 ? new Date(pedido.fechaPedido).toLocaleDateString() : "-") : "-"}</div>
+            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Solicitada:</span> {pedido.fechaSolicitada ? (new Date(pedido.fechaSolicitada).getTime() > 0 ? new Date(pedido.fechaSolicitada).toLocaleDateString() : "-") : "-"}</div>
+            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Entrega:</span> {pedido.fechaEntrega ? (new Date(pedido.fechaEntrega).getTime() > 0 ? new Date(pedido.fechaEntrega).toLocaleDateString() : "-") : "-"}</div>
             <div className="mb-1 text-sm font-semibold">Productos:</div>
             <ul className="list-disc pl-5 text-sm">
               {pedido.productos.map((prod) => (

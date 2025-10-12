@@ -18,10 +18,11 @@ const SupervisorLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex h-screen bg-neutral-light">
+      {/* Menú lateral: ocultable en mobile/tablet, fijo en desktop (lg+) */}
       <div
-        className={`fixed top-0 left-0 z-50 h-full w-64 transform bg-primary p-4 text-white transition-transform md:static ${
+        className={`fixed top-0 left-0 z-50 h-full w-64 transform bg-primary p-4 text-white transition-transform lg:static ${
           open ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0`}
+        } lg:translate-x-0`}
       >
         <h2 className="mb-6 text-center text-xl font-bold">SUPERVISOR</h2>
         <nav className="flex flex-col gap-2">
@@ -41,8 +42,9 @@ const SupervisorLayout = ({ children }: { children: React.ReactNode }) => {
         </nav>
       </div>
 
+      {/* Botón menú hamburguesa solo en mobile/tablet (hasta lg) */}
       <button
-        className="fixed left-4 top-4 z-50 rounded bg-primary p-2 text-white md:hidden"
+        className="fixed left-4 top-4 z-50 rounded bg-primary p-2 text-white lg:hidden"
         onClick={() => setOpen((prev) => !prev)}
         aria-label="Abrir menu"
       >

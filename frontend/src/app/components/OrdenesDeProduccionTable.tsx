@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { OrdenProduccion } from "../models/OrdenProduccion";
-import { UpdateEstadoOrdenProduccion } from "../api/produccion";
+// import { UpdateEstadoOrdenProduccion } from "../api/produccion";
 
 
 type Props = {
@@ -15,12 +15,12 @@ const estadoColor: Record<string, string> = {
   pendiente: "bg-gray-100 text-gray-700",
 };
 
-const estados = [
-  "en_proceso",
-  "planificada",
-  "finalizada",
-  "pendiente",
-];
+// const estados = [
+//   "en_proceso",
+//   "planificada",
+//   "finalizada",
+//   "pendiente",
+// ];
 
 const sortOptions = [
   { value: "id_orden_produccion", label: "ID Orden" },
@@ -32,11 +32,12 @@ const sortOptions = [
   { value: "estado_orden_produccion", label: "Estado" },
 ];
 
-export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Props) {
-  const [sortKey, setSortKey] = useState<string>("fecha_creacion_orden_venta");
-  const [sortAsc, setSortAsc] = useState<boolean>(true);
-  const [editId, setEditId] = useState<number | null>(null);
-  const [nuevoEstado, setNuevoEstado] = useState<string>("");
+// export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Props) {
+export default function OrdenesDeProduccionTable({ ordenes }: Props) {
+const [sortKey, setSortKey] = useState<string>("fecha_creacion_orden_venta");
+  const [sortAsc, setSortAsc] = useState<boolean>(false);
+  // const [editId, setEditId] = useState<number | null>(null);
+  // const [nuevoEstado, setNuevoEstado] = useState<string>("");
 
   const sortedOrdenes = useMemo(() => {
     const clone = [...ordenes];
@@ -69,30 +70,30 @@ export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Pr
     return clone;
   }, [ordenes, sortKey, sortAsc]);
 
-  const handleEdit = (id: number, estadoActual: string) => {
-    setEditId(id);
-    setNuevoEstado(estadoActual);
-  };
+//   const handleEdit = (id: number, estadoActual: string) => {
+//     setEditId(id);
+//     setNuevoEstado(estadoActual);
+//   };
 
-  const handleConfirm = async (id: number) => {
-  if (onEstadoChange) onEstadoChange(id, nuevoEstado); // Si usas el callback externo
-  try {
-    console.log("actualizar ot a: "+ id + " estado: " + nuevoEstado);
-    await UpdateEstadoOrdenProduccion(id, nuevoEstado);
-    setEditId(null);
-    setNuevoEstado("");
+//   const handleConfirm = async (id: number) => {
+//   if (onEstadoChange) onEstadoChange(id, nuevoEstado); // Si usas el callback externo
+//   try {
+//     console.log("actualizar ot a: "+ id + " estado: " + nuevoEstado);
+//     await UpdateEstadoOrdenProduccion(id, nuevoEstado);
+//     setEditId(null);
+//     setNuevoEstado("");
 
-    window.location.reload(); // Alternativa rápida si el estado está en el padre
-  } catch (error) {
-    alert("Error al actualizar el estado");
-    console.log("error al actualizar estado de OP: "+ error);
-    setEditId(null);
-  }
-};
+//     window.location.reload(); // Alternativa rápida si el estado está en el padre
+//   } catch (error) {
+//     alert("Error al actualizar el estado");
+//     console.log("error al actualizar estado de OP: "+ error);
+//     setEditId(null);
+//   }
+// };
 
-  const handleCancel = () => {
-    setEditId(null);
-  };
+//   const handleCancel = () => {
+//     setEditId(null);
+//   };
 
   return (
     <div className="overflow-x-auto rounded-lg shadow-lg bg-white p-4">
@@ -120,7 +121,7 @@ export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Pr
         </div>
       </div>
       {/* Tabla desktop */}
-      <table className="min-w-full divide-y divide-gray-200 hidden md:table">
+      {/* <table className="min-w-full divide-y divide-gray-200 hidden md:hidden">
         <thead className="bg-gray-50">
           <tr>
             <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">ID Orden</th>
@@ -186,9 +187,9 @@ export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Pr
             </tr>
           ))}
         </tbody>
-      </table>
+      </table> */}
       {/* Mobile: Cards */}
-      <div className="md:hidden mt-6 space-y-4">
+      <div className=" mt-6 min-w-full  ">
         {sortedOrdenes.map((orden) => (
           <div key={orden.id_orden_produccion} className="rounded-lg border p-3 shadow-sm bg-gray-50">
             <div className="flex justify-between items-center mb-2">
@@ -197,14 +198,16 @@ export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Pr
                 {orden.estado_orden_produccion.replace("_", " ")}
               </span>
             </div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Pedido:</span> {orden.id_pedido}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Cliente:</span> {orden.nombre_cliente} {orden.apellido_cliente}</div>
+      <div className="flex justify-between items-center mb-2">
+           <span className="font-semibold mb-1 text-sm">Pedido: {orden.id_pedido}</span> 
+      <span className="font-semibold mb-1 text-sm">Cliente: {orden.nombre_cliente} {orden.apellido_cliente}    </span>              
+</div>
             <div className="mb-1 text-sm"><span className="font-semibold">Producto:</span> {orden.nombre_producto}</div>
             <div className="mb-1 text-sm"><span className="font-semibold">Cantidad:</span> {orden.cantidad_producto}</div>
             <div className="mb-1 text-sm"><span className="font-semibold">Fecha Creación:</span> {orden.fecha_creacion_orden_venta}</div>
             <div className="mb-1 text-sm"><span className="font-semibold">Fecha Entrega:</span> {orden.fechaentrega_orden_venta}</div>
             <div className="mt-2">
-              {editId === orden.id_orden_produccion ? (
+              {/* {editId === orden.id_orden_produccion ? (
                 <div className="flex items-center gap-1">
                   <select
                     value={nuevoEstado}
@@ -235,7 +238,7 @@ export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Pr
                 >
                   Editar estado
                 </button>
-              )}
+              )} */}
             </div>
           </div>
         ))}

@@ -37,3 +37,26 @@ export async function UpdateEstadoOrdenProduccion(  id: number,  nuevoEstado: st
     throw new Error("Error updating orden de produccion");
   }
 }
+
+export async function getOrdenesDeProduccionEnEstado(estado: string): Promise<OrdenProduccion[]> {
+  const estadoOP = {
+    estado_orden_produccion: estado,
+  };
+  console.log("fetch ordenes de produccion en estado: " + estado);
+  const response = await fetch(`${apiUrl}/orden-produccion/listar-orden-produccion-por-estado`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(estadoOP),
+
+  });
+  if (!response.ok) {
+    throw new Error("Error fetching productos");
+  }
+  const data = await response.json();
+  console.log(data);
+  return data.ordenes_produccion;
+}
+
+// export async function CreateOrdenProduccion(ordenData: {
