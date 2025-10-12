@@ -146,3 +146,4 @@ Notas adicionales
 - Agregar alertas cuando una OP permanezca con faltante por encima de cierto SLA.
 
 
+\nInvocacion de la lambda\n------------------------\n- POST /post-asignar-materia-prima recibe opcionalmente ordenes_produccion (lista de IDs) y, si falta, procesa las OP planificadas en orden de llegada.\n- Para cada orden calcula el faltante por materia prima considerando lo ya consumido, selecciona lotes disponibles que no venzan en las proximas dos semanas y registra los consumos en materia_prima_por_orden_produccion.\n- Si todos los requerimientos quedan cubiertos, actualiza la OP a lista_para_produccion; de lo contrario mantiene el estado original y devuelve el faltante.
