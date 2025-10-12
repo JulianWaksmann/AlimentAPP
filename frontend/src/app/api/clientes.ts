@@ -15,8 +15,24 @@ export async function GetNombreApellidoClientes(): Promise<Cliente[]> {
   }
     const data = await response.json();
 
-  // console.log(data.clients);
+  console.log(data.clients);
     return data.clients;
 
   // return response.json();
+}
+
+export async function updateCliente(cliente: Cliente) {
+  console.log("Actualizar cliente: ", cliente);
+  const response = await fetch(`${apiUrl}/update-client`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(cliente),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Error updating cliente");
+  }
+  return response.json();
 }

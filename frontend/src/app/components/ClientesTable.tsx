@@ -1,138 +1,210 @@
-import React, { useState } from "react";
-import { Cliente } from "../models/Cliente";
+"use client";
+import React, { useState, useMemo } from 'react';
+import { Cliente } from '../models/Cliente';
+import { updateCliente } from '../api/clientes';
+import { Search, Edit, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface ClienteTableProps {
+type Props = {
   clientes: Cliente[];
-  onEdit: (cliente: Cliente) => void;
-  onDelete: (mail: string) => void;
-}
+};
 
-const ITEMS_PER_PAGE = 5;
-
-const ClienteTable: React.FC<ClienteTableProps> = ({ clientes, onEdit, onDelete }) => {
-  const [filterCiudad, setFilterCiudad] = useState("Todos");
-  const [filterProvincia, setFilterProvincia] = useState("Todos");
+const ClientesTable: React.FC<Props> = ({ clientes }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortAsc, setSortAsc] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filteredClientes = clientes.filter((cliente) => {
-    const ciudadMatch =
-      filterCiudad === "Todos" || cliente.ciudad.toLowerCase() === filterCiudad.toLowerCase();
-    const provinciaMatch =
-      filterProvincia === "Todos" || cliente.provincia.toLowerCase() === filterProvincia.toLowerCase();
-    return ciudadMatch && provinciaMatch;
-  });
+  const processedClientes = useMemo(() => {
+    const filtered = clientes.filter(cliente =>
+      `${cliente.nombre_contacto} ${cliente.apellido_contacto}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cliente.razon_social?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-  const totalPages = Math.ceil(filteredClientes.length / ITEMS_PER_PAGE);
-  const paginatedClientes = filteredClientes.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
+    filtered.sort((a, b) => {
+      const nameA = `${a.nombre_contacto} ${a.apellido_contacto}`;
+      const nameB = `${b.nombre_contacto} ${b.apellido_contacto}`;
+      return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    });
+
+    return filtered;
+  }, [clientes, searchTerm, sortAsc]);
+
+  const CLIENTS_PER_PAGE = 10;
+  const totalPages = Math.ceil(processedClientes.length / CLIENTS_PER_PAGE);
+  const paginatedClientes = useMemo(() => {
+    const start = (currentPage - 1) * CLIENTS_PER_PAGE;
+    const end = start + CLIENTS_PER_PAGE;
+    return processedClientes.slice(start, end);
+  }, [processedClientes, currentPage]);
+
+  const handleEditClick = (cliente: Cliente) => {
+    setSelectedCliente(cliente);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedCliente(null);
+  };
+
+  const handleUpdate = async (updatedCliente: Cliente) => {
+    if (!updatedCliente.id) return;
+    try {
+      await updateCliente(updatedCliente);
+      alert('Cliente actualizado con éxito!');
+      handleModalClose();
+      // Here you might want to trigger a refetch of the clientes data
+    } catch (error) {
+      console.error("Error updating client:", error);
+      alert('Error al actualizar el cliente.');
+    }
+  };
 
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex gap-2">
-          <select
-            value={filterCiudad}
-            onChange={(event) => {
-              setFilterCiudad(event.target.value);
-              setCurrentPage(1);
-            }}
-            className="rounded border border-gray-300 px-3 py-2"
-          >
-            <option>Todos</option>
-            {[...new Set(clientes.map((cliente) => cliente.ciudad))].map((ciudad) => (
-              <option key={ciudad}>{ciudad}</option>
-            ))}
-          </select>
-          <select
-            value={filterProvincia}
-            onChange={(event) => {
-              setFilterProvincia(event.target.value);
-              setCurrentPage(1);
-            }}
-            className="rounded border border-gray-300 px-3 py-2"
-          >
-            <option>Todos</option>
-            {[...new Set(clientes.map((cliente) => cliente.provincia))].map((provincia) => (
-              <option key={provincia}>{provincia}</option>
-            ))}
-          </select>
+    <div className="bg-gray-50 p-4 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Gestión de Clientes</h2>
+
+      {/* Controls */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+        <div className="relative w-full md:w-1/3">
+          <input
+            type="text"
+            placeholder="Buscar por nombre o razón social..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
         </div>
+        <button
+          onClick={() => setSortAsc(!sortAsc)}
+          className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg hover:bg-gray-100 transition"
+        >
+          Ordenar por Nombre {sortAsc ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+        </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full rounded-lg bg-white shadow">
-          <thead className="bg-primary text-white">
-            <tr>
-              <th className="px-6 py-3 text-left">Nombre</th>
-              <th className="px-6 py-3 text-left">Apellido</th>
-              <th className="px-6 py-3 text-left">Telefono</th>
-              <th className="px-6 py-3 text-left">Mail</th>
-              <th className="px-6 py-3 text-left">Ciudad</th>
-              <th className="px-6 py-3 text-left">Direccion</th>
-              <th className="px-6 py-3 text-left">Provincia</th>
-              <th className="px-6 py-3 text-left">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedClientes.map((cliente) => (
-              <tr key={cliente.email} className="odd:bg-neutral-light even:bg-white">
-                <td className="px-6 py-3">{cliente.nombre_contacto}</td>
-                <td className="px-6 py-3">{cliente.apellido_contacto}</td>
-                <td className="px-6 py-3">{cliente.telefono}</td>
-                <td className="px-6 py-3">{cliente.email}</td>
-                <td className="px-6 py-3">{cliente.ciudad}</td>
-                <td className="px-6 py-3">{cliente.direccion}</td>
-                <td className="px-6 py-3">{cliente.provincia}</td>
-                <td className="flex gap-2 px-6 py-3">
-                  <button
-                    className="rounded bg-success px-2 py-1 text-white transition hover:opacity-90"
-                    onClick={() => onEdit(cliente)}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className="rounded bg-error px-2 py-1 text-white transition hover:opacity-90"
-                    onClick={() => onDelete(cliente.email)}
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {paginatedClientes.length === 0 && (
-              <tr>
-                <td colSpan={8} className="py-4 text-center text-gray-500">
-                  No hay clientes para mostrar.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* Client List */}
+      <div className="grid grid-cols-1 gap-4">
+        {paginatedClientes.map(cliente => (
+          <div key={cliente.id} className="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex-grow">
+              <p className="font-bold text-lg text-blue-600">{cliente.razon_social}</p>
+              <p className="font-bold text-md text-blue-600">{`${cliente.nombre_contacto} ${cliente.apellido_contacto}`}</p>
+
+              <p className="text-sm text-gray-600">{cliente.email}</p>
+              <p className='text-sm text-gray-600'>{cliente.telefono}</p>
+              {/* <p className="text-sm text-gray-500">{cliente.ciudad}, {cliente.provincia}</p> */}
+              {cliente.cuil && <p className="text-xs text-gray-500 mt-1">CUIL: {cliente.cuil}</p>}
+            </div>
+            <button
+              onClick={() => handleEditClick(cliente)}
+              className="flex items-center gap-2 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-sm"
+            >
+              <Edit size={16} />
+              Modificar
+            </button>
+          </div>
+        ))}
       </div>
 
-      <div className="mt-4 flex justify-end gap-2">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-          className="rounded bg-gray-300 px-3 py-1 transition hover:bg-gray-400 disabled:opacity-50"
-        >
-          Anterior
-        </button>
-        <span className="px-3 py-1">
-          Pagina {currentPage} de {totalPages || 1}
-        </span>
-        <button
-          disabled={currentPage === totalPages || totalPages === 0}
-          onClick={() => setCurrentPage((page) => Math.min(totalPages || 1, page + 1))}
-          className="rounded bg-gray-300 px-3 py-1 transition hover:bg-gray-400 disabled:opacity-50"
-        >
-          Siguiente
-        </button>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center mt-6 gap-2">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-2 rounded-lg bg-white border disabled:opacity-50"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <span className="text-gray-700 font-medium">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-lg bg-white border disabled:opacity-50"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isModalOpen && selectedCliente && (
+        <ClienteEditModal
+          cliente={selectedCliente}
+          onClose={handleModalClose}
+          onSave={handleUpdate}
+        />
+      )}
+    </div>
+  );
+};
+
+// --- Edit Modal Component ---
+type ModalProps = {
+  cliente: Cliente;
+  onClose: () => void;
+  onSave: (cliente: Cliente) => void;
+};
+
+const ClienteEditModal: React.FC<ModalProps> = ({ cliente, onClose, onSave }) => {
+  const [formData, setFormData] = useState<Cliente>(cliente);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
+        <h3 className="text-xl font-bold mb-4">Modificar Cliente</h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="nombre_contacto" className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+              <input id="nombre_contacto" type="text" name="nombre_contacto" value={formData.nombre_contacto} onChange={handleChange} placeholder="Nombre" className="border p-2 rounded-lg w-full" />
+            </div>
+            <div>
+              <label htmlFor="apellido_contacto" className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+              <input id="apellido_contacto" type="text" name="apellido_contacto" value={formData.apellido_contacto} onChange={handleChange} placeholder="Apellido" className="border p-2 rounded-lg w-full" />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input id="email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="border p-2 rounded-lg w-full" />
+          </div>
+          <div>
+            <label htmlFor="razon_social" className="block text-sm font-medium text-gray-700 mb-1">Razón Social</label>
+            <input id="razon_social" type="text" name="razon_social" value={formData.razon_social || ''} onChange={handleChange} placeholder="Razón Social" className="border p-2 rounded-lg w-full" />
+          </div>
+          <div>
+            <label htmlFor="cuil" className="block text-sm font-medium text-gray-700 mb-1">CUIL</label>
+            <input id="cuil" type="text" name="cuil" value={formData.cuil || ''} onChange={handleChange} placeholder="CUIL" className="border p-2 rounded-lg w-full" />
+          </div>
+          <div>
+            <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+            <input id="telefono" type="text" name="telefono" value={formData.telefono || ''} onChange={handleChange} placeholder="Teléfono" className="border p-2 rounded-lg w-full" />
+          </div>
+
+
+          <div className="flex justify-end gap-4 mt-6">
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancelar</button>
+            <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Guardar Cambios</button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
-export default ClienteTable;
+export default ClientesTable;
