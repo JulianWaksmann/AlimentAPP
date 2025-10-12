@@ -16,7 +16,7 @@ export async function getMateriaPrimaXProovedor(): Promise<MateriaPrimaXProovedo
   }
     const data = await response.json();
 
-    console.log(data);
+    // console.log(data);
 
     return data.materias_primas;
 
@@ -113,3 +113,22 @@ export async function cancelarPedidoMateriaPrima(id_pedido: number) {
 } 
 
 
+export async function getStockMateriaPrima() {
+  const response = await fetch(`${apiUrl}/gestion-materia-prima/stock`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Error fetching stock materia prima");
+  }
+    const data = await response.json();
+
+    // console.log(data.stock_materia_prima);
+
+    return data.stock_materia_prima;
+
+  // return response.json();
+
+}

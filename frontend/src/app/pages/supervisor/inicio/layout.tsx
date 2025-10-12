@@ -9,7 +9,8 @@ const menuItems = [
   { name: "Control de Produccion", href: "/pages/supervisor/inicio/produccion" },
   { name: "Gestion de Productos", href: "/pages/supervisor/inicio/productos" },
   { name: "Ordenes de Trabajo", href: "/pages/supervisor/inicio/ordenes-trabajo" },
-  { name: "Materia Prima", href: "/pages/supervisor/inicio/materia-prima" },
+  { name: "Stock de Materia Prima", href: "/pages/supervisor/inicio/stock-materia-prima" },
+  { name: "Pedir Materia Prima", href: "/pages/supervisor/inicio/materia-prima" },
 ];
 
 const SupervisorLayout = ({ children }: { children: React.ReactNode }) => {

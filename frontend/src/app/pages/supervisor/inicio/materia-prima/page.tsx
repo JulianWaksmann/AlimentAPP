@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { MateriaPrimaXProovedor } from "app/models/MateriaPrimaXProovedor";
 import { Proovedor } from "app/models/Proovedor";
 
-const MateriaPrimaPage = () => {
+const PedidoMateriaPrimaPage = () => {
 
   const [materiasPrimas, setMateriasPrimas] = useState<MateriaPrimaXProovedor[]>([]);
   const [selectedMateriaPrima, setSelectedMateriaPrima] = useState<number | "">("");
@@ -137,4 +137,4 @@ const MateriaPrimaPage = () => {
         // ...existing code...
 };
 
-export default MateriaPrimaPage;
+export default PedidoMateriaPrimaPage;
