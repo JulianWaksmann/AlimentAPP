@@ -22,7 +22,7 @@ const PageOrdenesProduccionEnProceso = () => {
 
     const handleCambiarEstado = async (id: number) => {
         try {
-            await UpdateEstadoOrdenProduccion(id, "en_proceso");
+            await UpdateEstadoOrdenProduccion(id, "finalizada");
             setOrdenesEnProceso((prev) => prev.filter(o => o.id_orden_produccion !== id));
         } catch (error) {
             console.error("Error actualizando estado:", error);

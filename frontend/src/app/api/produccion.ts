@@ -3,7 +3,7 @@ import { OrdenProduccion } from "../models/OrdenProduccion";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GetOrdenesProduccion(): Promise<OrdenProduccion[]> {
-  const response = await fetch(`${apiUrl}/orden-produccion`, {
+  const response = await fetch(`${apiUrl}/orden-produccion/orden-produccion-listaprd-enproceso-finalizada`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -13,8 +13,9 @@ export async function GetOrdenesProduccion(): Promise<OrdenProduccion[]> {
     throw new Error("Error fetching productos");
   }
   const data = await response.json();
-  console.log(data);
-  return data.ordenes_produccion;
+  console.log(data.ordenes_produccion);
+    // Si el endpoint devuelve { ordenes_produccion: [...] }, retornamos directamente el array
+    return Array.isArray(data.ordenes_produccion) ? data.ordenes_produccion : [];
 }
 
 export async function UpdateEstadoOrdenProduccion(  id: number,  nuevoEstado: string): Promise<void> {

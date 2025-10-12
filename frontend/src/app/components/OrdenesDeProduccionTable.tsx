@@ -1,11 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { OrdenProduccion } from "../models/OrdenProduccion";
-// import { UpdateEstadoOrdenProduccion } from "../api/produccion";
-
 
 type Props = {
   ordenes: OrdenProduccion[];
-  onEstadoChange?: (id_orden_produccion: number, nuevoEstado: string) => void;
+  // onEstadoChange?: (id_orden_produccion: number, nuevoEstado: string) => void;
 };
 
 const estadoColor: Record<string, string> = {
@@ -14,13 +12,6 @@ const estadoColor: Record<string, string> = {
   finalizada: "bg-green-100 text-green-700",
   pendiente: "bg-gray-100 text-gray-700",
 };
-
-// const estados = [
-//   "en_proceso",
-//   "planificada",
-//   "finalizada",
-//   "pendiente",
-// ];
 
 const sortOptions = [
   { value: "id_orden_produccion", label: "ID Orden" },
@@ -32,16 +23,29 @@ const sortOptions = [
   { value: "estado_orden_produccion", label: "Estado" },
 ];
 
-// export default function OrdenesDeProduccionTable({ ordenes, onEstadoChange }: Props) {
 export default function OrdenesDeProduccionTable({ ordenes }: Props) {
-const [sortKey, setSortKey] = useState<string>("fecha_creacion_orden_venta");
+  const [sortKey, setSortKey] = useState<string>("fecha_creacion_orden_venta");
   const [sortAsc, setSortAsc] = useState<boolean>(false);
-  // const [editId, setEditId] = useState<number | null>(null);
-  // const [nuevoEstado, setNuevoEstado] = useState<string>("");
+  const [showMateriaPrimaId, setShowMateriaPrimaId] = useState<number | null>(null);
+  const [estadoFilter, setEstadoFilter] = useState<string>("");
+  const [clienteFilter, setClienteFilter] = useState<string>("");
+  const [productoFilter, setProductoFilter] = useState<string>("");
 
-  const sortedOrdenes = useMemo(() => {
-    const clone = [...ordenes];
-    clone.sort((a, b) => {
+
+  const filteredAndSortedOrdenes = useMemo(() => {
+    let filtered = [...ordenes];
+
+    if (estadoFilter) {
+      filtered = filtered.filter(o => o.estado_orden_produccion === estadoFilter);
+    }
+    if (clienteFilter) {
+      filtered = filtered.filter(o => `${o.nombre_cliente} ${o.apellido_cliente}` === clienteFilter);
+    }
+    if (productoFilter) {
+      filtered = filtered.filter(o => o.nombre_producto.toLowerCase().includes(productoFilter.toLowerCase()));
+    }
+
+    filtered.sort((a, b) => {
       let valueA = a[sortKey as keyof OrdenProduccion];
       let valueB = b[sortKey as keyof OrdenProduccion];
       if (
@@ -67,130 +71,80 @@ const [sortKey, setSortKey] = useState<string>("fecha_creacion_orden_venta");
         ? String(valueA).localeCompare(String(valueB))
         : String(valueB).localeCompare(String(valueA));
     });
-    return clone;
-  }, [ordenes, sortKey, sortAsc]);
+    return filtered;
+  }, [ordenes, sortKey, sortAsc, estadoFilter, clienteFilter, productoFilter]);
 
-//   const handleEdit = (id: number, estadoActual: string) => {
-//     setEditId(id);
-//     setNuevoEstado(estadoActual);
-//   };
-
-//   const handleConfirm = async (id: number) => {
-//   if (onEstadoChange) onEstadoChange(id, nuevoEstado); // Si usas el callback externo
-//   try {
-//     console.log("actualizar ot a: "+ id + " estado: " + nuevoEstado);
-//     await UpdateEstadoOrdenProduccion(id, nuevoEstado);
-//     setEditId(null);
-//     setNuevoEstado("");
-
-//     window.location.reload(); // Alternativa rápida si el estado está en el padre
-//   } catch (error) {
-//     alert("Error al actualizar el estado");
-//     console.log("error al actualizar estado de OP: "+ error);
-//     setEditId(null);
-//   }
-// };
-
-//   const handleCancel = () => {
-//     setEditId(null);
-//   };
+  const availableEstados = useMemo(() => [...new Set(ordenes.map(o => o.estado_orden_produccion))], [ordenes]);
+  const availableClientes = useMemo(() => [...new Set(ordenes.map(o => `${o.nombre_cliente} ${o.apellido_cliente}`))], [ordenes]);
 
   return (
     <div className="overflow-x-auto rounded-lg shadow-lg bg-white p-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
-        <h2 className="text-xl font-bold text-primary">Órdenes de Producción</h2>
-        <div className="flex items-center gap-2">
-          <label htmlFor="ordenar" className="text-sm font-medium">Ordenar por:</label>
-          <select
-            id="ordenar"
-            value={sortKey}
-            onChange={e => setSortKey(e.target.value)}
-            className="border rounded px-2 py-1 text-sm"
-          >
-            {sortOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <button
-            className="ml-2 px-2 py-1 rounded bg-neutral-light text-xs"
-            onClick={() => setSortAsc(a => !a)}
-            title="Invertir orden"
-          >
-            {sortAsc ? "Ascendente ↑" : "Descendente ↓"}
-          </button>
+              <h2 className="text-xl font-bold text-primary">Órdenes de Producción</h2>
+
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Filtros */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="filtro-estado" className="text-sm font-medium">Estado:</label>
+            <select
+              id="filtro-estado"
+              value={estadoFilter}
+              onChange={e => setEstadoFilter(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="">Todos</option>
+              {availableEstados.map(e => <option key={e} value={e}>{e.replace('_', ' ')}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="filtro-cliente" className="text-sm font-medium">Cliente:</label>
+            <select
+              id="filtro-cliente"
+              value={clienteFilter}
+              onChange={e => setClienteFilter(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="">Todos</option>
+              {availableClientes.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="filtro-producto" className="text-sm font-medium">Producto:</label>
+            <input
+              type="text"
+              id="filtro-producto"
+              value={productoFilter}
+              onChange={e => setProductoFilter(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+              placeholder="Buscar por producto..."
+            />
+          </div>
+          {/* Ordenamiento */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="ordenar" className="text-sm font-medium">Ordenar por:</label>
+            <select
+              id="ordenar"
+              value={sortKey}
+              onChange={e => setSortKey(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              {sortOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <button
+              className="ml-2 px-2 py-1 rounded bg-neutral-light text-xs"
+              onClick={() => setSortAsc(a => !a)}
+              title="Invertir orden"
+            >
+              {sortAsc ? "Ascendente ↑" : "Descendente ↓"}
+            </button>
+          </div>
         </div>
       </div>
-      {/* Tabla desktop */}
-      {/* <table className="min-w-full divide-y divide-gray-200 hidden md:hidden">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">ID Orden</th>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">ID Pedido</th>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">Cliente</th>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">Producto</th>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">Cantidad</th>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">Fecha Creación</th>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">Fecha Entrega</th>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">Estado</th>
-            <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedOrdenes.map((orden) => (
-            <tr key={orden.id_orden_produccion} className="hover:bg-gray-100 transition">
-              <td className="px-2 py-2 text-sm">{orden.id_orden_produccion}</td>
-              <td className="px-2 py-2 text-sm">{orden.id_pedido}</td>
-              <td className="px-2 py-2 text-sm">{orden.nombre_cliente} {orden.apellido_cliente}</td>
-              <td className="px-2 py-2 text-sm">{orden.nombre_producto}</td>
-              <td className="px-2 py-2 text-sm">{orden.cantidad_producto}</td>
-              <td className="px-2 py-2 text-sm">{orden.fecha_creacion_orden_venta}</td>
-              <td className="px-2 py-2 text-sm">{orden.fechaentrega_orden_venta}</td>
-              <td className="px-2 py-2 text-sm">
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${estadoColor[orden.estado_orden_produccion] || "bg-gray-200 text-gray-700"}`}>
-                  {orden.estado_orden_produccion.replace("_", " ")}
-                </span>
-              </td>
-              <td className="px-2 py-2 text-sm">
-                {editId === orden.id_orden_produccion ? (
-                  <div className="flex items-center gap-1">
-                    <select
-                      value={nuevoEstado}
-                      onChange={e => setNuevoEstado(e.target.value)}
-                      className="border rounded px-2 py-1 text-xs"
-                    >
-                      {estados.map(e => (
-                        <option key={e} value={e}>{e.replace("_", " ")}</option>
-                      ))}
-                    </select>
-                    <button
-                      className="px-2 py-1 bg-green-200 rounded text-xs"
-                      onClick={() => handleConfirm(orden.id_orden_produccion)}
-                    >
-                      Aceptar
-                    </button>
-                    <button
-                      className="px-2 py-1 bg-red-200 rounded text-xs"
-                      onClick={handleCancel}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    className="px-2 py-1 bg-blue-200 rounded text-xs"
-                    onClick={() => handleEdit(orden.id_orden_produccion, orden.estado_orden_produccion)}
-                  >
-                    Editar estado
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table> */}
       {/* Mobile: Cards */}
       <div className=" mt-6 min-w-full  ">
-        {sortedOrdenes.map((orden) => (
+        {filteredAndSortedOrdenes.map((orden) => (
           <div key={orden.id_orden_produccion} className="rounded-lg border p-3 shadow-sm bg-gray-50">
             <div className="flex justify-between items-center mb-2">
               <span className="font-bold text-primary">Orden #{orden.id_orden_produccion}</span>
@@ -198,48 +152,32 @@ const [sortKey, setSortKey] = useState<string>("fecha_creacion_orden_venta");
                 {orden.estado_orden_produccion.replace("_", " ")}
               </span>
             </div>
-      <div className="flex justify-between items-center mb-2">
-           <span className="font-semibold mb-1 text-sm">Pedido: {orden.id_pedido}</span> 
-      <span className="font-semibold mb-1 text-sm">Cliente: {orden.nombre_cliente} {orden.apellido_cliente}    </span>              
-</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Producto:</span> {orden.nombre_producto}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Cantidad:</span> {orden.cantidad_producto}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Creación:</span> {orden.fecha_creacion_orden_venta}</div>
-            <div className="mb-1 text-sm"><span className="font-semibold">Fecha Entrega:</span> {orden.fechaentrega_orden_venta}</div>
-            <div className="mt-2">
-              {/* {editId === orden.id_orden_produccion ? (
-                <div className="flex items-center gap-1">
-                  <select
-                    value={nuevoEstado}
-                    onChange={e => setNuevoEstado(e.target.value)}
-                    className="border rounded px-2 py-1 text-xs"
-                  >
-                    {estados.map(e => (
-                      <option key={e} value={e}>{e.replace("_", " ")}</option>
-                    ))}
-                  </select>
-                  <button
-                    className="px-2 py-1 bg-green-200 rounded text-xs"
-                    onClick={() => handleConfirm(orden.id_orden_produccion)}
-                  >
-                    Aceptar
-                  </button>
-                  <button
-                    className="px-2 py-1 bg-red-200 rounded text-xs"
-                    onClick={handleCancel}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              ) : (
-                <button
-                  className="px-2 py-1 bg-blue-200 rounded text-xs"
-                  onClick={() => handleEdit(orden.id_orden_produccion, orden.estado_orden_produccion)}
-                >
-                  Editar estado
-                </button>
-              )} */}
+            <div className="flex justify-between items-center mb-2">
+                <span className="font-semibold mb-1 text-sm">Pedido: {orden.id_orden_venta}</span> 
+            <span className="font-semibold mb-1 text-sm">Cliente: {orden.nombre_cliente} {orden.apellido_cliente}    </span>              
             </div>
+            <div className="text-sm"><span className="font-semibold">Producto:</span> {orden.nombre_producto} </div>
+            <div className='text-sm'><span className='font-semibold'>Cantidad:</span> {orden.cantidad_producto}</div>
+            <div className="text-sm"><span className="font-semibold">Fecha creación de orden de producción:</span> {orden.fecha_creacion_orden_produccion ? (new Date(orden.fecha_creacion_orden_produccion ).getTime() > 0 ? new Date(orden.fecha_creacion_orden_produccion ).toLocaleDateString() : "-") : "-"}</div>
+            <div className="text-sm"><span className="font-semibold">Fecha fin de orden de producción:</span> {orden.fecha_fin_orden_produccion ? (new Date(orden.fecha_fin_orden_produccion ).getTime() > 0 ? new Date(orden.fecha_fin_orden_produccion).toLocaleDateString() : "-") : "-"}</div>
+            <div className="text-sm"><span className="font-semibold">Fecha entrega del pedido:</span> {orden.fecha_entrega_solicitada_orden_venta ? (new Date(orden.fecha_entrega_solicitada_orden_venta).getTime() > 0 ? new Date(orden.fecha_entrega_solicitada_orden_venta).toLocaleDateString() : "-") : "-"}</div>
+            <div className="flex gap-2 mt-2">
+              <button className="flex-1 bg-blue-500 text-white rounded px-2 py-1 text-xs" 
+                onClick={() => setShowMateriaPrimaId(showMateriaPrimaId === orden.id_orden_produccion ? null : orden.id_orden_produccion)}>
+                {showMateriaPrimaId === orden.id_orden_produccion ? "Ocultar materia prima" : "Ver materia prima"}
+              </button>
+            </div>
+            {orden.materias_primas_requeridas.length > 0 && showMateriaPrimaId === orden.id_orden_produccion && (
+                  <div className="mt-2"><span className="font-semibold">Materias primas utilizadas:</span>
+                      <ul className="list-disc list-inside text-sm mt-1">
+                        {orden.materias_primas_requeridas.map((mp) => (
+                            <li key={mp.id_lote_materia_prima}>
+                                {mp.nombre_materia_prima} - {mp.cantidad_materia_prima} {mp.unidad_medida_materia_prima} (Lote: {mp.codigo_lote})
+                            </li>
+                        ))}
+                      </ul>
+                  </div>
+            )}           
           </div>
         ))}
       </div>

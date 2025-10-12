@@ -22,7 +22,7 @@ const PageOrdenesProduccionFinalizadas= () => {
 
     const handleCambiarEstado = async (id: number) => {
         try {
-            await UpdateEstadoOrdenProduccion(id, "en_proceso");
+            await UpdateEstadoOrdenProduccion(id, "");
             setOrdenesFinalizadas((prev) => prev.filter(o => o.id_orden_produccion !== id));
         } catch (error) {
             console.error("Error actualizando estado:", error);
@@ -35,7 +35,7 @@ const PageOrdenesProduccionFinalizadas= () => {
             <div className="text-lg font-bold mb-2">Ordenes de Producción Finalizadas</div>
             <TablaOrdenesDeTrabajo
                 ordenes={ordenesFinalizadas}
-                estadoSiguiente=""
+                // estadoSiguiente=""
                 onCambiarEstado={handleCambiarEstado}
             />
         </div>
