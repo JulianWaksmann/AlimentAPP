@@ -65,7 +65,7 @@ producto_por_linea_produccion
 materia_prima
 - id: SERIAL, llave primaria.
 - nombre: VARCHAR(50), nombre unico de la materia prima.
-- unidad_medida: VARCHAR(20), unidad base declarada (kg, litro, pack).
+- unidad_medida: VARCHAR(20), unidad operativa usada en recetas y consumos.\n- cantidad_por_unidad_compra: NUMERIC(10,3), cuantas unidades operativas contiene cada unidad de compra.
 - expirabile: BOOLEAN, si requiere control de vencimiento.
 - created_at: TIMESTAMP TZ, fecha de creacion del registro.
 
@@ -137,8 +137,8 @@ materia_prima_por_producto
 - id_producto: FK a producto(id), producto objetivo.
 - id_materia_prima: FK a materia_prima(id), insumo requerido.
 - cantidad_unitaria: NUMERIC(10,2), unidades de materia prima requeridas por unidad de producto.
-- unidad_medida: VARCHAR(20), unidad en la que se expresa la cantidad.
-- kilogramos: NUMERIC(10,2), equivalencia en kg si aplica.
+- unidad_medida: VARCHAR(20), unidad en la que se expresa la cantidad (debe coincidir con unidad_medida de materia_prima).
+- kilogramos: NUMERIC(10,2), equivalencia en kg si aplica (campo auxiliar).
 - UNIQUE (id_producto, id_materia_prima) evita definiciones duplicadas.
 
 proveedor_por_materia_prima
@@ -153,3 +153,4 @@ proveedor_por_materia_prima
 sesion
 - id_empleado: FK y llave primaria a empleado(id), usuario autenticado.
 - password: VARCHAR(255), contrasena temporal o legado (pendiente de reemplazar por hash robusto).
+

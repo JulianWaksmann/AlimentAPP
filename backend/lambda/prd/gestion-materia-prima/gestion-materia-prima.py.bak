@@ -23,14 +23,8 @@ lambda_client = boto3.client("lambda")
 
 DB_CONFIG: Optional[Dict[str, Any]] = None
 
-LAMBDA_ASIGNAR_MP = os.getenv(
-    "LAMBDA_POST_ASIGNAR_MATERIA_PRIMA",
-    "asignacion-lote-materia-prima-orden-produccion",
-)
-API_GENERAR_COMPRA_MP = os.getenv(
-    "API_GENERAR_COMPRA_MP",
-    "https://eldzogehdj.execute-api.us-east-1.amazonaws.com/prd/gestion-materia-prima/generar-compra-materia-prima",
-)
+LAMBDA_ASIGNAR_MP = "asignacion-lote-materia-prima-orden-produccion"
+LAMBDA_GENERAR_COMPRA_MP = "post-generar-compra-lote-materia-prima"
 
 
 def get_db_parameters() -> Dict[str, Any]:
@@ -304,59 +298,41 @@ def lambda_handler(event, context):
 
             try:
                 logger.info(
-                    "Generando pedido via API: materia_prima=%s paquetes=%s proveedor=%s",
+                    "Generando pedido: materia_prima=%s paquetes=%s proveedor=%s",
                     materia_id,
                     paquetes,
                     proveedor["id_proveedor"],
                 )
-                request_payload = json.dumps(
+                payload = json.dumps(
                     {
                         "id_materia_prima": materia_id,
                         "id_proveedor": proveedor["id_proveedor"],
                         "cantidad_total": paquetes,
                     }
                 ).encode("utf-8")
-                req = urllib.request.Request(
-                    API_GENERAR_COMPRA_MP,
-                    data=request_payload,
-                    method="POST",
-                    headers={"Content-Type": "application/json"},
+                response = lambda_client.invoke(
+                    FunctionName=LAMBDA_GENERAR_COMPRA_MP,
+                    InvocationType="RequestResponse",
+                    Payload=payload,
                 )
-                with urllib.request.urlopen(req) as resp:
-                    raw_body = resp.read().decode("utf-8")
-                    parsed_body = json.loads(raw_body or "{}")
-                    pedidos_generados.append(
-                        {
-                            "id_materia_prima": materia_id,
-                            "id_proveedor": proveedor["id_proveedor"],
-                            "cantidad_paquetes": paquetes,
-                            "response": {
-                                "status_code": resp.getcode(),
-                                "body": parsed_body,
-                            },
-                        }
-                    )
-            except urllib.error.HTTPError as exc:
-                logger.exception("API de compra devolvió HTTPError")
-                detalle = exc.read().decode("utf-8", errors="ignore")
-                pedidos_fallidos.append(
+                raw_body = (
+                    response.get("Payload").read().decode("utf-8")
+                    if response.get("Payload")
+                    else "{}"
+                )
+                pedidos_generados.append(
                     {
                         "id_materia_prima": materia_id,
+                        "id_proveedor": proveedor["id_proveedor"],
                         "cantidad_paquetes": paquetes,
-                        "motivo": f"HTTPError {exc.code}: {detalle or exc.reason}",
-                    }
-                )
-            except urllib.error.URLError as exc:
-                logger.exception("API de compra no disponible")
-                pedidos_fallidos.append(
-                    {
-                        "id_materia_prima": materia_id,
-                        "cantidad_paquetes": paquetes,
-                        "motivo": f"URLError: {exc.reason}",
+                        "response": {
+                            "status_code": response.get("StatusCode"),
+                            "body": json.loads(raw_body or "{}"),
+                        },
                     }
                 )
             except Exception as exc:  # pragma: no cover
-                logger.exception("Fallo al invocar la API de compra de materia prima")
+                logger.exception("Fallo al invocar la lambda de compra de materia prima")
                 pedidos_fallidos.append(
                     {
                         "id_materia_prima": materia_id,

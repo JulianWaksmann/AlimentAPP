@@ -1,3 +1,4 @@
+"""Lambda que asigna materia prima disponible a ordenes de produccion, respetando FEFO y evitando lotes que vencen en las proximas dos semanas."""
 import json
 import logging
 import math
@@ -79,10 +80,22 @@ def fetch_one(cur, sql: str, params: Iterable[Any] = None) -> Optional[Dict[str,
     return dict(zip(columns, row))
 
 
+def delete_existing_assignments(cur, order_ids: Iterable[int]) -> None:
+    """Elimina consumos previos antes de recalcular la asignacion."""
+    ids = list({int(i) for i in order_ids})
+    if not ids:
+        return
+    cur.execute(
+        f"DELETE FROM {ENV}.materia_prima_por_orden_produccion WHERE id_orden_produccion = ANY(%s)",
+        (ids,),
+    )
+
+
 def decimal_value(value: Any) -> Decimal:
     return Decimal(str(value))
 
 
+# Devuelve las ordenes indicadas en el payload o las proximas planificadas.
 def obtener_ordenes(cur, ids: Optional[List[int]], limit: Optional[int]) -> List[Dict[str, Any]]:
     if ids:
         sql = f"""
@@ -142,6 +155,7 @@ def lotes_disponibles(cur, materia_id: int, fecha_corte: datetime) -> List[Dict[
     return fetch_all(cur, sql, (materia_id, fecha_corte))
 
 
+# Consuma lotes FEFO hasta cubrir el faltante de la orden indicada.
 def asignar_materia(cur, orden: Dict[str, Any], fecha_corte: datetime) -> Dict[str, Any]:
     orden_id = int(orden["id"])
     producto_id = int(orden["id_producto"])
@@ -303,3 +317,5 @@ def lambda_handler(event, context):
     finally:
         if conn:
             conn.close()
+
+

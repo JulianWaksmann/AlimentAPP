@@ -106,7 +106,8 @@ CREATE TABLE IF NOT EXISTS producto_por_linea_produccion (
 CREATE TABLE IF NOT EXISTS materia_prima (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
-    unidad_medida unidad_medida NOT NULL,
+    unidad_medida VARCHAR(20) NOT NULL,
+    cantidad_por_unidad_compra NUMERIC(10,3) NOT NULL DEFAULT 1,
     expirabile BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -178,8 +179,8 @@ CREATE TABLE IF NOT EXISTS materia_prima_por_producto (
     id_producto INTEGER NOT NULL REFERENCES producto(id) ON DELETE CASCADE,
     id_materia_prima INTEGER NOT NULL REFERENCES materia_prima(id) ON DELETE RESTRICT,
     cantidad_unitaria NUMERIC(10,2),
-    --unidad_medida unidad_medida NOT NULL,
-    --kilogramos NUMERIC(10,2),
+    unidad_medida VARCHAR(20) NOT NULL,
+    kilogramos NUMERIC(10,2),
     UNIQUE (id_producto, id_materia_prima)
 );
 
@@ -213,4 +214,112 @@ CREATE TABLE IF NOT EXISTS sesion (
     password VARCHAR(255) NOT NULL
 );
 
+--------------------------------------------------------------------------------------
+---------------------------------- VISTAS -------------------------------------------
+--------------------------------------------------------------------------------------
 
+------------------ Vista para ver ordenes de produccion incompletas------------------
+CREATE OR REPLACE VIEW ordenes_produccion_incompletas AS
+
+WITH Requerimientos AS (
+    SELECT
+        op.id AS id_orden_produccion,
+        mpp.id_materia_prima,
+        (op.cantidad * mpp.cantidad_unitaria) AS cantidad_requerida
+    FROM
+        orden_produccion op
+    JOIN
+        materia_prima_por_producto mpp ON op.id_producto = mpp.id_producto
+    WHERE
+        -- Solo nos interesan las órdenes que aún no están finalizadas o canceladas.
+        op.estado IN ('pendiente', 'planificada', 'lista_para_produccion', 'en_proceso')
+),
+Asignaciones AS (
+    SELECT
+        mpop.id_orden_produccion,
+        lmp.id_materia_prima,
+        SUM(mpop.cantidad_utilizada) AS cantidad_asignada
+    FROM
+        materia_prima_por_orden_produccion mpop
+    JOIN
+        lote_materia_prima lmp ON mpop.id_lote_materia_prima = lmp.id
+    GROUP BY
+        mpop.id_orden_produccion, lmp.id_materia_prima
+),
+FaltantesDetallados AS (
+    SELECT
+        r.id_orden_produccion,
+        r.id_materia_prima,
+        -- Calculamos la diferencia entre lo requerido y lo asignado.
+        (r.cantidad_requerida - COALESCE(a.cantidad_asignada, 0)) AS cantidad_faltante
+    FROM
+        Requerimientos r
+    LEFT JOIN
+        Asignaciones a ON r.id_orden_produccion = a.id_orden_produccion
+                      AND r.id_materia_prima = a.id_materia_prima
+    WHERE
+        -- El criterio clave: la orden está incompleta si lo asignado es menor que lo requerido.
+        COALESCE(a.cantidad_asignada, 0) < r.cantidad_requerida
+)
+SELECT
+    f.id_orden_produccion,
+    JSONB_AGG(
+        JSONB_OBJECT(
+            ARRAY[mp.nombre],
+            ARRAY[f.cantidad_faltante::text]
+        )
+    ) AS materias_primas_faltantes
+FROM
+    FaltantesDetallados f
+JOIN
+    materia_prima mp ON f.id_materia_prima = mp.id
+GROUP BY
+    f.id_orden_produccion;
+
+
+
+------------------ Vista para ver cuanto nos falta por materia prima ------------------
+CREATE OR REPLACE VIEW vista_faltantes_globales_mp AS
+
+-- Paso 1: Calculamos el requerimiento total de cada materia prima para todas las órdenes activas.
+WITH RequerimientosTotales AS (
+    SELECT
+        mpp.id_materia_prima,
+        SUM(op.cantidad * mpp.cantidad_unitaria) AS cantidad_total_requerida
+    FROM
+        orden_produccion op
+    JOIN
+        materia_prima_por_producto mpp ON op.id_producto = mpp.id_producto
+    WHERE
+        -- Consideramos solo órdenes que consumirán stock en el futuro.
+        op.estado IN ('pendiente', 'planificada', 'lista_para_produccion', 'en_proceso')
+    GROUP BY
+        mpp.id_materia_prima
+),
+
+-- Paso 2: Obtenemos el stock disponible actual de la vista que ya tenés.
+StockActual AS (
+    SELECT
+        id_materia_prima,
+        cantidad_disponible
+    FROM
+        cantidad_disponible_materia_prima
+)
+
+-- Paso 3: Comparamos lo requerido vs. lo disponible y mostramos solo lo que falta.
+SELECT
+    r.id_materia_prima,
+    mp.nombre AS nombre_materia_prima,
+    r.cantidad_total_requerida,
+    COALESCE(s.cantidad_disponible, 0) AS cantidad_disponible,
+    -- La resta nos da exactamente cuánto nos falta para cubrir toda la demanda.
+    (r.cantidad_total_requerida - COALESCE(s.cantidad_disponible, 0)) AS cantidad_faltante
+FROM
+    RequerimientosTotales r
+JOIN
+    materia_prima mp ON r.id_materia_prima = mp.id
+LEFT JOIN
+    StockActual s ON r.id_materia_prima = s.id_materia_prima
+WHERE
+    -- Mostramos únicamente las materias primas donde la demanda supera al stock.
+    r.cantidad_total_requerida > COALESCE(s.cantidad_disponible, 0);
