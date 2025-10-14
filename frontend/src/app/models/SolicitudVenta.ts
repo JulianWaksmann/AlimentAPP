@@ -13,4 +13,5 @@ export interface SolicitudVenta{
   cantidad: number;}
   fecha_pedido: string; // ISO date string
   fecha_entrega: string; // ISO date string}
+  valor_total_pedido: number;
 }

@@ -8,9 +8,10 @@ import { Menu } from "lucide-react";
 const menuItems = [
   { name: "Control de Produccion", href: "/pages/supervisor/inicio/produccion" },
   { name: "Gestion de Productos", href: "/pages/supervisor/inicio/productos" },
-  { name: "Ordenes de Trabajo", href: "/pages/supervisor/inicio/ordenes-trabajo" },
+  { name: "Ordenes de Producción", href: "/pages/supervisor/inicio/ordenes-trabajo" },
   { name: "Stock de Materia Prima", href: "/pages/supervisor/inicio/stock-materia-prima" },
   { name: "Pedir Materia Prima", href: "/pages/supervisor/inicio/materia-prima" },
+  { name: "Ventas Pendientes de Aprobación", href: "/pages/supervisor/inicio/ventas-pendientes-aprobacion" },
 ];
 
 const SupervisorLayout = ({ children }: { children: React.ReactNode }) => {

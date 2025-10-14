@@ -25,6 +25,11 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
       </h2>
       
       {/* Mobile: Cards */}
+      {solicitudes.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center p-4">No hay pedidos en espera de materia prima.</td>
+              </tr>
+            ) : (
       <div className=" mt-6 space-y-4">
         {solicitudes.map((solicitud) => (
           <div
@@ -41,11 +46,11 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
               <span className="font-semibold">Cliente:</span>{" "}
               {solicitud.nombre_contacto} {solicitud.apellido_contacto}
             </div>
+            <div><span className="font-semibold">Valor del pedido:</span> ${solicitud.valor_total_pedido}</div>
             <div>
               <span className="font-semibold">Razón Social:</span>{" "}
               {solicitud.razon_social}
             </div>
-            <div> <span className="font-semibold">contacto: </span>{solicitud.telefono} - {solicitud.email}</div>
             <div className="mb-1 font-semibold">Productos:</div>
             <div className="mb-1 text-sm flex flex-col gap-1">
               {Array.isArray(solicitud.productos) ? (
@@ -60,6 +65,8 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
                 </span>
               )}
             </div>
+            <div> <span className="font-semibold">contacto: </span>{solicitud.telefono} - {solicitud.email}</div>
+
             <div className="mb-1 text-sm">
               <span className="font-semibold">Fecha Pedido:</span>{" "}
               {solicitud.fecha_pedido}
@@ -89,6 +96,7 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }
