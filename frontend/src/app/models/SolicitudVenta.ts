@@ -1,6 +1,12 @@
 
 export interface SolicitudVenta{
   id_orden_venta: number;
+  id_cliente: number;
+  nombre_contacto: string;
+  apellido_contacto: string;
+  razon_social: string;
+  email: string;
+  telefono: string;
   productos:{
   id: number;
   nombre: string;

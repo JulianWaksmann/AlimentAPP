@@ -37,12 +37,21 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
               </span>
               {/* Puedes mostrar el estado si lo tienes */}
             </div>
-            <div className="mb-1 text-sm font-semibold">Productos:</div>
+            <div>
+              <span className="font-semibold">Cliente:</span>{" "}
+              {solicitud.nombre_contacto} {solicitud.apellido_contacto}
+            </div>
+            <div>
+              <span className="font-semibold">Razón Social:</span>{" "}
+              {solicitud.razon_social}
+            </div>
+            <div> <span className="font-semibold">contacto: </span>{solicitud.telefono} - {solicitud.email}</div>
+            <div className="mb-1 font-semibold">Productos:</div>
             <div className="mb-1 text-sm flex flex-col gap-1">
               {Array.isArray(solicitud.productos) ? (
                 solicitud.productos.map((prod) => (
                   <span key={prod.id}>
-                    {prod.nombre} : {prod.cantidad}
+                    {prod.nombre} - cantidad: {prod.cantidad}
                   </span>
                 ))
               ) : (
@@ -56,7 +65,7 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
               {solicitud.fecha_pedido}
             </div>
             <div className="mb-1 text-sm">
-              <span className="font-semibold">Fecha Entrega:</span>{" "}
+              <span className="font-semibold">Fecha Entrega Solicitada:</span>{" "}
               {solicitud.fecha_entrega}
             </div>
             <div className="mt-2 flex gap-2">
