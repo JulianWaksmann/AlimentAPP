@@ -83,5 +83,6 @@ Diagrama ASCII
 Notas Rapidas
 -------------
 - Solo reescribimos las tandas planeadas; lo producido queda intacto.
+- La cabecera original de `orden_produccion` no se duplica: la fragmentación vive en `tanda_produccion`.
 - Las tandas guardan `estado`, `linea`, `cantidad_kg` y `secuencia_en_linea` para saber su orden.
 - El algoritmo vuelve a ejecutarse ante cada nueva orden lista o cuando cambian las condiciones (capacidad, fecha, etc.). 
