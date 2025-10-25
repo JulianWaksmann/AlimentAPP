@@ -30,6 +30,14 @@ CREATE TYPE estado_orden_produccion AS ENUM (
     'finalizada'
 );
 
+DROP TYPE IF EXISTS estado_tanda_produccion;
+CREATE TYPE estado_tanda_produccion AS ENUM (
+    'planificada',
+    'en_progreso',
+    'completada',
+    'cancelada'
+);
+
 DROP TYPE IF EXISTS unidad_medida;
 CREATE TYPE unidad_medida AS ENUM (
     'unidad',
@@ -173,6 +181,25 @@ CREATE TABLE IF NOT EXISTS materia_prima_por_orden_produccion (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     UNIQUE (id_orden_produccion, id_lote_materia_prima)
 );
+
+CREATE TABLE IF NOT EXISTS tanda_produccion (
+    id SERIAL PRIMARY KEY,
+    orden_produccion_id INTEGER NOT NULL REFERENCES orden_produccion(id) ON DELETE CASCADE,
+    linea_produccion_id INTEGER NOT NULL REFERENCES linea_produccion(id),
+    cantidad_kg NUMERIC(10,2) NOT NULL CHECK (cantidad_kg > 0),
+    estado estado_tanda_produccion NOT NULL DEFAULT 'planificada',
+    secuencia_en_linea INTEGER NOT NULL CHECK (secuencia_en_linea > 0),
+    tiempo_estimado_min INTEGER,
+    fecha_inicio_planificada TIMESTAMP WITH TIME ZONE,
+    fecha_fin_planificada TIMESTAMP WITH TIME ZONE,
+    creado_en TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tanda_produccion_orden
+    ON tanda_produccion (orden_produccion_id);
+
+CREATE INDEX IF NOT EXISTS idx_tanda_produccion_linea_estado
+    ON tanda_produccion (linea_produccion_id, estado, secuencia_en_linea);
 
 CREATE TABLE IF NOT EXISTS materia_prima_por_producto (
     id SERIAL PRIMARY KEY,

@@ -1,0 +1,87 @@
+Planificador de Produccion con Tandas (Explicacion Sencilla)
+=============================================================
+
+Objetivo
+--------
+Dividir y asignar automaticamente las ordenes de produccion en estado `lista_para_produccion` en tandas (`tanda_produccion`) respetando la capacidad de cada linea y la fecha que pidio el cliente (`fecha_entrega_solicitada`).
+
+Conceptos Basicos
+-----------------
+- *Orden de produccion*: lo que hay que fabricar (total de unidades/kg).
+- *Tanda de produccion*: fraccion de la orden planificada para una linea y un turno concretos. Se almacena en la tabla nueva `tanda_produccion`.
+- *Linea activa*: solo planificamos en lineas con `activa = TRUE`.
+- *Compatibilidad*: usamos `producto_por_linea_produccion` para saber donde puede producirse cada producto.
+- *Greedy por fecha*: siempre planificamos primero la orden con fecha de entrega mas proxima (menor `fecha_entrega_solicitada`).
+
+Pasos Principales
+-----------------
+1. **Preparar tablero**  
+   - Borrar solo las tandas `planificada` para poder recalcular sin tocar las que ya estan `en_progreso` o `completada`.
+2. **Calcular pendientes**  
+   - Para cada orden `lista_para_produccion`, restar lo ya producido o en curso (`SUM(tanda.cantidad_kg` con estado distinta a `planificada`) y obtener los kilos que faltan.
+3. **Ordenar por urgencia**  
+   - Ordenar las ordenes pendientes por `fecha_entrega_solicitada` (mas urgente primero).
+4. **Asignar tandas** (bucle greedy)  
+   - Tomar la orden mas urgente.  
+   - Buscar lineas activas compatibles.  
+   - Para cada linea, mirar su capacidad disponible (puede ser la capacidad maxima por tanda o el hueco segun secuencia).  
+   - Crear tandas una a una:  
+     * Si faltan mas kilos que la capacidad de la linea, crear una tanda con el maximo permitido y restarlo.  
+     * Si faltan menos o iguales, crear la tanda final y dejar la orden en cero.  
+   - Registrar `secuencia_en_linea` para mantener el orden en que se ejecutaran las tandas.
+5. **Repetir**  
+   - Pasar a la siguiente orden mas urgente hasta que no queden pendientes.
+6. **Alertas**  
+   - Si una orden no encuentra linea disponible, marcarla como “en riesgo” para gestion manual.
+
+Diagrama ASCII
+--------------
+
+                +-----------------------------+
+                | Ordenes lista_para_produccion|
+                | (con kilos pendientes)       |
+                +---------------+--------------+
+                                |
+                                v
+                +-----------------------------+
+                | Ordenar por fecha de entrega|
+                | mas urgente                 |
+                +---------------+--------------+
+                                |
+                                v
+                +-----------------------------+
+                | Tomar orden mas urgente     |
+                | y buscar lineas compatibles |
+                +---------------+--------------+
+                                |
+                +---------------v--------------+
+                | Hay linea activa disponible? |
+                +-----------+------------------+
+                            |SI
+                            v
+                +-----------------------------+
+                | Crear tanda_produccion      |
+                | hasta llenar capacidad      |
+                +---------------+--------------+
+                                |
+                                v
+                +-----------------------------+
+                | Actualizar kilos pendientes |
+                | y secuencia de la linea     |
+                +---------------+--------------+
+                                |
+                    +-----------v-----------+
+                    | Quedan kilos pendientes?|
+                    +-----------+-------------+
+                                |SI
+                                v
+                +-----------------------------+
+                | Repetir con misma o nueva   |
+                | linea compatible            |
+                +-----------------------------+
+
+Notas Rapidas
+-------------
+- Solo reescribimos las tandas planeadas; lo producido queda intacto.
+- Las tandas guardan `estado`, `linea`, `cantidad_kg` y `secuencia_en_linea` para saber su orden.
+- El algoritmo vuelve a ejecutarse ante cada nueva orden lista o cuando cambian las condiciones (capacidad, fecha, etc.). 
