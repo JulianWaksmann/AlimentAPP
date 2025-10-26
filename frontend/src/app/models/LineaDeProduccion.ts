@@ -5,7 +5,7 @@ export interface LineaDeProduccion{
     nombre: string;
     descripcion: string;
     capacidad_maxima_kg:number;
-    activa: boolean;
-    productos: Producto[];
+    activa?: boolean;
+    productos?: Producto[];
     ids_productos?: number[];
 }

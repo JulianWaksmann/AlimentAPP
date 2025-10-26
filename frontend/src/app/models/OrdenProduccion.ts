@@ -18,7 +18,9 @@ export interface OrdenProduccion {
     secuencia_en_linea?: number;
     tiempo_estimado_min?: number;
     fecha_inicio_planificada?: string | "";
-    fecha_fin_planificada?: string | ""
+    fecha_fin_planificada?: string | "",
+    cantidad_kg_tanda?: number;
+    id_tanda_produccion?: number;
     materias_primas_requeridas: {
         id_lote_materia_prima: number;
         codigo_lote: string;

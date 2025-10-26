@@ -49,7 +49,7 @@ export async function updateLineaProduccion(linea: LineaDeProduccion) {
       activa: linea.activa,
       descripcion: linea.descripcion,
       capacidad_maxima_kg: linea.capacidad_maxima_kg,
-      ids_productos: linea.productos.map((producto) => producto.id),
+      ids_productos: linea.productos?.map((producto) => producto.id),
     }),
   });
     if (!response.ok) {
