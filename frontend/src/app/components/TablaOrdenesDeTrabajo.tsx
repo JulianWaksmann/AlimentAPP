@@ -39,14 +39,14 @@ const TablaOrdenesDeTrabajo: React.FC<TablaOrdenesDeTrabajoProps> = ({ ordenes, 
                             <div className="text-sm"><span className="font-semibold">Fecha fin de orden de producción:</span> {orden.fecha_fin_orden_produccion ? (new Date(orden.fecha_fin_orden_produccion ).getTime() > 0 ? new Date(orden.fecha_fin_orden_produccion).toLocaleDateString() : "-") : "-"}</div>
                             <div className="text-sm"><span className="font-semibold">Fecha entrega del pedido:</span> {orden.fecha_entrega_solicitada_orden_venta ? (new Date(orden.fecha_entrega_solicitada_orden_venta).getTime() > 0 ? new Date(orden.fecha_entrega_solicitada_orden_venta).toLocaleDateString() : "-") : "-"}</div>
                             <div className="flex gap-2 mt-2">
-                                {estadoSiguiente ? (
+                                {/* {estadoSiguiente ? (
                                     <button
                                         className="flex-1 bg-details text-black rounded px-2 py-1 text-xs"
                                         onClick={() => setConfirmId(orden.id_orden_produccion)}
                                     >
                                         Cambiar estado a {estadoSiguiente}
                                     </button>
-                                ) : null}
+                                ) : null} */}
                                 <button
                                     className="flex-1 bg-blue-500 text-white rounded px-2 py-1 text-xs"
                                     onClick={() => setShowMateriaPrimaId(showMateriaPrimaId === orden.id_orden_produccion ? null : orden.id_orden_produccion)}
