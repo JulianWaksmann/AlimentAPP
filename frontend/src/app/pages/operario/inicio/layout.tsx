@@ -12,6 +12,12 @@ const menuItems = [
   { name: "Historial", href: "/pages/operario/inicio/ordenes-produccion-historial" },
 ];
 
+const tandasItems = [
+  { name: "Tandas Sugeridas", href: "/pages/operario/inicio/tandas-sugeridas" },
+  { name: "Generar Tanda", href: "/pages/operario/inicio/generar-tanda" },
+  { name: "Historial de tandas", href: "/pages/operario/inicio/historial-tandas" },
+]
+
 const CalidadLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -24,7 +30,23 @@ const CalidadLayout = ({ children }: { children: React.ReactNode }) => {
           open ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
-        <h2 className="mb-6 text-end text-m font-bold">Ordenes de Produccion</h2>
+        <h2 className="mt-10 text-center text-m font-bold">Tandas de Produccion</h2>
+        <nav className="flex flex-col gap-2">
+          {tandasItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`rounded p-2 ${isActive ? "bg-primary-light" : "hover:bg-primary-softer"}`}
+                onClick={() => setOpen(false)}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+                <h2 className="mt-10 text-center text-m font-bold">Ordenes de Produccion</h2>
         <nav className="flex flex-col gap-2">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
