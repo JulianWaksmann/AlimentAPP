@@ -13,7 +13,8 @@ export interface EficienciaProduccion{
 }
 
 export interface PedidosEntregados{
-    fecha: string;
+    fecha?: string;
+    mes?: string;
     entregados: number;
     tarde: number;
     a_tiempo: number;

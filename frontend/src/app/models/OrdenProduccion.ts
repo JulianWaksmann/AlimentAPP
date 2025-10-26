@@ -9,10 +9,16 @@ export interface OrdenProduccion {
     cantidad_producto: number;
     fecha_creacion_orden_venta: string;
     fecha_entrega_solicitada_orden_venta: string;
-    fecha_entrega_real_orden_venta: string | null;
+    fecha_entrega_real_orden_venta: string | "";
     fecha_creacion_orden_produccion: string;
-    fecha_fin_orden_produccion: string | null;
+    fecha_fin_orden_produccion: string | "";
     estado_orden_produccion: string//"pendiente" | "en_proceso" | "finalizada" | "cancelada";
+    estado_tanda_produccion?: string;
+    cantidad_kg?: number;
+    secuencia_en_linea?: number;
+    tiempo_estimado_min?: number;
+    fecha_inicio_planificada?: string | "";
+    fecha_fin_planificada?: string | ""
     materias_primas_requeridas: {
         id_lote_materia_prima: number;
         codigo_lote: string;

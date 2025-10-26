@@ -32,3 +32,29 @@ const PedidosEntregadosGrafico: React.FC<Props> = ({data}) => {
 };
 
 export default PedidosEntregadosGrafico;
+
+const PedidosEntregadosPorMesGrafico: React.FC<Props> = ({data}) => {
+  return (
+    <BarChart
+      style={{ width: '100%', maxWidth: '700px', maxHeight: '70vh', aspectRatio: 1.618 }}
+      responsive
+      data={data}
+      margin={{
+        top: 20,
+        right: 0,
+        left: 0,
+        bottom: 5,
+      }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="mes" />
+      <YAxis width="auto" />
+      <Tooltip />
+      <Legend />
+      <Bar dataKey="tarde" stackId="a" fill="#cc303a" />
+      <Bar dataKey="a_tiempo" stackId="a" fill="#82dd9d" />
+    </BarChart>
+  );
+};
+
+export { PedidosEntregadosPorMesGrafico };
