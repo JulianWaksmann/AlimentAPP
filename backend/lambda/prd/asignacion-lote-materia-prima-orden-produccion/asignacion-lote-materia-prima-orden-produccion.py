@@ -17,6 +17,9 @@ ENV = os.getenv("DB_SCHEMA", "dev")
 ssm_client = boto3.client("ssm")
 DB_CONFIG: Optional[Dict[str, Any]] = None
 
+lambda_client = boto3.client("lambda")
+
+PLANIFICADOR_ARN = "arn:aws:lambda:us-east-1:554074173959:function:planificador_ordenes_produccion"
 
 class ValidationError(Exception):
     """Errores de negocio en la asignacion de materia prima."""
@@ -82,7 +85,15 @@ def obtener_ordenes(cur, ids: Optional[List[int]], limit: Optional[int]) -> List
         sql = f"SELECT id, id_producto, cantidad, estado FROM {ENV}.orden_produccion WHERE id = ANY(%s)"
         ordenes = fetch_all(cur, sql, (ids,))
     else:
-        sql = f"SELECT id, id_producto, cantidad, estado FROM {ENV}.orden_produccion WHERE estado IN ('pendiente', 'planificada') ORDER BY fecha_creacion, id LIMIT %s"
+        sql = f"""
+            SELECT a.id, a.id_producto, a.cantidad, a.estado
+            FROM {ENV}.orden_produccion a
+            JOIN {ENV}.orden_venta b
+                ON a.id_orden_venta = b.id
+            WHERE a.estado = 'planificada' 
+            ORDER BY b.fecha_entrega_solicitada ASC, id LIMIT %s
+        """
+        #sql = f"SELECT id, id_producto, cantidad, estado FROM {ENV}.orden_produccion WHERE estado IN ('pendiente', 'planificada') ORDER BY fecha_creacion, id LIMIT %s"
         ordenes = fetch_all(cur, sql, (limit or 50,))
     if not ordenes:
         raise ValidationError("No se encontraron órdenes de producción para asignar.")
@@ -180,10 +191,20 @@ def asignar_materia(cur, orden: Dict[str, Any], fecha_corte: datetime) -> Dict[s
             f"""
             UPDATE {ENV}.orden_produccion
             SET estado = 'lista_para_produccion'
-            WHERE id = %s AND estado IN ('pendiente','planificada')
+            WHERE id = %s AND estado = 'planificada'
             """,
             (orden_id,),
         )
+
+        #cur.execute(
+        #    f"""
+        #    UPDATE {ENV}.orden_produccion
+        #    SET estado = 'lista_para_produccion'
+        #    WHERE id = %s AND estado IN ('pendiente','planificada')
+        #    """,
+        #    (orden_id,),
+        #)
+
         resultado["estado_final"] = "lista_para_produccion"
     else:
         logger.warning(f"Orden {orden_id} - Asignación INCOMPLETA. Estado no modificado: {orden['estado']}.")
@@ -219,10 +240,15 @@ def lambda_handler(event, context):
         ordenes = obtener_ordenes(cur, id_list, int(limit) if limit else None)
         logger.info(f"Se procesarán {len(ordenes)} órdenes de producción: {[o['id'] for o in ordenes]}")
         
-        delete_existing_assignments(cur, [o["id"] for o in ordenes])
-
         resultados: List[Dict[str, Any]] = []
         for orden in ordenes:
+            existentes = consumos_asignados(cur, int(orden["id"]))
+            if existentes:
+                logger.info(
+                    "Orden %s ya posee consumos registrados (manteniendo %s lotes).",
+                    orden["id"],
+                    len(existentes),
+                )
             resultados.append(asignar_materia(cur, orden, fecha_corte))
 
         conn.commit()
@@ -252,6 +278,13 @@ def lambda_handler(event, context):
         
         logger.info("=" * 60)
         # --- FIN DEL BLOQUE DE RESUMEN ---
+
+        # Llamo a la lambda de priorizacion de ordenes de produccion ya que pueden haber nuevas ordenes de produccion para reordenar.
+        lambda_client.invoke(
+            FunctionName=PLANIFICADOR_ARN, 
+            InvocationType="Event", 
+            Payload=json.dumps({"source": f"ejecucion por asignacion lote materia prima"}).encode("utf-8")
+        )
 
         return {
             "statusCode": 200,

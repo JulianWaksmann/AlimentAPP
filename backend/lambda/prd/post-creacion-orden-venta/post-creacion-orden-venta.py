@@ -8,13 +8,28 @@ from typing import Any, Dict, List
 import boto3
 import pg8000
 
+import urllib.request
+import urllib.error
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 ENV = os.getenv("DB_SCHEMA", "dev")
 ssm_client = boto3.client("ssm")
+lambda_client = boto3.client("lambda")
 
 DB_CONFIG = None  # cache SSM
+
+# Cantidad de productos que se pueden pedir sin pedir al supervisor la confirmación.
+THRESHOLD = {
+    1: 10,
+    2: 15,
+    3: 20,
+    4: 10,
+    5: 20,
+    6: 15,
+    7: 20
+}
 
 class ValidationError(Exception):
     """Error de validación para orden de venta."""
@@ -77,16 +92,33 @@ def run_command(cur, sql: str):
     cur.execute(sql)
 
 
-def create_production_orders(cur, order_id: int, items: List[Dict[str, int]]) -> None:
-    """Crea ordenes_produccion planificadas para cada producto."""
+def create_production_orders(cur, order_id: int, items: List[Dict[str, int]]) -> str:
+    """Crea ordenes_produccion para cada producto con el estado correcto."""
+    
+    # 1. Primero, determina el estado que tendrán TODAS las órdenes de producción.
+    # Si CUALQUIER producto supera el umbral, todas las órdenes irán a 'pendiente'.
+    estado_general = 'planificada'
+    for item in items:
+        cantidad_pedida = item['cantidad']
+        cantidad_umbral = THRESHOLD.get(item['id_producto'])
+
+        # Se verifica si hay un umbral definido y si se supera
+        if cantidad_umbral is not None and cantidad_pedida > cantidad_umbral:
+            estado_general = 'pendiente'
+            break  # Encontramos uno, no es necesario seguir buscando.
+
+    # 2. Ahora, inserta cada orden de producción usando el estado general determinado.
     for item in items:
         run_command(
             cur,
+            # CORRECCIÓN: Usamos item['id_producto'] para obtener el ID del producto actual.
             f"""
             INSERT INTO {ENV}.orden_produccion (id_orden_venta, id_producto, cantidad, estado)
-            VALUES ({order_id}, {item['id_producto']}, {item['cantidad']}, 'planificada')
+            VALUES ({order_id}, {item['id_producto']}, {item['cantidad']}, '{estado_general}')
             """,
         )
+    
+    return estado_general
 
 
 def validate_sale_order_payload(cur, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -176,9 +208,21 @@ def insert_sale_order(cur, validated: Dict[str, Any]):
     order = rows[0]
     order["valor_total_pedido"] = float(order["valor_total_pedido"])
     order["fecha_pedido"] = order["fecha_pedido"].isoformat()  # si viene como datetime
-    # debo crearlo aca, ya que debo almacenar los productos pedidos.
-    create_production_orders(cur, order["id"], validated["productos"])
-    return order
+    
+    # debo crearlo aca, ya que debo almacenar los productos pedidos, retorno el estado de la orden de prd, porque si hay una que queda pendiente, quiere decir que la orden de venta esta pendiente_supervision.
+    estado_orden_produccion = create_production_orders(cur, order["id"], validated["productos"])
+        
+    # Determina el estado pero NO llames a la API aquí
+    if estado_orden_produccion == 'pendiente':
+        nuevo_estado_venta = "pendiente_supervision"
+    else:
+        nuevo_estado_venta = "confirmada"
+
+
+    order["estado"] = nuevo_estado_venta
+
+    # Devuelve la orden y el estado que se necesita actualizar
+    return {"orden": order, "nuevo_estado": nuevo_estado_venta}
 
 
 def create_sale_order_from_payload(cur, raw_payload: Dict[str, Any]):
@@ -211,13 +255,65 @@ def lambda_handler(event, context):
         conn = get_connection()
         cur = conn.cursor()
 
-        resultado = create_sale_order_from_payload(cur, payload)
+        # Aplicamos la logica de creacion de orden de venta
+        resultado_db = create_sale_order_from_payload(cur, payload)
         conn.commit()
-
+        
+        # Gestionamos los valores del id de orden y el nuevo estado dependiendo los umbrales.
+        orden_creada = resultado_db["orden"]
+        nuevo_estado = resultado_db["nuevo_estado"]
+        
+        # Gestionamos la llamada a la api para el cambio de estado de la orden de venta a pendiente_supervision o confirmada
+        logger.info(f"La orden {orden_creada['id']} requiere actualización al estado '{nuevo_estado}'. Llamando a la API.")
+        
+        api_url = "https://eldzogehdj.execute-api.us-east-1.amazonaws.com/prd/crear-orden-venta/update-estado-orden-venta"
+        
+        api_payload = {
+            "id_pedido": orden_creada["id"],
+            "estado": nuevo_estado
+        }
+        
+        data = json.dumps(api_payload).encode('utf-8')
+        
+        req = urllib.request.Request(
+            api_url,
+            data=data,
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        try:
+            with urllib.request.urlopen(req) as response:
+                logger.info(f"Llamada a la API exitosa. Status: {response.status}")
+        except urllib.error.URLError as e:
+            logger.error(f"Error al llamar a la API para actualizar el estado de la orden {orden_creada['id']}: {e}")
+            # Considera cómo manejar este fallo. La orden ya está creada.
+            # Podrías reintentar, o enviar una notificación.
+         
+        # Si es confirmada, debo hacer gestion de la materia prima, para ver si hay que hacer pedido de materia prima.
+        #if nuevo_estado == 'confirmada':
+        #    try:
+        #        logger.info(f"Invocando Lambda 'gestion-materia-prima' para la orden {orden_creada['id']}.")
+        #        
+        #        # Prepara el payload para la Lambda
+        #        payload_gestion_mp = {
+        #            "id_orden_venta": orden_creada["id"]
+        #        }
+        #        
+        #        # Invoca la Lambda de forma asíncrona
+        #        lambda_client.invoke(
+        #            FunctionName='gestion-materia-prima',
+        #            InvocationType='Event',  # 'Event' es para "fire-and-forget"
+        #            Payload=json.dumps(payload_gestion_mp)
+        #        )
+        #    except Exception as e:
+        #        # La creación de la orden fue exitosa, pero la invocación falló.
+        #        # Solo registramos el error para no detener el flujo principal.
+        #        logger.error(f"Fallo al invocar la Lambda 'gestion-materia-prima': {e}")
+   
         return {
             "statusCode": 200,
             "headers": {**cors_headers, "Content-Type": "application/json"},
-            "body": json.dumps({"message": "Orden creada", "orden": resultado}),
+            "body": json.dumps({"message": "Orden creada", "orden": orden_creada}),
         }
     except ValidationError as exc:
         if conn:
