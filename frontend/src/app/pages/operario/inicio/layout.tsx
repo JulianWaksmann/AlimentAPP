@@ -14,6 +14,7 @@ const menuItems = [
 
 const tandasItems = [
   { name: "Tandas Sugeridas", href: "/pages/operario/inicio/tandas-sugeridas" },
+  { name: "Tandas en Proceso", href: "/pages/operario/inicio/tandas-en-proceso" },
   { name: "Generar Tanda", href: "/pages/operario/inicio/generar-tanda" },
   { name: "Historial de tandas", href: "/pages/operario/inicio/historial-tandas" },
 ]

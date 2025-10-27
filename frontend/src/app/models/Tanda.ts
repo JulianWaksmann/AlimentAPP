@@ -1,4 +1,3 @@
-import { LineaDeProduccion } from "./LineaDeProduccion";
 import { OrdenProduccion } from "./OrdenProduccion";
 
 export interface Tanda {

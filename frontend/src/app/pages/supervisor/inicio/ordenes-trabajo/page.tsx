@@ -24,6 +24,7 @@ const OrdenesDeTrabajoPage = () => {
   useEffect(() => {
     async function fetchOrdenes() {
       const res = await GetOrdenesProduccion();
+      console.log(res);
       setOrdenes(res);
       // console.log(res);
     }
