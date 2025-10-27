@@ -15,6 +15,7 @@ export interface OrdenProduccion {
     estado_orden_produccion: string//"pendiente" | "en_proceso" | "finalizada" | "cancelada";
     estado_tanda_produccion?: string;
     cantidad_kg?: number;
+    cantidad_kg_orden_produccion?: number;
     secuencia_en_linea?: number;
     tiempo_estimado_min?: number;
     fecha_inicio_planificada?: string | "";
