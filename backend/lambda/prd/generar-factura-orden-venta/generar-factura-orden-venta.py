@@ -36,11 +36,12 @@ ses_client = boto3.client("ses")
 DB_CONFIG: Optional[Dict[str, Any]] = None
 SSL_CONTEXT = ssl.create_default_context()
 
-COMPANY_NAME = os.getenv("INVOICE_COMPANY_NAME", "AlimentAPP")
-COMPANY_ADDRESS = os.getenv("INVOICE_COMPANY_ADDRESS", "Dirección Comercial - Ciudad, País")
-COMPANY_EMAIL = os.getenv("INVOICE_COMPANY_EMAIL", "facturacion@alimentapp.com")
-COMPANY_PHONE = os.getenv("INVOICE_COMPANY_PHONE", "+54 11 5555-0000")
-SES_SOURCE_EMAIL = os.getenv("SES_SOURCE_EMAIL", COMPANY_EMAIL)
+COMPANY_NAME = 'core-app'
+COMPANY_ADDRESS = 'av. libertador 1234'
+COMPANY_EMAIL = 'Coreappg4@gmail.com'
+COMPANY_PHONE = '+54 011 66358741'
+SES_SOURCE_EMAIL = 'Coreappg4@gmail.com'
+COMPANY_TAGLINE = os.getenv("INVOICE_COMPANY_TAGLINE", "")
 
 
 class ValidationError(Exception):
@@ -182,89 +183,298 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
     fecha_entrega = orden.get("fecha_entrega_solicitada")
     fecha_entrega_dt = fecha_entrega if isinstance(fecha_entrega, datetime) else None
 
-    # Encabezado corporativo
-    pdf.setFillColor(colors.HexColor("#0a3d62"))
-    pdf.setFont("Helvetica-Bold", 18)
-    pdf.drawString(margin, height - 70, COMPANY_NAME)
-    pdf.setFont("Helvetica", 10)
-    pdf.setFillColor(colors.black)
-    pdf.drawString(margin, height - 85, COMPANY_ADDRESS)
-    pdf.drawString(margin, height - 97, f"Email: {COMPANY_EMAIL}  |  Tel: {COMPANY_PHONE}")
+    def dibujar_gradiente(canvas_obj, x_pos, y_pos, ancho, alto, color_inicio, color_fin, pasos=80):
+        inicio = colors.HexColor(color_inicio)
+        fin = colors.HexColor(color_fin)
+        for i in range(pasos):
+            ratio = i / (pasos - 1)
+            r = inicio.red + (fin.red - inicio.red) * ratio
+            g = inicio.green + (fin.green - inicio.green) * ratio
+            b = inicio.blue + (fin.blue - inicio.blue) * ratio
+            canvas_obj.setFillColor(colors.Color(r, g, b))
+            x_actual = x_pos + (ancho * i) / pasos
+            canvas_obj.rect(x_actual, y_pos, (ancho / pasos) + 1, alto, fill=True, stroke=False)
 
-    # Datos del cliente
-    pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(margin, height - 130, "Factura para:")
+    header_top = height - (margin / 2)
+    accent_base = header_top - 58
+
+    pdf.setFillColor(colors.HexColor("#AD00FF"))
+    pdf.rect(0, accent_base + 6, width, 1.5, fill=True, stroke=False)
+    dibujar_gradiente(pdf, 0, accent_base, width, 6, "#4C00FF", "#AD00FF", pasos=80)
+    pdf.setFillColor(colors.HexColor("#4C00FF"))
+    pdf.rect(0, accent_base - 2, width, 1, fill=True, stroke=False)
+
+    title_y = header_top - 22
+    pdf.setFillColor(colors.HexColor("#32127A"))
+    pdf.setFont("Helvetica-Bold", 32)
+    pdf.drawCentredString(width / 2, title_y, COMPANY_NAME.upper())
+
+    if COMPANY_TAGLINE:
+        pdf.setFont("Helvetica", 13)
+        pdf.drawCentredString(width / 2, title_y - 20, COMPANY_TAGLINE)
+
+    # Tarjeta con información de la empresa
+    card_width = width - 2 * margin
+    company_card_height = 68
+    company_card_top = accent_base - 18
+    company_card_bottom = company_card_top - company_card_height
+
+    pdf.setFillColor(colors.white)
+    pdf.roundRect(margin, company_card_bottom, card_width, company_card_height, 10, fill=True, stroke=False)
+    pdf.setStrokeColor(colors.HexColor("#E5DAFF"))
+    pdf.setLineWidth(1)
+    pdf.roundRect(margin, company_card_bottom, card_width, company_card_height, 10, fill=False, stroke=True)
+
+    pdf.setFillColor(colors.HexColor("#4C00FF"))
+    pdf.setFont("Helvetica-Bold", 11)
+    pdf.drawString(margin + 18, company_card_top - 20, "Información de la empresa")
+
+    pdf.setFont("Helvetica", 9)
+    pdf.setFillColor(colors.black)
+    company_lines = [
+        ("Dirección", COMPANY_ADDRESS),
+        ("Email", COMPANY_EMAIL),
+        ("Teléfono", COMPANY_PHONE),
+    ]
+    line_y = company_card_top - 34
+    for etiqueta, valor in company_lines:
+        pdf.drawString(margin + 18, line_y, f"{etiqueta}: {valor}")
+        line_y -= 13
+
+    # Tarjeta con datos clave
+    card_top = company_card_bottom - 24
+    card_height = 148
+    card_bottom = card_top - card_height
+
+    pdf.setFillColor(colors.white)
+    pdf.roundRect(margin, card_bottom, card_width, card_height, 12, fill=True, stroke=False)
+    pdf.setStrokeColor(colors.HexColor("#DFCCFF"))
+    pdf.setLineWidth(1)
+    pdf.roundRect(margin, card_bottom, card_width, card_height, 12, fill=False, stroke=True)
+
+    pdf.setFillColor(colors.HexColor("#AD00FF"))
+    pdf.roundRect(margin, card_top - 6, card_width, 6, 12, fill=True, stroke=False)
+
+    pdf.setStrokeColor(colors.HexColor("#E5DAFF"))
+    divider_x = margin + card_width / 2
+    pdf.line(divider_x, card_bottom + 14, divider_x, card_top - 14)
+
+    pdf.setFillColor(colors.HexColor("#4C00FF"))
+    pdf.setFont("Helvetica-Bold", 11)
+    pdf.drawString(margin + 20, card_top - 25, "Datos del cliente")
+    pdf.drawString(divider_x + 20, card_top - 25, "Detalle de factura")
+
+    pdf.setFillColor(colors.black)
     pdf.setFont("Helvetica", 10)
-    pdf.drawString(margin, height - 145, f"Razón Social: {orden['razon_social']}")
-    pdf.drawString(margin, height - 157, f"CUIL/CUIT: {orden.get('cuil', 'N/D')}")
+
+    detalles_cliente = [
+        f"Razón Social: {orden['razon_social']}",
+        f"CUIL/CUIT: {orden.get('cuil', 'N/D')}",
+    ]
     contacto = f"{orden.get('nombre_contacto') or ''} {orden.get('apellido_contacto') or ''}".strip()
     if contacto:
-        pdf.drawString(margin, height - 169, f"Contacto: {contacto}")
+        detalles_cliente.append(f"Contacto: {contacto}")
     if orden.get("telefono"):
-        pdf.drawString(margin, height - 181, f"Teléfono: {orden['telefono']}")
-    pdf.drawString(margin, height - 193, f"Email: {orden['email']}")
+        detalles_cliente.append(f"Teléfono: {orden['telefono']}")
+    detalles_cliente.append(f"Email: {orden['email']}")
 
-    # Datos de la orden
-    pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(width - 260, height - 130, f"Factura N° OV-{orden['id']:06d}")
-    pdf.setFont("Helvetica", 10)
-    pdf.drawString(width - 260, height - 145, f"Fecha pedido: {fecha_pedido_dt.strftime('%d/%m/%Y') if fecha_pedido_dt else 'N/D'}")
-    pdf.drawString(width - 260, height - 157, f"Entrega solicitada: {fecha_entrega_dt.strftime('%d/%m/%Y') if fecha_entrega_dt else 'N/D'}")
-    pdf.drawString(width - 260, height - 169, f"Estado actual: {orden['estado']}")
+    left_y = card_top - 43
+    for linea in detalles_cliente:
+        pdf.drawString(margin + 20, left_y, linea)
+        left_y -= 14
 
-    if orden.get("observaciones"):
+    try:
+        total_pedido_decimal = decimal_value(orden.get("valor_total_pedido"), "valor total pedido")
+    except ValidationError:
+        total_pedido_decimal = Decimal("0")
+        for item in items:
+            cant_tmp = decimal_value(item["cantidad"], "cantidad de producto")
+            precio_tmp = decimal_value(item["precio_venta"], "precio_unitario")
+            total_pedido_decimal += cant_tmp * precio_tmp
+
+    datos_orden = [
+        f"N° de factura: {orden['id']}",
+        f"Fecha pedido: {fecha_pedido_dt.strftime('%d/%m/%Y') if fecha_pedido_dt else 'N/D'}",
+        f"Entrega solicitada: {fecha_entrega_dt.strftime('%d/%m/%Y') if fecha_entrega_dt else 'N/D'}",
+        f"Total pedido: {formatear_moneda(total_pedido_decimal)}",
+    ]
+    right_y = card_top - 43
+    for linea in datos_orden:
+        pdf.drawString(divider_x + 20, right_y, linea)
+        right_y -= 14
+
+    content_bottom = min(left_y, right_y)
+    y_cursor = content_bottom - 24
+
+    observaciones_texto = (orden.get("observaciones") or "").strip()
+    if observaciones_texto:
+        estilo_obs = ParagraphStyle("obs", fontName="Helvetica", fontSize=9, leading=12)
+        parrafo = Paragraph(observaciones_texto, estilo_obs)
+        texto_max_ancho = card_width - 36
+        _, parrafo_alto = parrafo.wrap(texto_max_ancho, 140)
+        obs_card_altura = parrafo_alto + 32
+        obs_card_top = content_bottom - 12
+        obs_card_bottom = obs_card_top - obs_card_altura
+
+        pdf.setFillColor(colors.HexColor("#F6F0FF"))
+        pdf.roundRect(margin, obs_card_bottom, card_width, obs_card_altura, 10, fill=True, stroke=False)
+        pdf.setStrokeColor(colors.HexColor("#E5DAFF"))
+        pdf.roundRect(margin, obs_card_bottom, card_width, obs_card_altura, 10, fill=False, stroke=True)
+
+        pdf.setFillColor(colors.HexColor("#4C00FF"))
         pdf.setFont("Helvetica-Bold", 10)
-        pdf.drawString(margin, height - 220, "Observaciones:")
+        pdf.drawString(margin + 18, obs_card_top - 16, "Observaciones")
+
+        pdf.setFillColor(colors.black)
         pdf.setFont("Helvetica", 9)
-        estilo_obs = ParagraphStyle("obs", fontName="Helvetica", fontSize=9, leading=11)
-        parrafo = Paragraph(orden["observaciones"], estilo_obs)
-        parrafo.wrapOn(pdf, width - 2 * margin, 60)
-        parrafo.drawOn(pdf, margin, height - 250)
-        y_inicio_tabla = height - 270
-    else:
-        y_inicio_tabla = height - 220
+        parrafo.drawOn(pdf, margin + 18, obs_card_top - 24 - parrafo_alto)
+
+        y_cursor = obs_card_bottom - 24
+
+    y_inicio_tabla = y_cursor
 
     # Tabla de productos
-    columnas = ["Producto", "Descripción", "Cantidad", "Precio unitario", "Subtotal"]
-    col_widths = [120, 180, 70, 90, 90]
-    pdf.setFont("Helvetica-Bold", 10)
-    y = y_inicio_tabla
-    pdf.setFillColor(colors.HexColor("#f1f2f6"))
-    pdf.rect(margin, y - 16, sum(col_widths), 18, fill=True, stroke=False)
-    pdf.setFillColor(colors.black)
-    x = margin + 5
-    for idx, col in enumerate(columnas):
-        pdf.drawString(x, y - 12, col)
-        x += col_widths[idx]
-    y -= 24
-    pdf.setFont("Helvetica", 9)
+    columnas = [
+        ("OP ID", "left"),
+        ("Producto", "left"),
+        ("Cantidad", "right"),
+        ("Precio unit.", "right"),
+        ("Subtotal", "right"),
+    ]
+    tabla_ancho = width - 2 * margin
+    col_ratios = [0.12, 0.43, 0.15, 0.15, 0.15]
+    col_widths = []
+    acumulado = 0.0
+    for idx, ratio in enumerate(col_ratios):
+        if idx == len(col_ratios) - 1:
+            col_widths.append(tabla_ancho - acumulado)
+        else:
+            ancho = round(tabla_ancho * ratio, 2)
+            col_widths.append(ancho)
+            acumulado += ancho
+    encabezados = [col[0] for col in columnas]
+    alineaciones = [col[1] for col in columnas]
+    tabla_x = margin
+    padding_left = 8
+    padding_right = 8
+
+    def dibujar_encabezado_tabla(y_pos: float) -> float:
+        header_height = 20
+        font_size = 10
+        box_top = y_pos
+        box_bottom = box_top - header_height
+        # --- INICIO CORRECCIÓN (Alineación vertical) ---
+        # Centra verticalmente el texto en la celda
+        text_y = box_bottom + (header_height - font_size) / 2 + 1.5
+        # --- FIN CORRECCIÓN ---
+
+        pdf.setFont("Helvetica-Bold", font_size)
+        pdf.setFillColor(colors.HexColor("#E9E1FF"))
+        pdf.rect(tabla_x, box_bottom, tabla_ancho, header_height, fill=True, stroke=False)
+        pdf.setFillColor(colors.black)
+        
+        x_cursor = tabla_x
+        for titulo, alineacion, ancho_columna in zip(encabezados, alineaciones, col_widths):
+            if alineacion == "right":
+                # --- CORRECCIÓN: usa la nueva text_y ---
+                pdf.drawRightString(x_cursor + ancho_columna - padding_right, text_y, titulo)
+            else:
+                # --- CORRECCIÓN: usa la nueva text_y ---
+                pdf.drawString(x_cursor + padding_left, text_y, titulo)
+            x_cursor += ancho_columna
+            
+        pdf.setStrokeColor(colors.HexColor("#D7C2FF"))
+        pdf.line(tabla_x, box_bottom, tabla_x + tabla_ancho, box_bottom)
+        pdf.setFont("Helvetica", 9)
+        return box_bottom - 6
+
+    y = dibujar_encabezado_tabla(y_inicio_tabla)
 
     total_factura = Decimal("0")
-    for item in items:
-        if y < 100:
+    pdf.setFillColor(colors.black)
+    row_height = 18
+    font_size = 9
+    
+    for idx, item in enumerate(items):
+        if y < margin + 90:
             pdf.showPage()
             y = height - margin
-            pdf.setFont("Helvetica", 9)
-        descripcion = item.get("descripcion") or ""
+            y = dibujar_encabezado_tabla(y)
+            pdf.setFillColor(colors.black)
+            pdf.setFont("Helvetica", font_size) # Restablecer fuente después de dibujar encabezado
+            
         cantidad = decimal_value(item["cantidad"], "cantidad de producto")
         precio = decimal_value(item["precio_venta"], "precio_unitario")
         subtotal = cantidad * precio
         total_factura += subtotal
 
-        pdf.drawString(margin + 5, y, item["producto"])
-        pdf.drawString(margin + 5 + col_widths[0], y, descripcion[:60])
-        pdf.drawRightString(margin + col_widths[0] + col_widths[1] + 50, y, f"{cantidad}")
-        pdf.drawRightString(margin + col_widths[0] + col_widths[1] + col_widths[2] + 85, y, formatear_moneda(precio))
-        pdf.drawRightString(margin + sum(col_widths) - 5, y, formatear_moneda(subtotal))
-        y -= 16
+        op_id = item.get("id")
+        op_label = f"OP-{int(op_id):06d}" if op_id is not None else "N/D"
+        nombre_producto = (item.get("producto") or "").strip()
+        valores = [
+            op_label,
+            nombre_producto[:42],
+            f"{cantidad}",
+            formatear_moneda(precio),
+            formatear_moneda(subtotal),
+        ]
+
+        top = y
+        bottom = y - row_height
+        
+        # --- INICIO CORRECCIÓN (Alineación vertical) ---
+        # Centra verticalmente el texto en la celda
+        text_y = bottom + (row_height - font_size) / 2 + 1.5
+        # --- FIN CORRECCIÓN ---
+
+        if idx % 2 == 0:
+            pdf.setFillColor(colors.HexColor("#F8F3FF"))
+            pdf.rect(tabla_x, bottom, tabla_ancho, row_height, fill=True, stroke=False)
+            pdf.setFillColor(colors.black)
+
+        # Esta es la lógica horizontal. Estaba correcta en tu código.
+        x_cursor = tabla_x
+        for valor, alineacion, ancho_columna in zip(valores, alineaciones, col_widths):
+            if alineacion == "right":
+                # --- CORRECCIÓN: usa la nueva text_y ---
+                pdf.drawRightString(x_cursor + ancho_columna - padding_right, text_y, valor)
+            else:
+                # --- CORRECCIÓN: usa la nueva text_y ---
+                pdf.drawString(x_cursor + padding_left, text_y, valor)
+            x_cursor += ancho_columna
+
+        pdf.setStrokeColor(colors.HexColor("#ECE0FF"))
+        pdf.line(tabla_x, bottom, tabla_x + tabla_ancho, bottom)
+
+        y = bottom
 
     # Totales
-    pdf.setFont("Helvetica-Bold", 11)
-    pdf.drawRightString(margin + sum(col_widths) - 5, y - 10, f"Total: {formatear_moneda(total_factura)}")
+    total_box_height = 24
+    total_box_bottom = y - total_box_height
+    pdf.setFillColor(colors.HexColor("#ECE0FF"))
+    pdf.rect(tabla_x, total_box_bottom, tabla_ancho, total_box_height, fill=True, stroke=False)
+    pdf.setFillColor(colors.black)
+
+    # --- INICIO CORRECCIÓN (Alineación vertical) ---
+    # Centra verticalmente el texto en la celda
+    font_size_label = 9
+    font_size_total = 11
+    text_y_label = total_box_bottom + (total_box_height - font_size_label) / 2 + 1.5
+    text_y_total = total_box_bottom + (total_box_height - font_size_total) / 2 + 2
+    # --- FIN CORRECCIÓN ---
+
+    pdf.setFont("Helvetica", font_size_label)
+    # --- CORRECCIÓN: usa la nueva text_y_label ---
+    pdf.drawString(tabla_x + padding_left, text_y_label, "Importe total")
+    
+    pdf.setFont("Helvetica-Bold", font_size_total)
+    # --- CORRECCIÓN: usa la nueva text_y_total ---
+    pdf.drawRightString(tabla_x + tabla_ancho - padding_right, text_y_total, formatear_moneda(total_factura))
+    y -= (total_box_height + 12) # y -= 36
 
     pdf.setFont("Helvetica", 9)
     pdf.setFillColor(colors.HexColor("#636e72"))
-    pdf.drawCentredString(width / 2, 40, "Gracias por confiar en nosotros. Ante cualquier consulta, escribinos a facturacion@alimentapp.com")
+    pdf.drawCentredString(width / 2, 40, f"Gracias por confiar en nosotros. Ante cualquier consulta, escribinos a {COMPANY_EMAIL}")
 
     pdf.showPage()
     pdf.save()
@@ -323,7 +533,14 @@ def lambda_handler(event, context):
         return {"statusCode": 200, "headers": cors_headers, "body": ""}
 
     body = event.get("body")
-    payload = json.loads(body) if isinstance(body, str) else body
+    payload = None
+    if isinstance(body, str):
+        payload = json.loads(body)
+    elif isinstance(body, dict):
+        payload = body
+
+    if payload is None and isinstance(event, dict):
+        payload = event
 
     if not payload or "orden_venta_id" not in payload:
         return {

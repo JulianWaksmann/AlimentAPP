@@ -286,30 +286,17 @@ def lambda_handler(event, context):
                 logger.info(f"Llamada a la API exitosa. Status: {response.status}")
         except urllib.error.URLError as e:
             logger.error(f"Error al llamar a la API para actualizar el estado de la orden {orden_creada['id']}: {e}")
-            # Considera cómo manejar este fallo. La orden ya está creada.
-            # Podrías reintentar, o enviar una notificación.
-         
-        # Si es confirmada, debo hacer gestion de la materia prima, para ver si hay que hacer pedido de materia prima.
-        #if nuevo_estado == 'confirmada':
-        #    try:
-        #        logger.info(f"Invocando Lambda 'gestion-materia-prima' para la orden {orden_creada['id']}.")
-        #        
-        #        # Prepara el payload para la Lambda
-        #        payload_gestion_mp = {
-        #            "id_orden_venta": orden_creada["id"]
-        #        }
-        #        
-        #        # Invoca la Lambda de forma asíncrona
-        #        lambda_client.invoke(
-        #            FunctionName='gestion-materia-prima',
-        #            InvocationType='Event',  # 'Event' es para "fire-and-forget"
-        #            Payload=json.dumps(payload_gestion_mp)
-        #        )
-        #    except Exception as e:
-        #        # La creación de la orden fue exitosa, pero la invocación falló.
-        #        # Solo registramos el error para no detener el flujo principal.
-        #        logger.error(f"Fallo al invocar la Lambda 'gestion-materia-prima': {e}")
-   
+
+        # llamo a la lambda que crea el pdf de factura y envia por mail
+        payload = {
+            "orden_venta_id": orden_creada["id"],
+        }
+
+        lambda_client.invoke(
+            FunctionName="arn:aws:lambda:us-east-1:554074173959:function:envio-factura-cliente",
+            InvocationType="RequestResponse",  # usá "Event" si querés que sea async fire-and-forget
+            Payload=json.dumps(payload).encode("utf-8"),
+        )
         return {
             "statusCode": 200,
             "headers": {**cors_headers, "Content-Type": "application/json"},
