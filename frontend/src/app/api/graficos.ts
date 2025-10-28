@@ -17,6 +17,7 @@ export async function Ingreso_Costos_Ganancias(mes: number, anio: number){
         throw new Error(errorData.error || "Error al obtener datos de finanzas");
       }
       const data = await response.json();
+      console.log(data);
       return data.datos_finanzas;
 
     }   

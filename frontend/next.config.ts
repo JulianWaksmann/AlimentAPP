@@ -5,7 +5,11 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  trailingSlash: true,
+  // Developer indicators: hide the bottom-left Next.js build/activity badge in dev
+  devIndicators: {
+    buildActivity: false,
+  },
+  trailingSlash: false,
 };
 
 export default nextConfig;

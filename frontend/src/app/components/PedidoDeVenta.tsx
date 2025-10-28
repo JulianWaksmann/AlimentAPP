@@ -106,7 +106,7 @@ export default function PedidoVenta({ pedidos }: Props) {
           </select>
           <select id="estado" value={estadoFiltro} onChange={e => setEstadoFiltro(e.target.value)} className="w-full rounded border px-3 py-2">
             <option value="">Todos los estados</option>
-            <option value="pendiente">Pendiente</option>
+            <option value="pendiente_supervision">Pendiente</option>
             <option value="confirmada">Confirmada</option>
             {/* <option value="cancelada">Cancelada</option> */}
             <option value="entregada">Entregada</option>

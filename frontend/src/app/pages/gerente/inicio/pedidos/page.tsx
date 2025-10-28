@@ -31,9 +31,7 @@ const PedidosPageGerente = () => {
       <h1 className="text-3xl mt-2 font-bold text-primary mb-4 text-center">
         Estadísticas de Pedidos Entregados
       </h1>
-      {/* Aquí iría el componente de tabla de pedidos de materia prima */}
       <div className="p-6 w-full h-full bg-white-light  border-b border-gray-300 mb-6 ">
-                {/* Select para Mes */}
       <div className="flex justify-center mb-4">
         <select value={mes} onChange={(e) => setMes(Number(e.target.value))} className="mr-4">
           {[...Array(12)].map((_, index) => (
@@ -43,7 +41,6 @@ const PedidosPageGerente = () => {
           ))}
         </select>
 
-        {/* Select para Año */}
         <select value={anio} onChange={(e) => setAnio(Number(e.target.value))}>
           {[2020, 2021, 2022, 2023, 2024, 2025].map((year) => (
             <option key={year} value={year}>

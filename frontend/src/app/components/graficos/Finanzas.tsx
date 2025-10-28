@@ -28,7 +28,6 @@ const FinanzasStack: React.FC<Props> =({finanzas}) => {
       <ReferenceLine y={0} stroke="#000" />
       <Bar dataKey="ingresos" fill="#82ca9d" />
       <Bar dataKey="costos" fill="#d71418" />
-      {/* <Bar dataKey="ganancias" fill="#ffc658" /> */}
     </BarChart>
   );
 };

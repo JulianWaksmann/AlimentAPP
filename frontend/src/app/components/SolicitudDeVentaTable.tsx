@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { SolicitudVenta } from "../models/SolicitudVenta";
 import { updateEstadoSolicitudVenta } from "../api/pedidosVenta";
 
@@ -7,15 +7,36 @@ type Props = {
 };
 
 export default function SolicitudDeVentaTable({ solicitudes }: Props) {
-  const handleAccion = (id: number, accion: "confirmada" | "cancelada") => {
-    const confirmacion = window.confirm(`Confirmar acción`);
-    if (confirmacion) {
-      updateEstadoSolicitudVenta(id, accion);
-          window.location.reload(); // Alternativa rápida si el estado está en el padre
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{
+    id: number;
+    accion: "confirmada" | "cancelada";
+  } | null>(null);
 
-      console.log("ID solicitud:", id, "Acción:", accion);
-      // Aquí podrías llamar a una función para actualizar el estado en el backend
+  const handleAccion = (id: number, accion: "confirmada" | "cancelada") => {
+    // Abrir modal de confirmación en lugar de window.confirm
+    setPendingAction({ id, accion });
+    setConfirmVisible(true);
+  };
+
+  const confirmAction = async () => {
+    if (!pendingAction) return;
+    const { id, accion } = pendingAction;
+    try {
+      await updateEstadoSolicitudVenta(id, accion);
+      // recargar para simplificar la actualización de la vista (como antes)
+      window.location.reload();
+    } catch (error) {
+      console.error("Error actualizando solicitud:", error);
+    } finally {
+      setConfirmVisible(false);
+      setPendingAction(null);
     }
+  };
+
+  const cancelAction = () => {
+    setConfirmVisible(false);
+    setPendingAction(null);
   };
 
   return (
@@ -96,6 +117,21 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
           </div>
         ))}
       </div>
+      )}
+
+      {confirmVisible && pendingAction && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h2 className="text-lg font-semibold mb-4">Confirmación</h2>
+            <p className="text-sm">
+              ¿Desea {pendingAction.accion === "confirmada" ? "aceptar" : "rechazar"} la solicitud #{pendingAction.id}?
+            </p>
+            <div className="mt-4 flex gap-2">
+              <button onClick={confirmAction} className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md">Sí, confirmar</button>
+              <button onClick={cancelAction} className="px-4 py-2 bg-gray-100 rounded-md">Cancelar</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
