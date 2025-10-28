@@ -185,6 +185,41 @@ def actualizar_lineas(cur, lineas_afectadas: Dict[int, str]) -> None:
                 )
                 print(f"[actualizar_lineas] Línea {linea_id} liberada (sin tandas en progreso)")
 
+def actualizar_estado_orden_venta_por_op(cur, orden_produccion_id: int) -> bool:
+    """Si todas las OP hermanas están finalizadas, marca la orden de venta como 'lista'."""
+    fila = fetch_all(
+        cur,
+        f"SELECT id_orden_venta FROM {ENV}.orden_produccion WHERE id = %s",
+        (orden_produccion_id,),
+    )
+    if not fila:
+        return False  # la OP no existe
+
+    orden_venta_id = fila[0]["id_orden_venta"]
+    if orden_venta_id is None:
+        return False  # la OP no está asociada a ninguna OV
+
+    totales = fetch_all(
+        cur,
+        f"""
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN estado = 'finalizada' THEN 1 ELSE 0 END) AS finalizadas
+            FROM {ENV}.orden_produccion
+            WHERE id_orden_venta = %s
+        """,
+        (orden_venta_id,),
+    )[0]
+
+    if int(totales["total"] or 0) > 0 and int(totales["total"] or 0) == int(totales["finalizadas"] or 0):
+        run_command(
+            cur,
+            f"UPDATE {ENV}.orden_venta SET estado = 'lista' WHERE id = %s",
+            (orden_venta_id,),
+        )
+        return True
+
+    return False
 
 def actualizar_ordenes(cur, orden_ids: List[int]) -> List[Dict[str, Any]]:
     """Recalcula el estado lógico de las órdenes impactadas."""
@@ -248,6 +283,8 @@ def actualizar_ordenes(cur, orden_ids: List[int]) -> List[Dict[str, Any]]:
                     "estado_nuevo": nuevo_estado,
                 }
             )
+            if nuevo_estado == "finalizada":
+                actualizar_estado_orden_venta_por_op(cur, order_id)
         else:
             resultados.append(
                 {
