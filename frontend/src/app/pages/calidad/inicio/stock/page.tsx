@@ -1,18 +1,29 @@
 
-import React from "react";
+"use client";
+import { getStockMateriaPrima } from "@/app/api/materiaPrima";
 import Header from "@/app/components/Header";
+import { MateriaPrima } from "@/app/models/MateriaPrima";
+import { useEffect, useState } from "react";
+import StockMateriaPrimaTable from "@/app/components/StockMateriaPrimaTable";
 
-const StockPage = () => {
+const StockMateriaPrimaPageCalidad = () => {
+    const [stock, setStock] = useState<MateriaPrima[]>([]);
+
+    useEffect(() => {
+        const fetchStock = async () => {
+            const res = await getStockMateriaPrima();
+            setStock(res);
+        };
+
+        fetchStock();
+    }, []);
+        
     return (
         <div>
-            <Header></Header>
-       
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">Stock</h1>
-            <p>Esta es la página de Stock para el rol de Calidad.</p>
+            <Header />
+            <StockMateriaPrimaTable materiasPrimas={stock} />
         </div>
-         </div>
     );
 };
 
-export default StockPage;
+export default StockMateriaPrimaPageCalidad;

@@ -150,6 +150,16 @@ export default function TandasTable({ tandas, className, estado }: Props) {
                   Línea de Producción #{lineaId}{" "}
                 </h3>
                 {tanda.nombre_linea_produccion ? <span className="text-sm text-gray-500">· {tanda.nombre_linea_produccion}</span> : null}
+                {ordenes.map((orden: OrdenProduccion) => {
+                  return(
+                    <div key={orden.id_orden_produccion} className="text-sm text-gray-500">
+                      <div>
+                        Orden #{orden.id_orden_produccion} - {orden.nombre_producto ?? `Producto #${orden.id_producto ?? "—"}`} · {orden.cantidad_kg_tanda ?? "—"} kg
+                      </div>
+                    </div>
+                  )
+                })}
+
               </div>
 
               <div className="flex items-center gap-2">
@@ -178,7 +188,7 @@ export default function TandasTable({ tandas, className, estado }: Props) {
                   return (
                     <div key={ordenKey} className="p-3 sm:p-4">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
+                        <div className="flex-1"> 
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-sm font-semibold text-gray-800">

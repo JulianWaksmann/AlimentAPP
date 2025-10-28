@@ -108,7 +108,7 @@ export default function PedidoVenta({ pedidos }: Props) {
             <option value="">Todos los estados</option>
             <option value="pendiente">Pendiente</option>
             <option value="confirmada">Confirmada</option>
-            <option value="cancelada">Cancelada</option>
+            {/* <option value="cancelada">Cancelada</option> */}
             <option value="entregada">Entregada</option>
           </select>
         </div>

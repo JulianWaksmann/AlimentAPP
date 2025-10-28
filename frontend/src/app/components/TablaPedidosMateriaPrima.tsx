@@ -23,6 +23,7 @@ const TablaPedidosMateriaPrima = () => {
     try {
       const response = await getAllPedidosMateriaPrima();
       setPedidos(response);
+      console.log(response);
     } catch {
       setModalMsg("Error al cargar pedidos");
       setModalType("error");

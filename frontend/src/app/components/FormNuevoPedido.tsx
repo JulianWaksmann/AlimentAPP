@@ -24,7 +24,12 @@ const FormNuevoPedido = () => {
   const [idCliente, setIdCliente] = useState<string>("");
   const [fechaEntrega, setFechaEntrega] = useState<string>("");
   const [productosPedido, setProductosPedido] = useState<ProductoPedido[]>([]);
-  const today = new Date().toISOString().split("T")[0];
+  const [comentario, setComentario] = useState<string>("");
+  // const today = new Date().toISOString().split("T")[0];
+  const today = new Date();
+const twoWeeksLater = new Date(today);
+twoWeeksLater.setDate(today.getDate() + 14);
+const formattedDate = twoWeeksLater.toISOString().split("T")[0];
 
 
   useEffect(() => {
@@ -101,6 +106,8 @@ const FormNuevoPedido = () => {
     setFechaEntrega("");
     setProductosPedido([]);
     setProductoActual({ id: "", cantidad: "" });
+    setComentario("");
+
   };
 
   const handleGuardar = async () => {
@@ -118,8 +125,10 @@ const FormNuevoPedido = () => {
         id_producto: p.id,
         cantidad: p.cantidad,
       })),
-      fecha_entrega_solicitada: fechaEntrega
+      fecha_entrega_solicitada: fechaEntrega,
+      comentario: comentario,
     };
+      limpiarFormulario();
 
     try{
       // Llamar a la función para crear el nuevo pedido
@@ -127,7 +136,6 @@ const FormNuevoPedido = () => {
       setModalMsg("Pedido creado con éxito.");
       setModalType("success");
       setModalOpen(true);
-      limpiarFormulario();
     }catch(error){
       console.error("Error al crear el pedido:", error);
       setModalMsg("Hubo un error al crear el pedido. Por favor, intenta nuevamente.");
@@ -166,8 +174,8 @@ const FormNuevoPedido = () => {
           </select>
         </div>
         <div>
-          <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium">Fecha de entrega</label>
-          <input id="fechaEntrega" type="date" min={today} value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} className="w-full rounded border px-3 py-2" />
+          <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium">Fecha de entrega <span className="text-xs text-gray-600">(Las fecha de entrega debe ser al menos dos semanas después de la fecha actual)</span></label>
+          <input id="fechaEntrega" type="date" min={formattedDate} value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} className="w-full rounded border px-3 py-2" />
         </div>
       </div>
 
@@ -210,7 +218,11 @@ const FormNuevoPedido = () => {
           </ul>
         </div>
       )}
+      <div className="mt-6 rounded border border-details p-4">
+        <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium"> Comentario </label>
+        <textarea id="comentario" className="w-full rounded border px-3 py-2" rows={3} placeholder="Agrega un comentario adicional (opcional)" value={comentario} onChange={(e) => setComentario(e.target.value)}></textarea>
 
+      </div>
       {/* --- Botones de Acción --- */}
       <div className="mt-8 flex justify-end gap-3">
         <button onClick={limpiarFormulario} className="rounded bg-neutral-dark px-6 py-2 text-white transition hover:opacity-90">

@@ -15,7 +15,7 @@ const GestionVentasPage = () => {
     async function fetchPedidos() {
       const res = await GetPedidosVenta();
       setPedidos(res);
-      // console.log(res);
+      console.log(res);
     };
     fetchPedidos();
   }, []);

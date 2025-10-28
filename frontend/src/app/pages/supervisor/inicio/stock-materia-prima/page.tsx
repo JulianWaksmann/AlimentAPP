@@ -20,7 +20,6 @@ const StockMateriaPrimaPage = () => {
     return (
         <div>
             <Header />
-            <h1 className="text-2xl font-bold mb-4 text-center">Stock de Materia Prima</h1>
             <StockMateriaPrimaTable materiasPrimas={stock} />
         </div>
     );
