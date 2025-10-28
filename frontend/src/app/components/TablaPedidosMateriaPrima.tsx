@@ -155,10 +155,14 @@ const TablaPedidosMateriaPrima = () => {
                               <option key={e.value} value={e.value}>{e.label}</option>
                             ))}
                           </select>
-                          <label className="text-sm font-medium">Fecha de vencimiento (opcional)</label>
-                          <input type="date" className="border rounded px-2 py-1" value={form.fecha_vencimiento} onChange={e => setForm(f => ({...f, fecha_vencimiento: e.target.value}))} />
-                          <label className="text-sm font-medium">Código de lote (opcional)</label>
-                          <input type="text" className="border rounded px-2 py-1" value={form.codigo_lote} onChange={e => setForm(f => ({...f, codigo_lote: e.target.value}))} />
+                          {p.expirable && (
+                          <>
+                            <label className="text-sm font-medium">Fecha de vencimiento </label>
+                            <input type="date" className="border rounded px-2 py-1" required value={form.fecha_vencimiento} onChange={e => setForm(f => ({...f, fecha_vencimiento: e.target.value}))} />
+                          </>
+                          )}
+                          <label className="text-sm font-medium">Código de lote</label>
+                          <input type="text" className="border rounded px-2 py-1" required value={form.codigo_lote} onChange={e => setForm(f => ({...f, codigo_lote: e.target.value}))} />
                           <label className="text-sm font-medium">Observaciones (opcional)</label>
                           <textarea className="border rounded px-2 py-1" value={form.observaciones} onChange={e => setForm(f => ({...f, observaciones: e.target.value}))} />
                           <div className="flex gap-2 mt-2">

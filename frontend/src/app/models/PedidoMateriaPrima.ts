@@ -10,4 +10,5 @@ export interface PedidoMateriaPrima{
     telefono_proveedor: string;
     email_proveedor: string;
     fecha_generacion_pedido: string;
+    expirable: boolean;
 }
