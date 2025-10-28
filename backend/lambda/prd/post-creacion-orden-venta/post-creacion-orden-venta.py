@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import ssl
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from typing import Any, Dict, List
 
 import boto3
@@ -123,7 +123,7 @@ def create_production_orders(cur, order_id: int, items: List[Dict[str, int]]) ->
 
 def validate_sale_order_payload(cur, payload: Dict[str, Any]) -> Dict[str, Any]:
     """Valida payload: cliente, vendedor, productos, fechas."""
-    required = ["id_vendedor", "id_cliente", "productos", "fecha_entrega_solicitada"]
+    required = ["id_vendedor", "id_cliente", "productos", "fecha_entrega_solicitada", "comentario"]
     missing = [k for k in required if not payload.get(k)]
     if missing:
         raise ValidationError(f"Faltan campos obligatorios: {', '.join(missing)}")
@@ -135,6 +135,18 @@ def validate_sale_order_payload(cur, payload: Dict[str, Any]) -> Dict[str, Any]:
         raise ValidationError("fecha_entrega_solicitada debe tener formato AAAA-MM-DD.")
     if fecha_entrega_date <= date.today():
         raise ValidationError("fecha_entrega_solicitada debe ser posterior a hoy.")
+
+    # Parsear string (AAAA-MM-DD) → date → datetime a medianoche
+    fecha_entrega_dt = datetime.combine(
+        datetime.fromisoformat(fecha_entrega).date(),
+        time.min
+    )
+
+    # Sumar 3 horas obligatoriamente
+    fecha_entrega_dt += timedelta(hours=3)
+
+    # Volver a string ISO (por ejemplo '2025-10-27T03:00:00')
+    fecha_entrega = fecha_entrega_dt.isoformat()
 
     if not run_query(cur, f"SELECT 1 FROM {ENV}.cliente WHERE id = {int(payload['id_cliente'])}"):
         raise ValidationError("El id_cliente indicado no existe.")
@@ -173,6 +185,7 @@ def validate_sale_order_payload(cur, payload: Dict[str, Any]) -> Dict[str, Any]:
         "fecha_entrega_solicitada": fecha_entrega,
         "productos": items,
         "total": total,
+        "comentario": payload["comentario"],
     }
 
 
@@ -182,12 +195,13 @@ def insert_sale_order(cur, validated: Dict[str, Any]):
         cur,
         f"""
         INSERT INTO {ENV}.orden_venta
-            (id_cliente, id_empleado, fecha_entrega_solicitada, estado, valor_total_pedido)
+            (id_cliente, id_empleado, fecha_entrega_solicitada, estado, valor_total_pedido, observaciones)
         VALUES ({validated['id_cliente']},
                 {validated['id_vendedor']},
                 '{validated['fecha_entrega_solicitada']}',
                 'pendiente',
-                {validated['total']})
+                {validated['total']},
+                '{validated['comentario']}')
         """,
     )
 
