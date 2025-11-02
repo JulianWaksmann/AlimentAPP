@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import ssl
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal, InvalidOperation
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -19,6 +19,8 @@ ssm_client = boto3.client("ssm")
 DB_CONFIG: Optional[Dict[str, Any]] = None
 
 ESTADOS_TANDA_FIRMES = ("en_progreso", "completada")
+# Capacidad diaria = capacidad_linea * CAPACIDAD_DIARIA_FACTOR (para previews por días)
+CAPACIDAD_DIARIA_FACTOR = int(os.getenv("CAPACIDAD_DIARIA_FACTOR", "1"))
 
 
 class PlanningError(Exception):
@@ -349,6 +351,137 @@ def planificar(cur) -> Dict[str, Any]:
         "ordenes_planificadas": ordenes_planificadas,
         "alertas": alertas,
     }
+
+# -------- Preview por días (sombra transaccional, sin persistir) --------
+
+def _siguiente_habil(d: datetime) -> datetime:
+    # explicacion funcionalidad: desplaza a próximo día hábil si cae sábado o domingo.
+    while d.weekday() >= 5:
+        d = d + timedelta(days=1)
+    return d
+
+
+def _generar_dias_habiles(desde: Optional[str], dias: int) -> List[str]:
+    # explicacion funcionalidad: genera lista de fechas (YYYY-MM-DD) para N días hábiles desde 'desde' o hoy.
+    base = datetime.now(timezone.utc)
+    if desde:
+        try:
+            base = datetime.fromisoformat(desde)
+            if base.tzinfo is None:
+                base = base.replace(tzinfo=timezone.utc)
+        except Exception:
+            pass
+    base = _siguiente_habil(base)
+    fechas: List[str] = []
+    cur_day = base
+    while len(fechas) < max(1, dias):
+        if cur_day.weekday() < 5:
+            fechas.append(cur_day.date().isoformat())
+        cur_day = cur_day + timedelta(days=1)
+    return fechas
+
+
+def _capturar_tandas_sombra(cur) -> List[Dict[str, Any]]:
+    # explicacion funcionalidad: ejecuta planificar dentro de la tx y lee tandas 'planificada' generadas.
+    resumen = planificar(cur)
+    logger.info("[preview] Resumen planificar sombra: %s", resumen)
+    filas = fetch_all(
+        cur,
+        f"""
+            SELECT t.id, t.orden_produccion_id, t.linea_produccion_id, t.cantidad_kg,
+                   op.id_orden_venta, op.id_producto, p.nombre AS producto,
+                   t.secuencia_en_linea
+            FROM {ENV}.tanda_produccion t
+            JOIN {ENV}.orden_produccion op ON op.id = t.orden_produccion_id
+            JOIN {ENV}.producto p ON p.id = op.id_producto
+            WHERE t.estado = 'planificada'
+            ORDER BY t.linea_produccion_id, t.secuencia_en_linea, t.id
+        """,
+    )
+    logger.info("[preview] Tandas capturadas: %s", len(filas))
+    return filas
+
+
+def _capacidades_diarias(cur) -> Dict[int, Decimal]:
+    # explicacion funcionalidad: capacidad/día por línea (capacidad_linea * factor env).
+    lineas = obtener_lineas_activas(cur)
+    caps: Dict[int, Decimal] = {}
+    for lid, meta in lineas.items():
+        caps[lid] = meta["capacidad"] * Decimal(str(CAPACIDAD_DIARIA_FACTOR))
+    return caps
+
+
+def _bucket_por_dias(tandas: List[Dict[str, Any]], dias: List[str], caps_dia: Dict[int, Decimal]) -> List[Dict[str, List[Dict[str, Any]]]]:
+    # explicacion funcionalidad: asigna tandas a fechas hábiles respetando capacidad diaria por línea.
+    restante: List[Dict[int, Decimal]] = []
+    for _ in dias:
+        restante.append({lid: Decimal(v) for lid, v in caps_dia.items()})
+
+    agenda: List[Dict[str, List[Dict[str, Any]]]] = [{d: []} for d in dias]
+
+    for t in tandas:
+        lid = int(t["linea_produccion_id"])
+        kg = decimal_value(t["cantidad_kg"], f"kg tanda {t['id']}")
+        colocado = False
+        for i, d in enumerate(dias):
+            disp = restante[i].get(lid, Decimal("0"))
+            if disp >= kg:
+                agenda[i][d].append(
+                    {
+                        "op_id": int(t["orden_produccion_id"]),
+                        "ov_id": int(t["id_orden_venta"]) if t.get("id_orden_venta") is not None else None,
+                        "linea_id": lid,
+                        "producto": t.get("producto"),
+                        "kg": float(kg),
+                    }
+                )
+                restante[i][lid] = disp - kg
+                colocado = True
+                break
+        if not colocado:
+            logger.warning("[preview] Sin capacidad en %s días para tanda %s (línea %s, kg=%s)", len(dias), t["id"], lid, kg)
+
+    return agenda
+
+
+def preview_por_dias(cur, dias: int, desde: Optional[str]) -> List[Dict[str, List[Dict[str, Any]]]]:
+    # explicacion funcionalidad: corre sombra y devuelve agenda por fecha (sin persistir cambios).
+    tandas = _capturar_tandas_sombra(cur)
+    caps = _capacidades_diarias(cur)
+    fechas = _generar_dias_habiles(desde, dias)
+    agenda = _bucket_por_dias(tandas, fechas, caps)
+    return agenda
+
+
+def lambda_handler_preview(event, context):
+    """Entry point alternativo para preview por días (modo sombra)."""
+    # explicacion funcionalidad: devuelve [{fecha:[items]}] sin escribir, usando rollback al final.
+    logger.info("Preview por días - evento: %s", event)
+    try:
+        payload = parse_event(event)
+    except PlanningError as exc:
+        return {"statusCode": 400, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": str(exc)})}
+
+    dias = int((payload or {}).get("dias", 0) or 0)
+    desde = (payload or {}).get("desde")
+    if dias <= 0:
+        return {"statusCode": 400, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": "Debe indicar 'dias' > 0"})}
+
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        agenda = preview_por_dias(cur, dias, desde)
+        conn.rollback()
+        return {"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": json.dumps(agenda)}
+    except Exception as exc:
+        if conn:
+            conn.rollback()
+        logger.exception("Error en preview por días")
+        return {"statusCode": 500, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": "Error interno", "detail": str(exc)})}
+    finally:
+        if conn:
+            conn.close()
 
 
 def parse_event(event: Any) -> Dict[str, Any]:

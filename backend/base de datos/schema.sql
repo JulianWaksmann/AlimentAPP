@@ -158,7 +158,8 @@ CREATE TABLE IF NOT EXISTS orden_venta (
     estado estado_orden_venta NOT NULL DEFAULT 'pendiente',
     valor_total_pedido NUMERIC(10,2) NOT NULL DEFAULT 0,
     observaciones TEXT,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    prioritario BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS orden_produccion (
@@ -221,6 +222,11 @@ CREATE TABLE IF NOT EXISTS proveedor_por_materia_prima (
     UNIQUE (id_proveedor, id_materia_prima)
 );
 
+CREATE TABLE planificacion_diaria (
+    id SERIAL PRIMARY KEY,
+    fecha DATE NOT NULL,
+    id_orden_produccion INTEGER NOT NULL
+);
 -- Tabla que reparte una orden de producción entre líneas compatibles
 --CREATE TABLE IF NOT EXISTS orden_produccion_linea (
 --    id SERIAL PRIMARY KEY,
