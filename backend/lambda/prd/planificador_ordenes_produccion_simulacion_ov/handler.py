@@ -20,7 +20,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 ENV = os.getenv("DB_SCHEMA", "dev")
-PLANNER_DAILY_FN = os.getenv("PLANNER_DAILY_FN")  # Nombre/ARN de la Lambda diaria
+# ARN de la Lambda diaria (hardcodeado por requerimiento)
+PLANNER_DAILY_FN = "arn:aws:lambda:us-east-1:554074173959:function:planificador_ordenes_produccion_daily"
 
 ssm_client = boto3.client("ssm")
 lambda_client = boto3.client("lambda")
@@ -259,4 +260,3 @@ def lambda_handler(event, context):
     finally:
         if conn:
             conn.close()
-
