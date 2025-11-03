@@ -7,7 +7,7 @@ import { Menu } from "lucide-react";
 
 const menuItems = [
   { name: "Control de Produccion", href: "/pages/supervisor/inicio/produccion" },
-  { name: "Gestion de Productos", href: "/pages/supervisor/inicio/productos" },
+  { name: "Planificacion de trabajo", href: "/pages/supervisor/inicio/planificacion" },
   { name: "Ordenes de Producción", href: "/pages/supervisor/inicio/ordenes-trabajo" },
   { name: "Stock de Materia Prima", href: "/pages/supervisor/inicio/stock-materia-prima" },
   { name: "Pedir Materia Prima", href: "/pages/supervisor/inicio/materia-prima" },

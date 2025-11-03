@@ -1,0 +1,118 @@
+[
+  {
+    "2025-11-03": [
+      
+      {
+        "estado_pedido": "atrasado",
+        "id_orden_produccion": 227
+      },
+      {
+        "estado_pedido": "atrasado",
+        "id_orden_produccion": 430
+      },
+      {
+        "estado_pedido": "atrasado",
+        "id_orden_produccion": 431
+      }
+    ]
+  },
+  {
+    "2025-11-04": [
+      
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 252
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 453
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 301
+      },
+      {
+        "estado_pedido": "atrasado",
+        "id_orden_produccion": 247
+      },
+      {
+        "estado_pedido": "atrasado",
+        "id_orden_produccion": 449
+      },
+      {
+        "estado_pedido": "atrasado",
+        "id_orden_produccion": 450
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 253
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 254
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 456
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 533
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 337
+      }
+    ]
+  },
+  {
+    "2025-11-05": [
+      
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 540
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 590
+      }
+    ]
+  },
+  {
+    "2025-11-06": [
+     
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 471
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 344
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 597
+      }
+    ]
+  },
+  {
+    "2025-11-07": [
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 274
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 275
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 477
+      },
+      {
+        "estado_pedido": "en_tiempo",
+        "id_orden_produccion": 478
+      }
+    ]
+  } 
+]

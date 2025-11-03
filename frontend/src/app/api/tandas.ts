@@ -1,4 +1,4 @@
-import { Tanda, TandaProduccionManual } from "@/app/models/Tanda";
+import { planificacion, Tanda, TandaProduccionManual } from "@/app/models/Tanda";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GetTandas(estado: string): Promise<Tanda[]> {
@@ -83,3 +83,28 @@ export async function CrearTandaProduccionManual(tandaData: ordenTandaNueva) {
   }
   return response.json();
 }
+
+
+export async function getPlanificacionData(): Promise<planificacion[]> {
+  try{
+  const response = await fetch(`${apiUrl}/orden-produccion/planificador_op_daily`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    });
+  if (!response.ok) {
+    const errorData = await response.json();
+    // console.log("Error fetching planificacion data:", errorData);
+    throw new Error(errorData.error || "Error fetching planificacion data");
+  }
+  const data = await response.json();
+  // console.log(data);
+  return data;
+}
+catch (error) {
+  console.log("error general: " + error);
+  throw error;
+}
+}
+

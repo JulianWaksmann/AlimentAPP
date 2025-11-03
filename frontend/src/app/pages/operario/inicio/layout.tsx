@@ -19,7 +19,7 @@ const tandasItems = [
   { name: "Historial de tandas", href: "/pages/operario/inicio/historial-tandas" },
 ]
 
-const CalidadLayout = ({ children }: { children: React.ReactNode }) => {
+const OperarioLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -79,4 +79,4 @@ const CalidadLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default CalidadLayout;
+export default OperarioLayout;

@@ -22,6 +22,7 @@ const FormNuevoPedido = () => {
   const [nombreClientes, setNombreClientes] = useState<Cliente[]>([]);
 
   const [idCliente, setIdCliente] = useState<string>("");
+  const [direccion, setDireccion] = useState<string>("");
   const [fechaEntrega, setFechaEntrega] = useState<string>("");
   const [productosPedido, setProductosPedido] = useState<ProductoPedido[]>([]);
   const [comentario, setComentario] = useState<string>("");
@@ -127,6 +128,7 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
       })),
       fecha_entrega_solicitada: fechaEntrega,
       comentario: comentario,
+      con_envio: true
     };
       limpiarFormulario();
 
@@ -172,6 +174,7 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
               <option key={c.id} value={c.id}>{c.id + " - " + c.nombre_contacto + " " + c.apellido_contacto + " - " + c.razon_social + " - " + c.cuil}</option>
             ))}
           </select>
+          {/* <select  id="direccion" value={} ></select> */}
         </div>
         <div>
           <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium">Fecha de entrega <span className="text-xs text-gray-600">(Las fecha de entrega debe ser al menos dos semanas después de la fecha actual)</span></label>

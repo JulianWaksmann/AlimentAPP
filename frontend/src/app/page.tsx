@@ -11,6 +11,7 @@ const roles = [
   { name: "Gerente", color: "bg-red-500", path: "/pages/gerente/login" },
   { name: "Vendedor", color: "bg-purple-500", path: "/pages/vendedor/login" },
   { name: "Calidad", color: "bg-pink-500", path: "/pages/calidad/login" },
+  { name: "Logistica", color: "bg-gray-500", path: "/pages/logistica/login" },
 ];
 
 const LandingPage: React.FC = () => {

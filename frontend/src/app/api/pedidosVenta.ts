@@ -26,6 +26,8 @@ export async function CreateNuevoPedido(data: {
   fecha_entrega_solicitada: string;
   productos: { id_producto: number; cantidad: number }[];
   comentario?: string;
+  con_envio: boolean;
+  
 }){
   console.log("Creando nuevo pedido con data:", data);
   const response = await fetch(`${apiUrl}/crear-orden-venta`, {

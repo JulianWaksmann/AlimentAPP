@@ -19,5 +19,7 @@ export interface TandaProduccionManual {
         ordenes_de_produccion_aceptadas: OrdenProduccion[],
 }
 
-
-   
+export type planificacion = Record<string, {
+    estado_pedido: "atrasado" | "en_tiempo" | "por_vencer";
+    id_orden_produccion: number;
+}[]>;
