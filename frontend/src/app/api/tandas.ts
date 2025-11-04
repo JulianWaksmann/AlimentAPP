@@ -14,7 +14,7 @@ const data = { estado: estado };
     throw new Error("Error fetching tandas sugeridas");
   }
     const responseData = await response.json();
-    console.log(responseData);
+    console.log( "tandas" + responseData.lineas_produccion);
     return responseData.lineas_produccion;
 }
 

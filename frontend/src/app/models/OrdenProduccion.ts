@@ -32,40 +32,52 @@ export interface OrdenProduccion {
     }[];
   }
 
-//     "ordenes_produccion": [
-//     {
-//       "id_orden_produccion": 113,
-//       "id_orden_venta": 56,
-//       "id_cliente": 1,
-//       "nombre_cliente": "Lucas Ezequiel",
-//       "apellido_cliente": "Mendez",
-//       "id_producto": 1,
-//       "nombre_producto": "Empanadas de Carne x12",
-//       "cantidad_producto": 16,
-//       "fecha_creacion_orden_venta": "2025-09-28",
-//       "fecha_entrega_solicitada_orden_venta": "2025-10-04",
-//       "fecha_entrega_real_orden_venta": null,
-//       "fecha_creacion_orden_produccion": "2025-09-28",
-//       "fecha_fin_orden_produccion": null,
-//       "estado_orden_produccion": "en_proceso",
-//       "materias_primas_requeridas": [
-//         {
-//           "id_lote_materia_prima": 1,
-//           "id_materia_prima": 1,
-//           "nombre_materia_prima": "Carne picada especial",
-//           "unidad_medida_materia_prima": "kilogramos",
-//           "cantidad_materia_prima": "2.50"
-//         },
-//         {
-//           "id_lote_materia_prima": 2,
-//           "id_materia_prima": 2,
-        // "codigo_lote": "LMP-001",
+export interface OrdenDetalle{
+    id: number;
+    id_orden_venta: number;
+    id_producto: number;
+    nombre_producto: string;
+    fecha_creacion: string;
+    fecha_fin: string | null;
+    estado: string;
+    cantidad: number;
+    observaciones: string;
+    cliente: string;
+    valor_total_pedido: number;
+    fecha_entrega_solicitada: string;
+    materias_primas: {
+        id: number;
+        id_lote_materia_prima: number;
+        cantidad_utilizada: number;
+        nombre_materia_prima: string;
+        unidad_medida: string;
+        codigo_lote: string;
+        fecha_ingreso: string;
+    }[];
+}
 
-//           "nombre_materia_prima": "Condimentos varios",
-//           "unidad_medida_materia_prima": "kilogramos",
-//           "cantidad_materia_prima": "0.50"
-//         }
-//       ]
-//     }
-//   ]
+
+// {
+//   "id": 221,
+//   "id_orden_venta": 5,
+//   "id_producto": 3,
+//   "nombre_producto": "Empanadas de carne",
+//   "fecha_creacion": "2025-10-29",
+//   "fecha_fin": null,
+//   "estado": "planificada",
+//   "cantidad": 120,
+//   "observaciones": "Lote en preparación",
+//   "cliente": "Panadería San Martín",
+//   "valor_total_pedido": 45000.
+    // "materias_primas": [
+    //   {
+    //     "id": 7,
+    //     "id_lote_materia_prima": 4,
+    //     "cantidad_utilizada": 15.5,
+    //     "nombre_materia_prima": "Carne vacuna",
+    //     "unidad_medida": "kg",
+    //     "codigo_lote": "LMP-2025-0004",
+    //     "fecha_recepcion": "2025-10-20T00:00:00Z"
+    //   }
+    // ]
 // }

@@ -1,10 +1,31 @@
+"use client";
 import React from "react";
+import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 
-const Header: React.FC = () => (
-  <header className="bg-gradient-primary text-white py-3 text-center">
-    <h1 className="text-4xl font-bold">CORE.</h1>
-    <h4>Gestion de Empresas</h4>
-  </header>
-);
+const Header: React.FC = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push("/");
+  };
+
+  return (
+    <header className="bg-gradient-primary text-white py-3 text-center relative flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold">CORE.</h1>
+        <h4>El Núcleo de tu Empresa</h4>
+      </div>
+      <button
+        onClick={handleLogout}
+        className="absolute top-1/2 right-4 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 text-sm font-semibold bg-white text-primary rounded-md hover:bg-gray-200 transition"
+        aria-label="Cerrar sesión"
+      >
+        <LogOut size={16} />
+        <span>Salir</span>
+      </button>
+    </header>
+  );
+};
 
 export default Header;

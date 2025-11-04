@@ -18,17 +18,30 @@ export async function GetPedidosVenta(): Promise<PedidosVentas[]> {
   return data.data;
   }
 
-//metodo post para crear un nuevo pedido de venta
-//envio id cliente - id vendedor - fecha entrega - productos (array de id productos y cantidades de cada uno)
-export async function CreateNuevoPedido(data: {
-  id_cliente: number;
+  export type NuevoPedido = {
+      id_cliente: number;
   id_vendedor: number;
   fecha_entrega_solicitada: string;
   productos: { id_producto: number; cantidad: number }[];
   comentario?: string;
   con_envio: boolean;
+  id_direccion_entrega?: number;
+  direccion_nueva_opcional?: string;
+  zona?: string;}
+//metodo post para crear un nuevo pedido de venta
+//envio id cliente - id vendedor - fecha entrega - productos (array de id productos y cantidades de cada uno)
+export async function CreateNuevoPedido(data: NuevoPedido
+  // id_cliente: number;
+  // id_vendedor: number;
+  // fecha_entrega_solicitada: string;
+  // productos: { id_producto: number; cantidad: number }[];
+  // comentario?: string;
+  // con_envio: boolean;
+  // id_direccion_entrega?: number;
+  // direccion_nueva_opcional?: string;
+  // zona?: string;
   
-}){
+){
   console.log("Creando nuevo pedido con data:", data);
   const response = await fetch(`${apiUrl}/crear-orden-venta`, {
     method: "POST",

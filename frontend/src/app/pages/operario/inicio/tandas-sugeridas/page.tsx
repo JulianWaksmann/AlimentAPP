@@ -20,6 +20,7 @@ const TandasSupegidasPage = () => {
     <div>
       <Header />
       <h1 className="text-xxl font-bold text-center my-3">Tandas Sugeridas por Optimización</h1>
+      <button className="rounded bg-primary px-4 py-2 text-white transition hover:opacity-90"  >Actualizar</button>
       <div>
         <TandasTable tandas={tandasSugeridas} estado="en_progreso" />
         </div>

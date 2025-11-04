@@ -4,6 +4,8 @@ import FullCalendar from "@fullcalendar/react";
 import type { EventContentArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { OrdenDetalle } from "../models/OrdenProduccion";
+import { getOrdenProduccionDetails } from "../api/produccion";
 
 type OrdenPlanificada = {
     estado_pedido: "atrasado" | "en_tiempo" | "por_vencer";
@@ -25,11 +27,8 @@ const estadoColor: Record<OrdenPlanificada['estado_pedido'], string> = {
 
 export default function Calendario({ planificacion }: Props) {
     const [modalOpen, setModalOpen] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState<{
-        id: number;
-        estado: OrdenPlanificada['estado_pedido'];
-        fecha: string;
-    } | null>(null);
+
+    const [selectedOrder, setSelectedOrder] = useState<OrdenDetalle | null>(null);
 
     const events = useMemo(() => {
         if (!planificacion) return [];
@@ -45,17 +44,37 @@ export default function Calendario({ planificacion }: Props) {
         );
     }, [planificacion]);
 
-    const handleVerMas = (id: number, estado: OrdenPlanificada['estado_pedido'], fecha: string) => {
-        setSelectedOrder({ id, estado, fecha });
-        setModalOpen(true);
+        async function fetchOrderDetails(id: number) {
+        try{
+            const response = await getOrdenProduccionDetails(id);
+            setSelectedOrder(response);
+            console.log("Detalles de la orden de produccion:", response);
+            setModalOpen(true);
+
+            
+        }
+        
+        catch(error){
+            console.error("Error fetching order details:", error);
+        }
+        }
+
+    const handleVerMas = (id: number) => {
+        try{
+        fetchOrderDetails(id);
+        }
+        catch(error){
+            console.error("Error fetching order details:", error);
+        }
+        // setSelectedOrder({ id, estado, fecha });
+        // setModalOpen(true);
     };
 
     const renderEventContent = (eventInfo: EventContentArg) => {
         const id = Number(eventInfo.event.id);
-        const estado = eventInfo.event.extendedProps.estado as OrdenPlanificada['estado_pedido'];
-        const fecha = eventInfo.event.startStr;
+
         return (
-            <div className="grid grid-cols-2 items-center  gap-1">
+            <div className="flex items-center justify-between gap-2">
                 <div className="text-xs font-medium" style={{ color: "white" }}>
                     {eventInfo.event.title}
                 </div>
@@ -63,7 +82,7 @@ export default function Calendario({ planificacion }: Props) {
                     onClick={(e) => {
                         // evitar que FullCalendar haga navegación de evento
                         e.stopPropagation();
-                        handleVerMas(id, estado, fecha);
+                        handleVerMas(id);
                     }}
                     className="ml-2 text-[10px] bg-white text-black rounded px-1 py-0.5"
                 >
@@ -87,10 +106,26 @@ export default function Calendario({ planificacion }: Props) {
             {modalOpen && selectedOrder && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                        <h3 className="text-lg font-semibold mb-2">Orden #{selectedOrder.id}</h3>
-                        <p className="text-sm text-gray-700">Estado: {selectedOrder.estado}</p>
-                        <p className="text-sm text-gray-700">Fecha: {selectedOrder.fecha}</p>
-                        {/* Modal vacío por ahora — aquí iría más información */}
+                        <h2 className="text-xl font-bold mb-1">Orden de Producción #{selectedOrder.id}</h2>
+                        <p className="text-sm text-gray-500 mb-4">Pedido de Venta #{selectedOrder.id_orden_venta}</p>
+                        
+                        <div className="space-y-2 text-sm">
+                            <p><strong>Cliente:</strong> {selectedOrder.cliente}</p>
+                            <p><strong>Producto:</strong> {selectedOrder.nombre_producto}</p>
+                            <p><strong>Cantidad:</strong> {selectedOrder.cantidad} bultos</p>
+                            <p><strong>Fecha de Entrega Solicitada:</strong> {new Date(selectedOrder.fecha_entrega_solicitada).toLocaleDateString()} </p>
+                            
+                            <details className="pt-2">
+                                <summary className="cursor-pointer font-semibold">Materias Primas Requeridas</summary>
+                                <ul className="list-disc pl-5 mt-2 text-xs text-gray-700">
+                                    {selectedOrder.materias_primas &&
+                                    selectedOrder.materias_primas.map(mp => (
+                                        <li key={mp.id}>{mp.nombre_materia_prima}: {mp.cantidad_utilizada} {mp.unidad_medida}</li>
+                                    ))}
+                                </ul>
+                            </details>
+                        </div>
+
                         <div className="mt-4 flex justify-end">
                             <button
                                 onClick={() => setModalOpen(false)}
