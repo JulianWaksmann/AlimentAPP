@@ -6,6 +6,10 @@ CREATE TYPE estado_orden_venta AS ENUM (
     'cancelada',
     'en_produccion',
     'lista',
+    'asignada_para_Envio', -- NO SE USA
+    'asignada_para_envio_temp' -- NO SE USA, 
+    'asignada_para_envio',  
+    'despachado',
     'entregada'
 );
 
