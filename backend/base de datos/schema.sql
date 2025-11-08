@@ -57,6 +57,29 @@ CREATE TYPE unidad_medida AS ENUM (
 --    'finalizada'
 --);
 
+DROP TYPE IF EXISTS zona;
+CREATE TYPE zona AS ENUM (
+    'zona norte',
+    'zona sur',
+    'zona este',
+    'zona oeste'
+);
+
+DROP TYPE IF EXISTS estado_envio;
+CREATE TYPE estado_envio AS ENUM (
+    'pendiente', 
+    'despachado', 
+    'en_viaje', 
+    'entregado', 
+    'cancelado'
+);
+
+CREATE TYPE tipo_unidad_transporte AS ENUM (
+    'camioneta', 
+    'auto', 
+    'camion'
+);
+
 CREATE TABLE IF NOT EXISTS rol (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(15) NOT NULL UNIQUE
@@ -66,13 +89,11 @@ CREATE TABLE IF NOT EXISTS empleado (
     id SERIAL PRIMARY KEY,
     dni INTEGER NOT NULL UNIQUE,
     email VARCHAR(50) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
     id_rol INTEGER NOT NULL REFERENCES rol(id),
     nombre VARCHAR(20) NOT NULL,
     apellido VARCHAR(20) NOT NULL,
     telefono VARCHAR(20),
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    --ultimo_login TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE IF NOT EXISTS cliente (
@@ -83,6 +104,7 @@ CREATE TABLE IF NOT EXISTS cliente (
     nombre_contacto VARCHAR(20),
     apellido_contacto VARCHAR(20),
     telefono VARCHAR(20),
+    id_direccion_principal INT REFERENCES direccion(id),
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -91,9 +113,7 @@ CREATE TABLE IF NOT EXISTS producto (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL,
     descripcion TEXT,
-    --unidad_medida VARCHAR(20) NOT NULL, me conviene sacarlo porque me sirve el peso para establecerlo en la linea de prd pertinente
     peso_unitario_kg NUMERIC(10,3) NOT NULL CHECK (peso_unitario_kg > 0),
-    --stock_actual NUMERIC(10,2) NOT NULL DEFAULT 0,  no hace falta tenerlo aca, mejor un stock de producto
     precio_venta NUMERIC(10,2) NOT NULL DEFAULT 0,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
@@ -143,7 +163,6 @@ CREATE TABLE IF NOT EXISTS lote_materia_prima (
     codigo_lote VARCHAR(50) NOT NULL,
     fecha_ingreso TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     fecha_vencimiento DATE,
-    --unidad_medida unidad_medida NOT NULL, sale de materia prima
     cantidad_total NUMERIC(10,2) NOT NULL CHECK (cantidad_unitaria_total >= 0),
     cantidad_unitaria_disponible NUMERIC(10,2) NOT NULL CHECK (cantidad_unitaria_disponible >= 0 AND cantidad_unitaria_disponible <= cantidad_unitaria_total),
     estado estado_lote_materia_prima NOT NULL DEFAULT 'en_cuarentena',
@@ -161,21 +180,27 @@ CREATE TABLE IF NOT EXISTS orden_venta (
     fecha_entrega_real TIMESTAMP WITH TIME ZONE,
     estado estado_orden_venta NOT NULL DEFAULT 'pendiente',
     valor_total_pedido NUMERIC(10,2) NOT NULL DEFAULT 0,
+    con_envio BOOLEAN DEFAULT FALSE,
+    id_direccion_entrega INT REFERENCES direccion(id);
     observaciones TEXT,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    prioritario BOOLEAN NOT NULL DEFAULT FALSE
+    prioritario BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE planificacion_diaria (
+    id SERIAL PRIMARY KEY,
+    fecha DATE NOT NULL,
+    id_orden_produccion INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS orden_produccion (
     id SERIAL PRIMARY KEY,
     id_orden_venta INTEGER REFERENCES orden_venta(id) ON DELETE SET NULL,
     id_producto INTEGER NOT NULL REFERENCES producto(id),
-    --id_linea_produccion INTEGER REFERENCES linea_produccion(id), no se usa mas ya que ahora orden_produccion_linea lo establece
     fecha_creacion DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_fin TIMESTAMP WITH TIME ZONE,
     estado estado_orden_produccion NOT NULL DEFAULT 'planificada',
     cantidad INTEGER,
-    --kg_programados NUMERIC(10,2) CHECK (kg_programados IS NULL OR kg_programados > 0), peso_unitario_kg de producto ya me resuelve esto.
     observaciones TEXT
 );
 CREATE TABLE IF NOT EXISTS materia_prima_por_orden_produccion (
@@ -211,8 +236,6 @@ CREATE TABLE IF NOT EXISTS materia_prima_por_producto (
     id_producto INTEGER NOT NULL REFERENCES producto(id) ON DELETE CASCADE,
     id_materia_prima INTEGER NOT NULL REFERENCES materia_prima(id) ON DELETE RESTRICT,
     cantidad_unitaria NUMERIC(10,2),
-    unidad_medida VARCHAR(20) NOT NULL,
-    kilogramos NUMERIC(10,2),
     UNIQUE (id_producto, id_materia_prima)
 );
 
@@ -221,35 +244,67 @@ CREATE TABLE IF NOT EXISTS proveedor_por_materia_prima (
     id_proveedor INTEGER NOT NULL REFERENCES proveedor(id) ON DELETE CASCADE,
     id_materia_prima INTEGER NOT NULL REFERENCES materia_prima(id) ON DELETE RESTRICT,
     precio NUMERIC(10,2) NOT NULL,
-    --dias_entrega_promedio INTEGER,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     UNIQUE (id_proveedor, id_materia_prima)
 );
 
-CREATE TABLE planificacion_diaria (
+
+CREATE TABLE codigo_verification (
     id SERIAL PRIMARY KEY,
-    fecha DATE NOT NULL,
-    id_orden_produccion INTEGER NOT NULL
+    email VARCHAR(255) NOT NULL,
+    codigo VARCHAR(6) NOT NULL,
+    fecha_generacion TIMESTAMP NOT NULL DEFAULT NOW(),
+    fecha_expiracion TIMESTAMP NOT NULL,
+    utilizado BOOLEAN NOT NULL DEFAULT FALSE
 );
--- Tabla que reparte una orden de producción entre líneas compatibles
---CREATE TABLE IF NOT EXISTS orden_produccion_linea (
---    id SERIAL PRIMARY KEY,
---    id_orden_produccion INTEGER NOT NULL
---        REFERENCES orden_produccion(id) ON DELETE CASCADE,
---    id_linea_produccion INTEGER NOT NULL
---        REFERENCES linea_produccion(id),
---    cantidad_unitaria_asignada NUMERIC(10,2) NOT NULL
---        CHECK (cantidad_unitaria_asignada > 0),
---    estado_produccion estado_produccion_linea NOT NULL
---        DEFAULT 'lista_para_produccion',
---    fecha_inicio TIMESTAMP WITH TIME ZONE,
---    fecha_fin TIMESTAMP WITH TIME ZONE
---);
 
 CREATE TABLE IF NOT EXISTS sesion (
     id_empleado INTEGER PRIMARY KEY REFERENCES empleado(id) ON DELETE CASCADE,
     password VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE direccion (
+  id SERIAL PRIMARY KEY,
+  id_cliente INT NOT NULL REFERENCES cliente(id) ON DELETE CASCADE,
+  direccion_text TEXT NOT NULL,
+  zona zona,
+  latitud DECIMAL(10,6),
+  longitud DECIMAL(10,6),
+  es_principal BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+--Crear el índice único parcial para la dirección principal
+CREATE UNIQUE INDEX unique_direccion_principal 
+ON direccion (id_cliente) 
+WHERE es_principal = true;
+
+CREATE TABLE vehiculo (
+    id SERIAL PRIMARY KEY,
+    empresa TEXT,
+    nombre_conductor TEXT,
+    apellido_conductor TEXT,
+    dni_conductor TEXT,
+    tipo_unidad tipo_unidad_transporte NOT NULL,
+    patente TEXT NOT NULL UNIQUE,
+    modelo TEXT NOT NULL,
+    capacidad_kg INTEGER NOT NULL CHECK (capacidad_kg > 0),
+    color TEXT,
+    disponible BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+
+CREATE TABLE envio (
+    id SERIAL PRIMARY KEY,
+    id_orden_venta INTEGER NOT NULL REFERENCES orden_venta(id),
+    id_vehiculo INTEGER REFERENCES vehiculo(id),
+    estado estado_envio NOT NULL DEFAULT 'pendiente',
+    fecha_despacho TIMESTAMP WITH TIME ZONE,
+    fecha_entrega TIMESTAMP WITH TIME ZONE,
+    porcentaje_entrega NUMERIC(5,2) NOT NULL DEFAULT 100.00,
+    notas TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 
 --------------------------------------------------------------------------------------
 ---------------------------------- VISTAS -------------------------------------------
