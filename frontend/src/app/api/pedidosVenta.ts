@@ -1,5 +1,6 @@
-import { PedidosVentas } from "../models/PedidosVentas";
+import { PedidosPorZonaAPI, PedidosVentas } from "../models/PedidosVentas";
 import { SolicitudVenta } from "../models/SolicitudVenta";
+import { PedidosAsignadosResponse } from "../pages/logistica/inicio/pedidos-asignados/page";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -31,15 +32,7 @@ export async function GetPedidosVenta(): Promise<PedidosVentas[]> {
 //metodo post para crear un nuevo pedido de venta
 //envio id cliente - id vendedor - fecha entrega - productos (array de id productos y cantidades de cada uno)
 export async function CreateNuevoPedido(data: NuevoPedido
-  // id_cliente: number;
-  // id_vendedor: number;
-  // fecha_entrega_solicitada: string;
-  // productos: { id_producto: number; cantidad: number }[];
-  // comentario?: string;
-  // con_envio: boolean;
-  // id_direccion_entrega?: number;
-  // direccion_nueva_opcional?: string;
-  // zona?: string;
+
   
 ){
   console.log("Creando nuevo pedido con data:", data);
@@ -94,6 +87,63 @@ export async function updateEstadoSolicitudVenta(id: number, estado: "confirmada
     const errorData = await response.json();
     throw new Error(
       `Error updating estado: ${response.status} - ${JSON.stringify(
+        errorData,
+      )}`,
+    );
+  }
+  return response.json();
+}
+
+
+export async function getPedidosTerminados(): Promise<PedidosPorZonaAPI[]> {
+  const response = await fetch(`${apiUrl}/gestion-envios/get-pedidos-por-zona`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Error fetching pedidos terminados");
+  }
+   const data = await response.json();
+return data.zonas;
+}
+
+
+export async function GetPedidosAsignados(estado : string): Promise<PedidosAsignadosResponse[]> {
+  const data = {
+    estado : estado
+  };
+  const response = await fetch(`${apiUrl}/gestion-envios/post-get-envios-por-estado`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify( data ),
+  });
+  if (!response.ok) {
+    throw new Error("Error fetching pedidos asignados");
+  }
+    const responseData = await response.json();
+    console.log("Response Data:", responseData);
+    return responseData.vehiculos;
+}
+
+export async function updateEstadoEnvio(id_vehiculo: number) {
+  const data = {
+    id_vehiculo: id_vehiculo,
+  };
+  const response = await fetch(`${apiUrl}/gestion-envios/update-estado-envio`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify( data ),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Error updating estado envio: ${response.status} - ${JSON.stringify(
         errorData,
       )}`,
     );

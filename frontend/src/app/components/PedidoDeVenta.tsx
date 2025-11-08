@@ -13,6 +13,10 @@ const estadoColor: Record<string, string> = {
   pendiente: "bg-yellow-100 text-yellow-700",
   cancelada: "bg-red-100 text-red-700",
   entregada: "bg-blue-100 text-blue-700",
+  pendiente_supervision: "bg-orange-100 text-orange-700",
+  despachado: "bg-purple-100 text-purple-700",
+  asignada_para_Envio: "bg-indigo-100 text-indigo-700",
+  lista: "bg-teal-100 text-teal-700",
 };
 
 const sortOptions = [
@@ -106,9 +110,11 @@ export default function PedidoVenta({ pedidos }: Props) {
           </select>
           <select id="estado" value={estadoFiltro} onChange={e => setEstadoFiltro(e.target.value)} className="w-full rounded border px-3 py-2">
             <option value="">Todos los estados</option>
-            <option value="pendiente_supervision">Pendiente</option>
             <option value="confirmada">Confirmada</option>
-            {/* <option value="cancelada">Cancelada</option> */}
+            <option value="pendiente_supervision">Pendiente de aprobación</option>
+            <option value="lista">Pedidos Terminados</option>
+            <option value="asignada_para_Envio">Pedidos Listos para envio</option>
+            <option value="despachado">Pedidos Despachados</option>
             <option value="entregada">Entregada</option>
           </select>
         </div>

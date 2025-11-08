@@ -5,7 +5,6 @@ import { Cliente } from "app/models/Cliente";
 import { GetNombreProductos } from "../api/productos";
 import { GetNombreApellidoClientes } from "../api/clientes";
 import { CreateNuevoPedido } from "../api/pedidosVenta";
-import { NuevoPedido } from "../api/pedidosVenta";
 
 interface ProductoPedido {
   id: number;
@@ -20,22 +19,14 @@ const FormNuevoPedido = () => {
   const [modalType, setModalType] = useState<"error"|"success">("error");
   // --- Estados del formulario ---
   const [nombreProductos, setNombreProductos] = useState<Producto[]>([]);
-  const [ClientesLista, setClientesLista] = useState<Cliente[]>([]);
-  
-  const [idClienteSeleccionado, setIdClienteSeleccionado] = useState<number | null>(null);
-  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
+  const [nombreClientes, setNombreClientes] = useState<Cliente[]>([]);
+
+  const [idCliente, setIdCliente] = useState<string>("");
+  const [direccion, setDireccion] = useState<string>("");
   const [fechaEntrega, setFechaEntrega] = useState<string>("");
   const [productosPedido, setProductosPedido] = useState<ProductoPedido[]>([]);
   const [comentario, setComentario] = useState<string>("");
-  const [idDireccionSeleccionada, setIdDireccionSeleccionada] = useState<number | null>(null);
-  const [nuevaDireccion, setNuevaDireccion] = useState<string >("");
-  const [zonaNuevaDireccion, setZonaNuevaDireccion] = useState<string >("");
-  const [conEnvio, setConEnvio] = useState<boolean>(false);
-  const [SeleccionoEnvioNuevaDireccion, setSeleccionoEnvioNuevADireccion] = useState<boolean>(false);
-  const [abrirModalNuevaDireccion, setAbrirModalNuevaDireccion] = useState<boolean>(false); 
-
-
-
+  // const today = new Date().toISOString().split("T")[0];
   const today = new Date();
 const twoWeeksLater = new Date(today);
 twoWeeksLater.setDate(today.getDate() + 14);
@@ -46,7 +37,7 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
     const fetchClientes = async () => {
       const clientes= await GetNombreApellidoClientes();
       // console.log(clientes);
-        setClientesLista(clientes);
+        setNombreClientes(clientes);
     };
     fetchClientes();
   }, []);
@@ -60,20 +51,6 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
     fetchProductos();
   }, []);
     
-  //guarda el cliente seleccionado
-    useEffect(() => {
-      if (idClienteSeleccionado) {
-        const cliente = ClientesLista.find((c) => c.id === idClienteSeleccionado) || null;
-        setClienteSeleccionado(cliente);
-        console.log("limpi id direccion")
-        setIdDireccionSeleccionada(null);
-        setNuevaDireccion("");
-        setZonaNuevaDireccion("");
-      } else {
-        setClienteSeleccionado(null);
-      }
-    }, [idClienteSeleccionado, ClientesLista]);
-
   // --- Estado para el producto que se está agregando ---
   const [productoActual, setProductoActual] = useState<{
     id: string;
@@ -126,87 +103,38 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
   };
 
   const limpiarFormulario = () => {
-    setIdClienteSeleccionado(null);
+    setIdCliente("");
     setFechaEntrega("");
     setProductosPedido([]);
     setProductoActual({ id: "", cantidad: "" });
     setComentario("");
-    setConEnvio(false);
-    setIdDireccionSeleccionada(null);
-    setNuevaDireccion("");
-    setZonaNuevaDireccion("");
 
   };
 
   const handleGuardar = async () => {
-      const nuevoPedido: NuevoPedido = {
-      id_cliente: Number(idClienteSeleccionado),
+    if (!idCliente || !fechaEntrega || productosPedido.length === 0) {
+      setModalMsg("Completa todos los campos antes de guardar.");
+      setModalType("error");
+      setModalOpen(true);
+      return;
+    }
+
+    const nuevoPedido = {
+      id_cliente: Number(idCliente),
       id_vendedor: 1,
-      fecha_entrega_solicitada: fechaEntrega,
       productos: productosPedido.map(p => ({
         id_producto: p.id,
         cantidad: p.cantidad,
       })),
+      fecha_entrega_solicitada: fechaEntrega,
       comentario: comentario,
-      con_envio: conEnvio,
-      id_direccion_entrega: idDireccionSeleccionada? idDireccionSeleccionada : undefined ,
-      direccion_nueva_opcional: SeleccionoEnvioNuevaDireccion? nuevaDireccion : undefined,
-      zona: SeleccionoEnvioNuevaDireccion? zonaNuevaDireccion : undefined,  
-    
-    }
+      con_envio: true
+    };
+      limpiarFormulario();
 
-          // console.log("Nuevo que quiero :", nuevoPedido);
-
-    if (!idClienteSeleccionado){//no hay cliente seleccionado
-        setModalMsg("Debe seleccionar un cliente antes de continuar.");
-        setModalType("error");
-        setModalOpen(true);
-        return;
-    } 
-      if( !fechaEntrega){  //no se asigno fecha 
-        setModalMsg("Debe asignar una fecha de entrega.");
-        setModalType("error");
-        setModalOpen(true);
-        return; 
-      } 
-      if(productosPedido.length === 0 ){    //no hay productos en el pedido
-      
-        setModalMsg("Debe agregar al menos un producto al pedido.");
-        setModalType("error");
-        setModalOpen(true);
-        return;
-      }
-      if(conEnvio && !SeleccionoEnvioNuevaDireccion && !idDireccionSeleccionada){
-      setModalMsg("Selecciona una dirección de envío o agrega una nueva.");
-      setModalType("error");
-      setModalOpen(true);
-      return;
-      } 
-      if(SeleccionoEnvioNuevaDireccion && (!nuevaDireccion.trim() || !zonaNuevaDireccion)){
-      setModalMsg("Completa la nueva dirección y selecciona una zona.");
-      setModalType("error");
-      setModalOpen(true);
-      return;
-    }
-
-
-    // const nuevoPedido = {
-    //   id_cliente: Number(idClienteSeleccionado),
-    //   id_vendedor: 1,
-    //   productos: productosPedido.map(p => ({
-    //     id_producto: p.id,
-    //     cantidad: p.cantidad,
-    //   })),
-    //   fecha_entrega_solicitada: fechaEntrega,
-    //   comentario: comentario,
-    //   con_envio: true
-    // };
-     limpiarFormulario();
-    // console.log("Nuevo Pedido a crear:", nuevoPedido);
     try{
       // Llamar a la función para crear el nuevo pedido
       await CreateNuevoPedido(nuevoPedido);
-      console.log("Nuevo Pedido creado:", nuevoPedido);
       setModalMsg("Pedido creado con éxito.");
       setModalType("success");
       setModalOpen(true);
@@ -240,71 +168,13 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
       <div className="grid grid-cols-1 gap-4 ">
         <div>
           <label htmlFor="cliente" className="mb-1 block text-sm font-medium">Cliente</label>
-          <select id="cliente" value={Number(idClienteSeleccionado)} onChange={(e) => setIdClienteSeleccionado(Number(e.target.value))}  className="w-full rounded border px-3 py-2">
-            <option value={0} key={""} disabled className="text-black">Selecciona un cliente</option>
-            {ClientesLista.map((c) => (
+          <select id="cliente" value={idCliente} onChange={(e) => setIdCliente(e.target.value)} className="w-full rounded border px-3 py-2">
+            <option value="" disabled>Selecciona un cliente</option>
+            {nombreClientes.map((c) => (
               <option key={c.id} value={c.id}>{c.id + " - " + c.nombre_contacto + " " + c.apellido_contacto + " - " + c.razon_social + " - " + c.cuil}</option>
             ))}
           </select>
-        
-        <div className="flex mt-4">
- <input type="checkbox" checked={conEnvio} onChange={(e) => setConEnvio(e.target.checked)} className=""/>
-            <label className="ml-2"> Requiere Envío</label>
-        </div>
-
-          {/* SELECCION DE DIRECCION */}
-          {idClienteSeleccionado && clienteSeleccionado && conEnvio &&
-          <div className="mt-4">
-          <label htmlFor="cliente" className="mb-1 block text-sm font-medium">Seleccionar dirección</label>
-            {!SeleccionoEnvioNuevaDireccion &&(
-            <div className="flex">
-            <select   id="direccion" value={idDireccionSeleccionada || ""} className="w-full rounded border px-3 py-2" onChange={(e) => {setIdDireccionSeleccionada(Number(e.target.value))}} >
-              <option value={""} disabled className="text-black" >Selecciona una dirección</option>
-              {clienteSeleccionado.direcciones_asociadas &&
-              clienteSeleccionado.direcciones_asociadas.map((dir) => (
-              <option  key={dir.id_direccion} value={dir.id_direccion}>{dir.id_direccion} - {dir.direccion_text} - {dir.zona} </option> 
-              ))}
-            </select>
-            <button type="button" className="ml-2 text-sm border rounded bg-primary text-white px-4 py-2" onClick={() => setAbrirModalNuevaDireccion(true)}>
-              +Agregar
-            </button>
-            </div>
-            )}
-          </div>
-          }
-
-          {/* agregar nueva direccion */}
-          {abrirModalNuevaDireccion && conEnvio &&(
-            <div className="border p-4 mt-4 rounded bg-neutral-light">
-              <div className="">
-                <label htmlFor="nuevaDireccion" className="mb-1 block text-sm font-medium">Nueva Dirección</label>
-                <input type="text" value={nuevaDireccion} placeholder="Ingrese la nueva direccion" onChange={(e) => setNuevaDireccion(e.target.value)} className="w-full rounded border px-3 py-2"/>
-              </div>
-              <div className="mt-4">
-                <label htmlFor="zonaNuevaDireccion" className="mb-1 block text-sm font-medium">Zona de la nueva dirección</label>
-                <select  value={zonaNuevaDireccion} onChange={(e) => setZonaNuevaDireccion(e.target.value)} className="w-full rounded border px-3 py-2">
-                  <option value="" disabled>Selecciona una zona</option>
-                  <option value="zona norte">Zona Norte</option>
-                  <option value="zona sur">Zona Sur</option>
-                  <option value="zona este">Zona Este</option>
-                  <option value="zona oeste">Zona Oeste</option>
-                </select>
-              </div>
-              <button onClick={() => {setSeleccionoEnvioNuevADireccion(false); setAbrirModalNuevaDireccion(false)  }} className="mt-2 text-sm border rounded bg-error text-white px-4 py-2" >Cancelar</button>
-              <button onClick={()=> {setIdDireccionSeleccionada(null); setSeleccionoEnvioNuevADireccion(true); setAbrirModalNuevaDireccion(false)}  } className="mt-2 text-sm border rounded bg-success text-white px-4 py-2">  Aceptar</button>
-            </div>)
-              }
-
-              {SeleccionoEnvioNuevaDireccion && (
-                <div className="border p-4 mt-4 rounded bg-neutral-light flex justify-between items-center">
-                  <label htmlFor="">Enviar a la direccion: {nuevaDireccion} - {zonaNuevaDireccion}</label>
-                  <button onClick={()=> {setSeleccionoEnvioNuevADireccion(false); setNuevaDireccion(""); setZonaNuevaDireccion("")} } className="mt-2 text-sm border rounded bg-error text-white px-4 py-2">  cancelar</button>
-                </div>
-              )
-                
-              }
-
-
+          {/* <select  id="direccion" value={} ></select> */}
         </div>
         <div>
           <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium">Fecha de entrega <span className="text-xs text-gray-600">(Las fecha de entrega debe ser al menos dos semanas después de la fecha actual)</span></label>

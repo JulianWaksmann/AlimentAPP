@@ -10,6 +10,7 @@ export interface Flota {
    capacidad_kg: number;
    color?: string;
    disponible?: boolean;
+   id_vehiculo?: number;
 }
 
 

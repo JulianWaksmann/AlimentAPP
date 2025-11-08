@@ -6,7 +6,9 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 
 const menuItems = [
-  {name : "Gestión de Envíos", href: "/pages/logistica/inicio/envios" },
+  {name : "Asignar Envíos", href: "/pages/logistica/inicio/envios" },
+  { name: "Pedidos Asignados", href: "/pages/logistica/inicio/pedidos-asignados" },
+  { name: "Pedidos Despachados", href: "/pages/logistica/inicio/pedidos-despachados" },
   { name: "Flota", href: "/pages/logistica/inicio/flota" },
 ]
 
