@@ -132,3 +132,24 @@ export async function getStockMateriaPrima() {
   // return response.json();
 
 }
+
+
+export async function aceptarMP() {
+  const response = await fetch(`${apiUrl}/gestion-materia-prima/get-aceptar-materia-prima-automatico`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Error accepting materia prima");
+  }
+    const data = await response.json();
+
+    // console.log(data);
+
+    return data;
+
+  // return response.json();
+
+}

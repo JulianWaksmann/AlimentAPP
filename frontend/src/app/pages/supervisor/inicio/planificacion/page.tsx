@@ -27,9 +27,9 @@ const PlanificacionPage = () => {
   return(
   <div className="min-h-screen bg-neutral-light">
     <Header />
-
+    <div className="p-2">
     <Calendario planificacion={planificacionParaCalendario} />
-
+    </div>
 
   </div>
   )

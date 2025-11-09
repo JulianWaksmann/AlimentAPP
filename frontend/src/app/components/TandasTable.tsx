@@ -24,7 +24,7 @@ export default function TandasTable({ tandas, className, estado }: Props) {
   const [modalMessage, setModalMessage] = useState("");
   const [modalTitle, setModalTitle] = useState("");
   const [lineaIdToUpdate, setLineaIdToUpdate] = useState<number | null>(null);
-  const [tandasSugeridas, setTandas] = useState<Tanda[]>(tandas || []);
+  const [estadoDestino, setEstadoDestino] = useState<"en_progreso" | "completada">("en_progreso");
   const fechaActual = new Date();
 
   useEffect(() => {
@@ -37,48 +37,24 @@ export default function TandasTable({ tandas, className, estado }: Props) {
   const toggleOrden = (id: number) =>
     setExpandedOrdenes((s) => ({ ...s, [id]: !s[id] }));
 
-  const showModal = (title: string, message: string, onConfirm?: () => void) => {
+  const showModal = (title: string, message: string) => {
     setModalTitle(title);
     setModalMessage(message);
     setModalVisible(true);
-    const handleConfirm = () => {
-        if (onConfirm) onConfirm(); // Call the callback if provided
-        setModalVisible(false);
-    };
-    // Trigger handleConfirm on user confirmation
-    return (
-        <div>
-            <button onClick={handleConfirm}>Confirm</button>
-            <button onClick={() => setModalVisible(false)}>Cancel</button>
-        </div>
-    );
   };
 
-  const refreshOrderList = () => {
-    setLocalTandas(tandas || []);
-  };
+  // const fetchTandas = useCallback(async () => {
+  //   try {
+  //       const response = await GetTandas(estado);
+  //       setLocalTandas(response);
+  //   } catch (error) {
+  //       console.error('Error fetching tandas:', error);
+  //   }
+  // }, [estado]);
 
-  const fetchTandas = useCallback(async () => {
-    try {
-        const response = await GetTandas(estado);
-        setTandas(response);
-    } catch (error) {
-        console.error('Error fetching tandas:', error);
-    }
-  }, [estado]);
-
-  useEffect(() => {
-    fetchTandas();
-  }, [fetchTandas]);
-
-  const handleStateChange = async (id: number[], nuevaEstado: string) => {
-    try {
-        await UpdateEstadoTandaProduccion(id, nuevaEstado);
-        fetchTandas(); // Refresh the list after updating
-    } catch (error) {
-        console.error('Error updating state:', error);
-    }
-  };
+  // useEffect(() => {
+  //   fetchTandas();
+  // }, [fetchTandas]);
 
   const handleConfirmAction = async () => {
     if (lineaIdToUpdate === null) return;
@@ -100,17 +76,17 @@ export default function TandasTable({ tandas, className, estado }: Props) {
     setLoadingLineas((s) => ({ ...s, [lineaIdToUpdate]: true }));
 
     try {
-      await UpdateEstadoTandaProduccion(ids, estado);
+      await UpdateEstadoTandaProduccion(ids, estadoDestino);
       setLocalTandas((prev) =>
         prev.map((t) => {
           if (t.id_linea_produccion !== lineaIdToUpdate) return t;
           const updatedOrdenes = (t.tandas_de_produccion ?? []).map((o) =>
-            ids.includes(o.id_tanda_produccion) ? { ...o, estado_tanda_produccion: estado } : o
+            ids.includes(o.id_tanda_produccion) ? { ...o, estado_tanda_produccion: estadoDestino } : o
           );
           return { ...t, tandas_de_produccion: updatedOrdenes };
         })
       );
-      showModal("Éxito", "Tandas actualizadas correctamente.", refreshOrderList);
+      showModal("Éxito", "Tandas actualizadas correctamente.");
     } catch (err) {
       console.error(err);
       showModal("Error", "Error al actualizar las tandas. Reintenta.");
@@ -126,6 +102,7 @@ export default function TandasTable({ tandas, className, estado }: Props) {
     const message = `¿Seguro que querés ${action.toLowerCase()} todas las órdenes de esta línea?`;
 
     setLineaIdToUpdate(lineaId);
+    setEstadoDestino(estadoOrden === "planificada" ? "en_progreso" : "completada");
     showModal("Confirmación", message);
   };
 

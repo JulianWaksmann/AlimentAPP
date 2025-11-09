@@ -180,7 +180,7 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
           <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium">Fecha de entrega <span className="text-xs text-gray-600">(Las fecha de entrega debe ser al menos dos semanas después de la fecha actual)</span></label>
           <input id="fechaEntrega" type="date" min={formattedDate} value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} className="w-full rounded border px-3 py-2" />
         </div>
-      </div>
+      </div>  
 
       {/* --- Sección para Agregar Productos --- */}
       <div className="mt-6 rounded border border-details p-4">
@@ -221,6 +221,9 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
           </ul>
         </div>
       )}
+      <div>
+
+      </div>
       <div className="mt-6 rounded border border-details p-4">
         <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium"> Comentario </label>
         <textarea id="comentario" className="w-full rounded border px-3 py-2" rows={3} placeholder="Agrega un comentario adicional (opcional)" value={comentario} onChange={(e) => setComentario(e.target.value)}></textarea>

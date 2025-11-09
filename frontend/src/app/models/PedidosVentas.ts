@@ -1,7 +1,7 @@
 export interface PedidosVentas {
     idPedido: number;
     idCliente: number;
-    idVendedor: number;
+    idVendedor?: number;
     nombreCliente: string;
     apellidoCliente: string;
     productos:{ idProducto: number;nombre: string; cantidad: number}[];
@@ -10,7 +10,10 @@ export interface PedidosVentas {
     fechaSolicitada: string;
     valorPedido: number;
     estado: string;//'pendiente' | 'en_proceso' | 'completado' | 'cancelado';
+    email?: string;
+    telefono?: string;
 }
+
 
 export interface PedidosPorZona{
     zona: string;

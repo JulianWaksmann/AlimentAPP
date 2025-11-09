@@ -42,6 +42,11 @@ export default function VendedorLayout({
           >
             CLIENTES
           </Link>
+          <Link
+            href="/pages/vendedor/inicio/pedidos-reprogramados"
+            className={navLinkClasses("/pages/vendedor/inicio/pedidos-reprogramados")}>
+              REPROGRAMADOS
+          </Link>
         </nav>
       </div>
       <div>

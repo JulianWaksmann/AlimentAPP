@@ -15,7 +15,7 @@ export async function GetNombreApellidoClientes(): Promise<Cliente[]> {
   }
     const data = await response.json();
 
-  console.log(data.clients);
+  // console.log(data.clients);
     return data.clients;
 
   // return response.json();

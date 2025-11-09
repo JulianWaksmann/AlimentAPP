@@ -1,6 +1,7 @@
 import { PedidosPorZonaAPI, PedidosVentas } from "../models/PedidosVentas";
 import { SolicitudVenta } from "../models/SolicitudVenta";
 import { PedidosAsignadosResponse } from "../pages/logistica/inicio/pedidos-asignados/page";
+import { PedidosVentasReprogramado } from "../pages/vendedor/inicio/pedidos-reprogramados/page";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -149,4 +150,21 @@ export async function updateEstadoEnvio(id_vehiculo: number) {
     );
   }
   return response.json();
+}
+
+export async function getPedidosReprogramados(): Promise<PedidosVentasReprogramado[]> {
+  const response = await fetch(`${apiUrl}/crear-orden-venta/get-orden-venta-atrasada`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    console.error("Failed to fetch pedidos reprogramados:", response.statusText);
+    throw new Error("Error fetching pedidos reprogramados");
+  }
+  
+   const data = await response.json();
+  //  console.log("Pedidos Reprogramados Data:", data);
+return data;
 }
