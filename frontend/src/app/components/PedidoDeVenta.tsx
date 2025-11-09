@@ -15,7 +15,7 @@ const estadoColor: Record<string, string> = {
   entregada: "bg-blue-100 text-blue-700",
   pendiente_supervision: "bg-orange-100 text-orange-700",
   despachado: "bg-purple-100 text-purple-700",
-  asignada_para_Envio: "bg-indigo-100 text-indigo-700",
+  asignada_para_envio: "bg-indigo-100 text-indigo-700",
   lista: "bg-teal-100 text-teal-700",
 };
 

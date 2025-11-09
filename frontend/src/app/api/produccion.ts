@@ -1,4 +1,4 @@
-import { OrdenProduccion } from "../models/OrdenProduccion";
+import { OrdenProduccion, OrdenDetalle } from "../models/OrdenProduccion";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -58,5 +58,23 @@ export async function getOrdenesDeProduccionEnEstado(estado: string): Promise<Or
   // console.log(data);
   return data.ordenes_produccion;
 }
+export async function getOrdenProduccionDetails(id: number): Promise<OrdenDetalle> {
+  const data= {
+    id_orden_produccion: id,
+  }
+  const response = await fetch(`${apiUrl}/orden-produccion/post-get-orden-produccion`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+          body: JSON.stringify(data),
 
+  });
+  if (!response.ok) {
+    throw new Error("Error fetching orden de produccion details");
+  }
+  const res = await response.json();
+  console.log("Detalles de la orden de produccion:", data);
+  return res.orden_produccion;
+}
 // export async function CreateOrdenProduccion(ordenData: {

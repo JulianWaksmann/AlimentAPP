@@ -134,7 +134,7 @@ export async function updateEstadoEnvio(id_vehiculo: number) {
   const data = {
     id_vehiculo: id_vehiculo,
   };
-  const response = await fetch(`${apiUrl}/gestion-envios/update-estado-envio`, {
+  const response = await fetch(`${apiUrl}/gestion-envios/post-update-despachar-all-envios-de-vehiculo`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

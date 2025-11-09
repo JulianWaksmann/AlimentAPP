@@ -7,19 +7,22 @@ import { GetTandas } from "@/app/api/tandas";
 // import Modal from "./Modal"; // Asegúrate de tener un componente Modal
 
 type Props = {
-  tandas: Tanda[];
+  // tandas: Tanda[];
+  estadoActual: "planificada" | "en_progreso" | "completada";
   className?: string;
-  estado: "planificada" | "en_progreso" | "completada"; // Cambiado a un tipo específico
+  estadoNuevo: "planificada" | "en_progreso" | "completada"; // Cambiado a un tipo específico
 };
 
 const formatDate = (d?: string | null) =>
   d ? new Date(d).toLocaleString() : "—";
 
-export default function TandasTable({ tandas, className, estado }: Props) {
+export default function TandasTable({ estadoActual, className, estadoNuevo }: Props) {
   const [expandedLineas, setExpandedLineas] = useState<Record<number, boolean>>({});
   const [expandedOrdenes, setExpandedOrdenes] = useState<Record<number, boolean>>({});
   const [loadingLineas, setLoadingLineas] = useState<Record<number, boolean>>({});
-  const [localTandas, setLocalTandas] = useState<Tanda[]>(tandas || []);
+  // const [localTandas, setLocalTandas] = useState<Tanda[]>(tandas || []);
+    const [localTandas, setLocalTandas] = useState<Tanda[]>( []);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalTitle, setModalTitle] = useState("");
@@ -27,9 +30,9 @@ export default function TandasTable({ tandas, className, estado }: Props) {
   const [estadoDestino, setEstadoDestino] = useState<"en_progreso" | "completada">("en_progreso");
   const fechaActual = new Date();
 
-  useEffect(() => {
-    setLocalTandas(tandas || []);
-  }, [tandas]);
+  // useEffect(() => {
+  //   setLocalTandas(tandas || []);
+  // }, [tandas]);
 
   const toggleLinea = (id: number) =>
     setExpandedLineas((s) => ({ ...s, [id]: !s[id] }));
@@ -43,18 +46,18 @@ export default function TandasTable({ tandas, className, estado }: Props) {
     setModalVisible(true);
   };
 
-  // const fetchTandas = useCallback(async () => {
-  //   try {
-  //       const response = await GetTandas(estado);
-  //       setLocalTandas(response);
-  //   } catch (error) {
-  //       console.error('Error fetching tandas:', error);
-  //   }
-  // }, [estado]);
+  const fetchTandas = useCallback(async () => { 
+    try {
+      const response = await GetTandas(estadoActual);
+      setLocalTandas(response);
+    } catch (error) {
+        console.error('Error fetching tandas:', error);
+    }
+  }, [estadoActual]);
 
-  // useEffect(() => {
-  //   fetchTandas();
-  // }, [fetchTandas]);
+  useEffect(() => {
+    fetchTandas();
+  }, [fetchTandas]);
 
   const handleConfirmAction = async () => {
     if (lineaIdToUpdate === null) return;
@@ -76,12 +79,12 @@ export default function TandasTable({ tandas, className, estado }: Props) {
     setLoadingLineas((s) => ({ ...s, [lineaIdToUpdate]: true }));
 
     try {
-      await UpdateEstadoTandaProduccion(ids, estadoDestino);
+      await UpdateEstadoTandaProduccion(ids, estadoNuevo);
       setLocalTandas((prev) =>
         prev.map((t) => {
           if (t.id_linea_produccion !== lineaIdToUpdate) return t;
           const updatedOrdenes = (t.tandas_de_produccion ?? []).map((o) =>
-            ids.includes(o.id_tanda_produccion) ? { ...o, estado_tanda_produccion: estadoDestino } : o
+            ids.includes(o.id_tanda_produccion) ? { ...o, estado_tanda_produccion: estadoNuevo } : o
           );
           return { ...t, tandas_de_produccion: updatedOrdenes };
         })

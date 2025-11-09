@@ -47,9 +47,9 @@ export default function SolicitudDeVentaTable({ solicitudes }: Props) {
       
       {/* Mobile: Cards */}
       {solicitudes.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center p-4">No hay pedidos en espera de materia prima.</td>
-              </tr>
+            <div>
+                <p  className="text-center p-4">No hay pedidos en espera de materia prima.</p>
+            </div>
             ) : (
       <div className=" mt-6 space-y-4">
         {solicitudes.map((solicitud) => (
