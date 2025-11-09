@@ -43,6 +43,7 @@ const FormNuevoPedido = () => {
   const [conEnvio, setConEnvio] = useState<boolean>(false);
   const [SeleccionoEnvioNuevaDireccion, setSeleccionoEnvioNuevADireccion] = useState<boolean>(false);
   const [abrirModalNuevaDireccion, setAbrirModalNuevaDireccion] = useState<boolean>(false); 
+  const [urgente, setUrgente] = useState<boolean>(false);
   // const today = new Date().toISOString().split("T")[0];
   const today = new Date();
 const twoWeeksLater = new Date(today);
@@ -198,12 +199,14 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
       id_direccion_entrega: idDireccionSeleccionada? idDireccionSeleccionada : undefined ,
       direccion_nueva_opcional: SeleccionoEnvioNuevaDireccion? nuevaDireccion : undefined,
       zona: SeleccionoEnvioNuevaDireccion? zonaNuevaDireccion : undefined,  
+      prioritario: urgente,
     };
-      limpiarFormulario();
+      // limpiarFormulario();
 
     try{
       // Llamar a la función para crear el nuevo pedido
-      await CreateNuevoPedido(nuevoPedido);
+      console.log("Datos del nuevo pedido a enviar:", nuevoPedido);
+      // await CreateNuevoPedido(nuevoPedido);
       setModalMsg("Pedido creado con éxito.");
       setModalType("success");
       setModalOpen(true);
@@ -305,6 +308,11 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
         <div>
           <label htmlFor="fechaEntrega" className="mb-1 block text-sm font-medium">Fecha de entrega <span className="text-xs text-gray-600">(Las fecha de entrega debe ser al menos dos semanas después de la fecha actual)</span></label>
           <input id="fechaEntrega" type="date" min={formattedDate} value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} className="w-full rounded border px-3 py-2" />
+        </div>
+
+        <div className="flex mt-4">
+          <input type="checkbox" checked={urgente} onChange={(e) => setUrgente(e.target.checked)} className=" "/>
+          <label className="ml-2"> Pedido Prioritario (URGENTE)</label>
         </div>
       </div>  
 

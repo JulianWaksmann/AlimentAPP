@@ -29,7 +29,8 @@ export async function GetPedidosVenta(): Promise<PedidosVentas[]> {
   con_envio: boolean;
   id_direccion_entrega?: number;
   direccion_nueva_opcional?: string;
-  zona?: string;}
+  zona?: string;
+  prioritario?: boolean;}
 //metodo post para crear un nuevo pedido de venta
 //envio id cliente - id vendedor - fecha entrega - productos (array de id productos y cantidades de cada uno)
 export async function CreateNuevoPedido(data: NuevoPedido
