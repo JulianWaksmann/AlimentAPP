@@ -6,6 +6,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import {OrdenDetalle} from "../models/OrdenProduccion";
 import { getOrdenProduccionDetails } from "../api/produccion";
+import { actualizarFechaOrden } from "../api/produccion";
 
 
 
@@ -48,6 +49,19 @@ export default function Calendario({ planificacion }: Props) {
         );
     }, [planificacion]);
         
+
+    async function actualizarFecha(id: number, fecha: string) {
+        // console.log("Actualizando fecha para orden:", id, "a nueva fecha:", fecha);
+        try{
+            const response = await actualizarFechaOrden(id, fecha);
+            console.log("Fecha actualizada:", response);
+            window.location.reload();
+        }
+        catch(error){
+            console.error("Error al actualizar la fecha:", error);
+        }
+        }
+
     async function fetchOrderDetails(id: number) {
         try{
             const response = await getOrdenProduccionDetails(id);
@@ -164,6 +178,7 @@ export default function Calendario({ planificacion }: Props) {
                                    type="submit"
                                        onClick={() => {
                                            // Lógica para replanificar la orden
+                                           actualizarFecha(selectedOrder!.id_orden_venta, fechaEntrega);
                                            setModalAdvertencia(false);
                                            setModalOpen(false);
                                        }}

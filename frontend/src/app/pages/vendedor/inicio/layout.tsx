@@ -23,7 +23,7 @@ export default function VendedorLayout({
     <div>
       <div  className=" w-80% ">
         <Header />
-        <nav className="flex flex-row justify-around border-b ">
+        <nav className="flex flex-row justify-evenly border-b ">
           <Link
             href="/pages/vendedor/inicio/gestion-ventas"
             className={navLinkClasses("/pages/vendedor/inicio/gestion-ventas")}
@@ -36,16 +36,24 @@ export default function VendedorLayout({
           >
             NUEVO
           </Link>
+        
           <Link
             href="/pages/vendedor/inicio/administracion-clientes"
             className={navLinkClasses("/pages/vendedor/inicio/administracion-clientes")}
           >
             CLIENTES
           </Link>
+          </nav>
+        <nav className="flex flex-row justify-evenly border-b ">
           <Link
             href="/pages/vendedor/inicio/pedidos-reprogramados"
             className={navLinkClasses("/pages/vendedor/inicio/pedidos-reprogramados")}>
               REPROGRAMADOS
+          </Link>
+              <Link
+            href="/pages/vendedor/inicio/pedidos-en-camino"
+            className={navLinkClasses("/pages/vendedor/inicio/pedidos-en-camino")}>
+              PEDIDOS EN CAMINO
           </Link>
         </nav>
       </div>

@@ -33,10 +33,7 @@ export async function GetPedidosVenta(): Promise<PedidosVentas[]> {
   prioritario?: boolean;}
 //metodo post para crear un nuevo pedido de venta
 //envio id cliente - id vendedor - fecha entrega - productos (array de id productos y cantidades de cada uno)
-export async function CreateNuevoPedido(data: NuevoPedido
-
-  
-){
+export async function CreateNuevoPedido(data: NuevoPedido){
   console.log("Creando nuevo pedido con data:", data);
   const response = await fetch(`${apiUrl}/crear-orden-venta`, {
     method: "POST",
@@ -153,6 +150,46 @@ export async function updateEstadoEnvio(id_vehiculo: number) {
   return response.json();
 }
 
+export async function entregarPedido(id_envio: number, estado: string) {
+  const data = {
+    id_envio: id_envio,
+    estado: estado
+  }
+  console.log(JSON.stringify(data));
+  const response = await fetch(`${apiUrl}/gestion-envios/post-update-estado-envio`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify( data ),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Error updating estado envio: ${response.status} - ${JSON.stringify(
+        errorData,
+      )}`,
+    );
+  }
+  return response.json();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export async function getPedidosReprogramados(): Promise<PedidosVentasReprogramado[]> {
   const response = await fetch(`${apiUrl}/crear-orden-venta/get-orden-venta-atrasada`, {
     method: "GET",
@@ -168,4 +205,37 @@ export async function getPedidosReprogramados(): Promise<PedidosVentasReprograma
    const data = await response.json();
   //  console.log("Pedidos Reprogramados Data:", data);
 return data;
+}
+
+
+export async function getPedidosUrgentes(): Promise<SolicitudVenta[]> {
+  const response = await fetch(`${apiUrl}/get-orden-venta/get-orden-venta-en-supervision-por-urgencia`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Error fetching pedidos urgentes");
+  }
+   const data = await response.json();
+return data.orden_ventas_pendiente_supervision_urgencia;
+}
+
+export async function getOrdenesQueSeRetrasan(id_orden_venta: number): Promise<number[]> {
+  const data = {
+    id_orden_venta: id_orden_venta,
+  };
+  const response = await fetch(`${apiUrl}/get-orden-venta/planificador_ordenes_produccion_simulacion_ov`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify( data ),
+  });
+  if (!response.ok) {
+    throw new Error("Error fetching ordenes que se retrasan");
+  }
+   const responseData = await response.json();
+return responseData.afectadas;
 }

@@ -206,7 +206,7 @@ const formattedDate = twoWeeksLater.toISOString().split("T")[0];
     try{
       // Llamar a la función para crear el nuevo pedido
       console.log("Datos del nuevo pedido a enviar:", nuevoPedido);
-      // await CreateNuevoPedido(nuevoPedido);
+      await CreateNuevoPedido(nuevoPedido);
       setModalMsg("Pedido creado con éxito.");
       setModalType("success");
       setModalOpen(true);

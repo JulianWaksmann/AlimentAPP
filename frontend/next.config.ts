@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   devIndicators: {
     buildActivity: false,
   },
-  trailingSlash: false,
+  trailingSlash: true,
 };
 
 export default nextConfig;

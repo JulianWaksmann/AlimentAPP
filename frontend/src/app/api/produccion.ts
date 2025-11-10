@@ -78,3 +78,27 @@ export async function getOrdenProduccionDetails(id: number): Promise<OrdenDetall
   return res.orden_produccion;
 }
 // export async function CreateOrdenProduccion(ordenData: {
+
+export async function actualizarFechaOrden(id: number, nuevaFecha: string) {
+  const data = {
+    id_orden_venta: id,
+    nueva_fecha_solicitada: nuevaFecha,
+  };
+  // console.log(data);
+  console.log(JSON.stringify(data));
+  const response = await fetch(
+    `${apiUrl}/crear-orden-venta/post-cambiar-fecha-solicitada`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Error updating fecha de entrega");
+  }
+  const res = await response.json();
+  return res;
+}
