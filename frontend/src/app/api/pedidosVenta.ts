@@ -1,4 +1,4 @@
-import { PedidosPorZonaAPI, PedidosVentas } from "../models/PedidosVentas";
+import { PedidoCliente, PedidosPorZonaAPI, PedidosVentas } from "../models/PedidosVentas";
 import { SolicitudVenta } from "../models/SolicitudVenta";
 import { PedidosAsignadosResponse } from "../pages/logistica/inicio/pedidos-asignados/page";
 import { PedidosVentasReprogramado } from "../pages/vendedor/inicio/pedidos-reprogramados/page";
@@ -238,4 +238,24 @@ export async function getOrdenesQueSeRetrasan(id_orden_venta: number): Promise<n
   }
    const responseData = await response.json();
 return responseData.afectadas;
+}
+
+export async function getEstadoPedido(cuil: string, pedidoId: string): Promise<PedidoCliente> {
+  const data = {
+    id_orden_venta: pedidoId,
+    cuil: cuil,
+  };
+  const response = await fetch(`${apiUrl}/get-orden-venta/get-detalle-pedido-por-id-y-cuil`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify( data ),
+  });
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseData.error ||"Error fetching estado del pedido");
+  }
+return responseData;
 }

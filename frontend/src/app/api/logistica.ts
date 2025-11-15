@@ -1,4 +1,5 @@
 import { Flota } from "../models/Flota";
+import { PedidoRetiro } from "../models/PedidosVentas";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function CreateFlota(flota: Flota) {
@@ -52,4 +53,34 @@ export async function crearEnvio(payload: { id_vehiculo: number|undefined; ids_p
     }
     return response.json();
 
+}
+
+
+export async function getPedidosRetiro(): Promise<PedidoRetiro[]> {
+    const response = await fetch(`${apiUrl}/get-orden-venta/get-orden-venta-lista`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    if (!response.ok) {
+        throw new Error("Error fetching pedidos para retiro");
+    }
+    const data = await response.json();
+    return Array.isArray(data.pedidos) ? data.pedidos : [];
+}
+
+export async function entregarPedido(idPedido: number) {
+    const response = await fetch(`${apiUrl}/crear-orden-venta/update-estado-orden-venta`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id_pedido: idPedido, estado: "entregada" }),
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al marcar el pedido como entregado");
+    }
+    return response.json();
 }

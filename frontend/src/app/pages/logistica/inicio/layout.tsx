@@ -9,7 +9,10 @@ const menuItems = [
   {name : "Asignar Envíos", href: "/pages/logistica/inicio/envios" },
   { name: "Pedidos Asignados", href: "/pages/logistica/inicio/pedidos-asignados" },
   { name: "Pedidos Despachados", href: "/pages/logistica/inicio/pedidos-despachados" },
+  { name: "Pedidos Para Retiro", href: "/pages/logistica/inicio/pedidos-retiro" },
+  
   { name: "Flota", href: "/pages/logistica/inicio/flota" },
+  
 ]
 
 

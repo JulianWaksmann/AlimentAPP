@@ -22,8 +22,7 @@ const LandingPage: React.FC = () => {
       <Header />
       <main className="flex flex-col items-center gap-6 px-4 py-10">
         <p className="max-w-2xl text-center text-lg text-neutral-dark">
-          Selecciona el perfil que deseas ingresar para navegar por los tableros de la organizacion.
-          Cada rol tiene un flujo independiente para que puedas validar la experiencia completa.
+          Selecciona el perfil que deseas ingresar.
         </p>
         {roles.map((role) => (
           <button

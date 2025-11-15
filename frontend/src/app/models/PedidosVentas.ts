@@ -67,3 +67,37 @@ export interface OrdenVentaAPI {
     peso_total_pedido: number;
     direccion_entrega: string;
 }
+
+
+export interface PedidoRetiro {
+    id_pedido_venta: number;
+    id_cliente: number;
+    razon_social: string;
+    email: string;
+    nombre_contacto: string;
+    apellido_contacto: string;
+    telefono: string;
+    productos: {
+        id_producto: number;
+        nombre_producto: string;
+        cantidad: number;
+    }[];
+    fecha_pedido: string;
+    fecha_entrega_solicitada: string;
+    valor_total_pedido: number;
+    peso_total_kg: number;
+}
+
+
+export interface PedidoCliente {
+    id_pedido_venta: number;
+    estado_pedido: string;
+    fecha_pedido: string;
+    fecha_entrega_solicitada: string;
+    valor_total_pedido: number;
+    productos: {
+        id_producto: number;
+        nombre: string;
+        cantidad: number;
+    }[];
+}
