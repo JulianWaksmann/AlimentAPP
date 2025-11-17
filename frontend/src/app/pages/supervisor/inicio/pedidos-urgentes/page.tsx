@@ -6,20 +6,23 @@ import { getPedidosUrgentes } from "@/app/api/pedidosVenta";
 import { getOrdenesQueSeRetrasan } from "@/app/api/pedidosVenta";
 import { updateEstadoSolicitudVenta } from "@/app/api/pedidosVenta";
 import Header from "@/app/components/Header";
-
+import { OrdenProduccionConRetraso } from "@/app/models/OrdenProduccion";
 
 const PedidosUrgentesPage = () => {
     const [pedidosUrgentes, setPedidosUrgentes] = useState<SolicitudVenta[]>([]);
     const [pedido, setPedido] = useState<SolicitudVenta | null>(null);
     const [openModalRetraso, setOpenModalRetraso] = useState(false);
-    const [ordenesRetrasadas, setOrdenesRetrasadas] = useState<number[]>([]);
+    const [ordenesRetrasadas, setOrdenesRetrasadas] = useState<OrdenProduccionConRetraso[]>([]);
+    // NUEVO: estado de carga
+    const [loadingRetraso, setLoadingRetraso] = useState(false);
 
     async function aprobarPedido(id: number) {
-        // Lógica para aprobar el pedido
         // await updateEstadoSolicitudVenta(id,  "confirmada" );
         console.log(`Pedido ${id} aprobado.`);
         setOpenModalRetraso(false);
         setPedido(null);
+        setOrdenesRetrasadas([]);
+        setLoadingRetraso(false);
         fetchPedidosUrgentes();
     }
 
@@ -30,9 +33,17 @@ const PedidosUrgentesPage = () => {
     }
 
     async function obtenerRetrasoDeOrdenes(id: number){
-        const response = await getOrdenesQueSeRetrasan(id);
-        setOrdenesRetrasadas(response);
-        console.log(response);
+        try {
+            setLoadingRetraso(true);
+            const response = await getOrdenesQueSeRetrasan(id);
+            setOrdenesRetrasadas(response);
+            console.log(response);
+        } catch (e) {
+            console.error(e);
+            setOrdenesRetrasadas([]);
+        } finally {
+            setLoadingRetraso(false);
+        }
     }
 
     async function fetchPedidosUrgentes() {
@@ -81,15 +92,19 @@ const PedidosUrgentesPage = () => {
                 </ul>
               </div>
               <div className="flex justify-between">
-                  <button className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-                  onClick={() => {
-                    setPedido(pedido);
-                    setOpenModalRetraso(true);
-                    obtenerRetrasoDeOrdenes(pedido.id_orden_venta);
-                  }}>
+                  <button
+                    className="rounded bg-success px-4 py-2 text-white hover:bg-green-600"
+                    onClick={() => {
+                      setPedido(pedido);
+                      setOpenModalRetraso(true);
+                      // limpiar estado anterior y mostrar loading antes de pedir datos
+                      setOrdenesRetrasadas([]);
+                      setLoadingRetraso(true);
+                      obtenerRetrasoDeOrdenes(pedido.id_orden_venta);
+                    }}>
                     Aprobar
                   </button>
-                  <button className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+                  <button className="rounded bg-error px-4 py-2 text-white hover:bg-red-600"
                   onClick={() => cancelarPedido(pedido.id_orden_venta)}>
                     Rechazar
                   </button>
@@ -99,30 +114,50 @@ const PedidosUrgentesPage = () => {
         </ul>
       )}
 
-      {openModalRetraso && pedido && ordenesRetrasadas != null &&(
+      {openModalRetraso && pedido && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            {ordenesRetrasadas.length === 0 ? (
+            {loadingRetraso ? (
+              <div className="flex items-center justify-center py-6">
+                <span className="mr-3 inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500"></span>
+                Cargando órdenes retrasadas...
+              </div>
+            ) : ordenesRetrasadas.length === 0 ? (
               <p>No se retrasará ninguna orden de producción.</p>
             ) : (
               <>
                 <h2 className="text-xl font-semibold mb-4">Órdenes Retrasadas</h2>
-                <ul className="list-disc list-inside">
-                  {ordenesRetrasadas.map((id) => (
-                    <li key={id}>Orden #{id}</li>
-                  ))}
-                </ul>
+                {/* tabla de las ordenes que se retrasaran con la fecha actual y la fecha a la que cambiara */}
+                <table className="w-full table-auto border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100"><th>Orden</th><th>Fecha Actual</th><th>Nueva Fecha</th></tr>
+                  </thead>
+                  <tbody>
+                    {ordenesRetrasadas?.map((orden) => (
+                      <tr key={orden.id_orden_produccion}>
+                        <td className="text-center">{orden.id_orden_produccion}</td>
+                        <td className="text-center">{orden.fecha_planificada_original}</td>
+                        <td className="text-center">{orden.fecha_planificada_nueva}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </>
             )}
             <div className="mt-4 flex justify-between">
               <button
                 className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-                onClick={() => setOpenModalRetraso(false)}
+                onClick={() => {
+                  setOpenModalRetraso(false);
+                  setOrdenesRetrasadas([]);
+                  setLoadingRetraso(false);
+                }}
               >
                 Cancelar
               </button>
               <button
-                className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+                disabled={loadingRetraso}
+                className={`rounded px-4 py-2 text-white ${loadingRetraso ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}
                 onClick={() => aprobarPedido(pedido.id_orden_venta)}
               >
                 Confirmar

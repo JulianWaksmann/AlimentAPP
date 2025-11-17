@@ -2,6 +2,9 @@ import { PedidoCliente, PedidosPorZonaAPI, PedidosVentas } from "../models/Pedid
 import { SolicitudVenta } from "../models/SolicitudVenta";
 import { PedidosAsignadosResponse } from "../pages/logistica/inicio/pedidos-asignados/page";
 import { PedidosVentasReprogramado } from "../pages/vendedor/inicio/pedidos-reprogramados/page";
+import { OrdenProduccionConRetraso } from "../models/OrdenProduccion";
+import { IdDireccion } from "../components/FormNuevoPedido";
+// import { Direccion } from "../components/FormNuevoPedido";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -28,8 +31,8 @@ export async function GetPedidosVenta(): Promise<PedidosVentas[]> {
   comentario?: string;
   con_envio: boolean;
   id_direccion_entrega?: number;
-  direccion_nueva_opcional?: string;
-  zona?: string;
+  // direccion_nueva_opcional?: string;
+  // zona?: string;
   prioritario?: boolean;}
 //metodo post para crear un nuevo pedido de venta
 //envio id cliente - id vendedor - fecha entrega - productos (array de id productos y cantidades de cada uno)
@@ -222,10 +225,11 @@ export async function getPedidosUrgentes(): Promise<SolicitudVenta[]> {
 return data.orden_ventas_pendiente_supervision_urgencia;
 }
 
-export async function getOrdenesQueSeRetrasan(id_orden_venta: number): Promise<number[]> {
+export async function getOrdenesQueSeRetrasan(id_orden_venta: number): Promise<OrdenProduccionConRetraso[]> {
   const data = {
     id_orden_venta: id_orden_venta,
   };
+  console.log(JSON.stringify( data ));
   const response = await fetch(`${apiUrl}/get-orden-venta/planificador_ordenes_produccion_simulacion_ov`, {
     method: "POST",
     headers: {
@@ -237,7 +241,7 @@ export async function getOrdenesQueSeRetrasan(id_orden_venta: number): Promise<n
     throw new Error("Error fetching ordenes que se retrasan");
   }
    const responseData = await response.json();
-return responseData.afectadas;
+return responseData.ordenes_afectadas;
 }
 
 export async function getEstadoPedido(cuil: string, pedidoId: string): Promise<PedidoCliente> {
@@ -257,5 +261,34 @@ export async function getEstadoPedido(cuil: string, pedidoId: string): Promise<P
   if (!response.ok) {
     throw new Error(responseData.error ||"Error fetching estado del pedido");
   }
+return responseData;
+}
+
+
+export async function crearDireccion(calle: string, numero: string, ciudad: string, provincia: string, id_cliente: number): Promise<IdDireccion> {
+  const data = {
+    id_cliente: id_cliente,
+    calle: calle,
+    numero: numero,
+    localidad: ciudad,
+    provincia: provincia
+  };
+  const response = await fetch(`${apiUrl}/crear-direccion/post-obtener-direcciones-normalizadas`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify( data ),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Error creating direccion: ${response.status} - ${JSON.stringify(
+        errorData,
+      )}`,
+    );
+  }
+   const responseData = await response.json();
+   console.log("Respuesta de crearDireccion en API:", responseData);
 return responseData;
 }

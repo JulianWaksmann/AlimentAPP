@@ -85,7 +85,7 @@ function extractMessage(err: unknown): string | null {
                     onClick={() => setEditingId(editingId === l.id ? null : l.id ?? null)}
                   >{editingId === l.id ? 'Cancelar edición' : 'Editar línea'}</button>
                   <button
-                    className={`flex-1 ${l.activa ? 'bg-yellow-500 text-black' : 'bg-green-600 text-white'} rounded px-3 py-2 text-sm`}
+                    className={`flex-1 ${l.activa ? 'bg-error text-white' : 'bg-success text-white'} rounded px-3 py-2 text-sm`}
                     onClick={() => setConfirmToggleId(l.id ?? null)}
                   >{l.activa ? 'Desactivar' : 'Activar'}</button>
                 </div>

@@ -8,23 +8,11 @@ import { GetNombreApellidoClientes } from "@/app/api/clientes";
 
 
 const GestionClientesPage = () => {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
 
-  useEffect(() => {
-    const fetchClientes = async () => {
-      try {
-        const res = await GetNombreApellidoClientes();
-        setClientes(res);
-      } catch (error) {
-        console.error("Error fetching clientes:", error);
-      }
-    };
-    fetchClientes();
-  }, []);
 
   return (
     <div>
-      <ClienteTable clientes={clientes} />
+      <ClienteTable  />
     </div>
 
   );

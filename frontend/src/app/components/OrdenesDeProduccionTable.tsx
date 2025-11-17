@@ -8,9 +8,10 @@ type Props = {
 
 const estadoColor: Record<string, string> = {
   en_proceso: "bg-yellow-100 text-yellow-700",
-  planificada: "bg-blue-100 text-blue-700",
+  lista_para_produccion: "bg-blue-100 text-blue-700",
   finalizada: "bg-green-100 text-green-700",
   pendiente: "bg-gray-100 text-gray-700",
+  // lista_para_produccion: "bg-purple-100 text-purple-700",
 };
 
 const sortOptions = [
@@ -149,11 +150,11 @@ export default function OrdenesDeProduccionTable({ ordenes }: Props) {
             <div className="flex justify-between items-center mb-2">
               <span className="font-bold text-primary">Orden #{orden.id_orden_produccion}</span>
               <span className={`px-2 py-1 rounded-full text-xs font-semibold ${estadoColor[orden.estado_orden_produccion] || "bg-gray-200 text-gray-700"}`}>
-                {orden.estado_orden_produccion.replace("_", " ")}
+                {orden.estado_orden_produccion.replaceAll("_", " ")}
               </span>
             </div>
             <div className="flex justify-between items-center mb-2">
-                <span className="font-semibold mb-1 text-sm">Pedido: {orden.id_orden_venta}</span> 
+                <span className="font-semibold mb-1 text-xs text-center bg-details rounded-full px-2 py-1 text-black">Pedido: {orden.id_orden_venta}</span> 
             <span className="font-semibold mb-1 text-sm">Cliente: {orden.nombre_cliente} {orden.apellido_cliente}    </span>              
             </div>
             <div className="text-sm"><span className="font-semibold">Producto:</span> {orden.nombre_producto} </div>
@@ -162,7 +163,7 @@ export default function OrdenesDeProduccionTable({ ordenes }: Props) {
             <div className="text-sm"><span className="font-semibold">Fecha fin de orden de producción:</span> {orden.fecha_fin_orden_produccion ? (new Date(orden.fecha_fin_orden_produccion ).getTime() > 0 ? new Date(orden.fecha_fin_orden_produccion).toLocaleDateString() : "-") : "-"}</div>
             <div className="text-sm"><span className="font-semibold">Fecha entrega del pedido:</span> {orden.fecha_entrega_solicitada_orden_venta ? (new Date(orden.fecha_entrega_solicitada_orden_venta).getTime() > 0 ? new Date(orden.fecha_entrega_solicitada_orden_venta).toLocaleDateString() : "-") : "-"}</div>
             <div className="flex gap-2 mt-2">
-              <button className="flex-1 bg-blue-500 text-white rounded px-2 py-1 text-xs" 
+              <button className="flex-1 bg-success text-white rounded px-2 py-1 text-xs" 
                 onClick={() => setShowMateriaPrimaId(showMateriaPrimaId === orden.id_orden_produccion ? null : orden.id_orden_produccion)}>
                 {showMateriaPrimaId === orden.id_orden_produccion ? "Ocultar materia prima" : "Ver materia prima"}
               </button>

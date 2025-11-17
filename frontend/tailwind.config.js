@@ -20,8 +20,8 @@ module.exports = {
           light: "#F3F4F6",
         },
         details: "#00D8C4",
-        success: "#16A34A",
-        error: "#DC2626",
+        success: "#05ABFF",
+        error: "#DF4651",
       },
       backgroundImage: {
         'gradient-primary': 'radial-gradient(circle, rgba(34, 30, 95, 1) 0%, rgba(142, 1, 251, 1) 50%, rgba(0, 216, 196, 1) 100%)',

@@ -81,3 +81,10 @@ export interface OrdenDetalle{
     //   }
     // ]
 // }
+
+export interface OrdenProduccionConRetraso {
+    id_orden_produccion: number;
+    fecha_planificada_original: string;
+    fecha_planificada_nueva: string;
+}
+

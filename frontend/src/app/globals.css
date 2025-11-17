@@ -3,3 +3,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Selector para el texto dentro del encabezado de la columna del día */
+.fc-col-header-cell-cushion {
+    /* 1. Cambiar el Tamaño de Fuente (Font Size) */
+    font-size: 1rem !important; /* Ajusta el valor según necesites (ej: 0.8rem para más pequeño) */
+    
+    /* 2. Cambiar la Tipografía (Font Family) */
+    font-family: 'Arial', sans-serif !important; /* Reemplaza 'Arial' con la fuente que deseas usar */
+    
+    /* (Opcional) Asegurar que no esté en negrita si no quieres */
+    font-weight: bold; 
+}
+@media (max-width: 768px) { 
+    /* Estilos más compactos y pequeños para dispositivos móviles */
+    .fc-col-header-cell-cushion {
+        font-size: 0.75rem !important; /* Más pequeño para pantallas pequeñas */
+        font-family: 'Verdana', sans-serif !important; /* Fuente para móvil (opcionalmente diferente) */
+        font-weight: 500; /* Puedes usar un peso específico si quieres un seminegrita */
+    }
+}
+
+@media (max-width: 768px) {
+    /* 1. Hace todos los botones más pequeños y compactos */
+    .fc-button {
+        font-size: 0.7rem !important;
+        padding: 0.15rem 0.4rem !important;
+        margin-right: 0.2rem !important;
+    }
+
+    /* 2. Remueve el espacio entre grupos de botones */
+    .fc-button-group {
+        margin: 0 !important;
+    }
+    
+    /* 3. Reduce el tamaño del título de la vista (ej: "Noviembre 2025") */
+    .fc-toolbar-title {
+        font-size: 1.2rem !important; 
+    }
+}
+
+/* Oculta la palabra 'All-day' en la columna */
+
+/* Si estás usando la vista de mes (dayGrid), el selector es diferente, pero ya estás en timeGrid */
+/* Reducir la altura de la franja de eventos de todo el día */

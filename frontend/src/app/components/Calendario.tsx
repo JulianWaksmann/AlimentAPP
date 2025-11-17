@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import type { EventContentArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -7,7 +7,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import {OrdenDetalle} from "../models/OrdenProduccion";
 import { getOrdenProduccionDetails } from "../api/produccion";
 import { actualizarFechaOrden } from "../api/produccion";
-
+import timeGridPlugin from "@fullcalendar/timegrid";
 
 
 type OrdenPlanificada = {
@@ -29,11 +29,15 @@ const estadoColor: Record<OrdenPlanificada['estado_pedido'], string> = {
 };
 
 export default function Calendario({ planificacion }: Props) {
-    
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<OrdenDetalle | null>(null);
     const [modalAdvertencia, setModalAdvertencia] = useState(false);
     const [fechaEntrega, setFechaEntrega] = useState<string>("");
+
+    // Nuevo: estado para buscador y resaltado
+    const [searchId, setSearchId] = useState<string>("");
+    const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+    const calendarRef = useRef<FullCalendar | null>(null);
 
     const events = useMemo(() => {
         if (!planificacion) return [];
@@ -42,7 +46,6 @@ export default function Calendario({ planificacion }: Props) {
                 id: String(o.id_orden_produccion),
                 title: `#${o.id_orden_produccion}`,
                 start: fecha,
-                backgroundColor: estadoColor[o.estado_pedido],
                 borderColor: estadoColor[o.estado_pedido],
                 extendedProps: { estado: o.estado_pedido },
             }))
@@ -87,35 +90,91 @@ export default function Calendario({ planificacion }: Props) {
 
 
     const renderEventContent = (eventInfo: EventContentArg) => {
-        const id = Number(eventInfo.event.id);
+        const id = String(eventInfo.event.id);
+        const isSelected = selectedEventId === id;
         return (
-            <div className="flex items-center justify-between gap-2">
-                <div className="text-xs font-medium" style={{ color: "white" }}>
+            <div
+                className={`bg-gray-200 p-0.5 border flex flex-col items-center justify-center hover:cursor-pointer ${
+                    isSelected ? "border-2 border-blue-600 ring-2 ring-blue-300" : "border-gray-200"
+                }`}
+                style={{ borderColor: isSelected ? undefined : eventInfo.event.borderColor as string }}
+            >
+                <div className="text-xs">
+                    {eventInfo.event.extendedProps.estado === "atrasado"
+                        ? "🟡"
+                        : eventInfo.event.extendedProps.estado === "en_tiempo"
+                        ? "🟢"
+                        : "🔴"}
+                </div>
+                <div
+                    className="text-xs"
+                    style={{ color: "black" }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleVerMas(Number(id));
+                    }}
+                >
                     {eventInfo.event.title}
                 </div>
-                <button
-                    onClick={(e) => {
-                        // evitar que FullCalendar haga navegación de evento
-                        e.stopPropagation();
-                        handleVerMas(id);
-                    }}
-                    className="ml-2 text-[10px] bg-white text-black rounded px-1 py-0.5"
-                >
-                    ver más
-                </button>
             </div>
         );
     };
 
+    // Nuevo: buscar por ID, navegar y resaltar
+    function handleSearch(e: React.FormEvent) {
+        e.preventDefault();
+        const id = searchId.trim();
+        if (!id) return;
+
+        const api = calendarRef.current?.getApi();
+        const ev = api?.getEventById(id);
+        if (ev && ev.start) {
+            setSelectedEventId(id);
+            api?.gotoDate(ev.start);
+            // Opcional: abrir modal con detalles
+            // fetchOrderDetails(Number(id));
+        } else {
+            setSelectedEventId(null);
+            alert("Orden no encontrada en el calendario.");
+        }
+    }
+
+    function clearSearch() {
+        setSearchId("");
+        setSelectedEventId(null);
+    }
+
     return (
         <div>
+            {/* Buscador de orden por ID */}
+            {/* <form onSubmit={handleSearch} className="flex items-center gap-2 mb-3">
+                <input
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    placeholder="Buscar Orden #"
+                    value={searchId}
+                    onChange={(e) => setSearchId(e.target.value)}
+                    className="w-40 rounded border px-3 py-2"
+                />
+                <button type="submit" className="px-3 py-2 bg-blue-600 text-white rounded">
+                    Buscar
+                </button>
+                <button type="button" onClick={clearSearch} className="px-3 py-2 border rounded">
+                    Limpiar
+                </button>
+            </form> */}
+
             <FullCalendar
-                plugins={[dayGridPlugin, interactionPlugin]}
+                ref={calendarRef}
+                dayHeaderFormat={{ weekday: "short" }}
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
+                headerToolbar={{ left: "prev,next today", right: "title" }}
+                defaultAllDayEventDuration={"24:00"}
                 events={events}
                 eventContent={renderEventContent}
-                height="auto"
-                dayMaxEventRows={true}
+                weekends={false}
             />
 
             {modalOpen && selectedOrder && (
@@ -144,13 +203,13 @@ export default function Calendario({ planificacion }: Props) {
                         <div className="mt-4 flex justify-end">
                             <button
                                 onClick={() => setModalOpen(false)}
-                                className="px-4 py-2 mx-1 bg-blue-600 text-white rounded"
+                                className="px-4 py-2 mx-1 bg-success text-white rounded"
                             >
                                 Cerrar
                             </button>
                             <button 
                                 onClick={() => {setModalAdvertencia(true)}}
-                               className="px-4 mx-1 py-2 bg-red-600 text-white rounded">
+                               className="px-4 mx-1 py-2 bg-error text-white rounded">
                                 Replanificar
                             </button>
                         </div>
@@ -182,7 +241,7 @@ export default function Calendario({ planificacion }: Props) {
                                            setModalAdvertencia(false);
                                            setModalOpen(false);
                                        }}
-                                       className="px-4 py-2 mx-1 bg-red-600 text-white rounded"
+                                       className="px-4 py-2 mx-1 bg-error text-white rounded"
                                    >
                                        Replanificar
                                    </button>

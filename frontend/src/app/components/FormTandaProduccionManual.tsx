@@ -242,7 +242,7 @@ export default function GenerarTandaForm({ lineas: initialLineas, onUpdated }: P
             <button
               onClick={handleGenerateClick}
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-md shadow-sm disabled:opacity-60"
+              className="flex-1 px-4 py-2 bg-success text-white rounded-md shadow-sm disabled:opacity-60"
             >
               {loading ? "Procesando..." : "Generar Tanda"}
             </button>

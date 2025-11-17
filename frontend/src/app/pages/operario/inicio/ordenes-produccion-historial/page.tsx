@@ -21,7 +21,6 @@ const [ordenes, setOrdenes] = useState<OrdenProduccion[]>([]);
 
     <Header></Header>
         <main className="p-6 space-y-4">
-      <h2 className="text-2xl font-bold text-primary">Panel Operario</h2>
       <div className="">
         <OrdenesDeProduccionTable ordenes={ordenes} />
       </div>
