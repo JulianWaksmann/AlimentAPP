@@ -6,12 +6,13 @@ import { verificarEntrega, verPedidos } from "@/app/api/logistica"
 import Header from "../components/Header"
 
 const EnviosPage = () => {
-    const [verificado, setVerificado] = useState(false)
+    const [verificado, setVerificado] = useState(true)
     const [dniTransportista, setDniTransportista] = useState("")
     const [pedidosAsignados, setPedidosAsignados] = useState<PedidosAsignadosResponse>() //estado "pendiente"
     const [pedidosDespachados, setPedidosDespachados] = useState<PedidosAsignadosResponse>() //estado "despachado"
     const [pedidosEntregados, setPedidosEntregados] = useState<PedidosAsignadosResponse>() //estado "entregada"
     const [cuilCliente, setCuilCliente] = useState("")
+    const [activeTab, setActiveTab] = useState('asignados')
 
     async function consultarPedidos(){
         try{
@@ -46,8 +47,8 @@ const EnviosPage = () => {
     return (
     <div>
         <Header/>
-
-        <div className="rounded-lg bg-white p-6 w-full">
+        <h1 className="text-2xl color-primary font-bold text-center mt-3">PEDIDOS</h1>
+        <div className="rounded-lg bg-white p-3 w-full">
         {!verificado &&(
             <div className="flex flex-col items-center justify-center p-4  rounded-lg bg-white shadow-md w-full">
                 <h2 className="text-2xl font-bold mb-4">Bienvenido</h2>
@@ -66,63 +67,96 @@ const EnviosPage = () => {
         )}
         {verificado && (
             <div>
-                {/* Aquí puedes agregar el contenido que se mostrará cuando el usuario esté verificado */}
-                <div>
-                    { /* Renderizar pedidos asignados */}
-                    <div>
-                        <h2>Pedidos Asignados</h2>
-                        {pedidosAsignados && pedidosAsignados.envios.length > 0 ? (
-                            <ul>
-                                {pedidosAsignados.envios.map((pedido) => (
-                                    <li key={pedido.id_envio}>
-                                        Pedido ID: {pedido.id_envio} - Cliente: {pedido.razon_social}
-
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>No hay pedidos asignados.</p>
-                        )}
-                    </div>
-
-                    { /* Renderizar pedidos despachados */}
-                    <div>
-                        <h2>Pedidos Despachados</h2>
-                        {pedidosDespachados && pedidosDespachados.envios.length > 0 ? (
-                            <ul>
-                                {pedidosDespachados.envios.map((pedido) => (
-                                    <li key={pedido.id_envio}>
-                                        Pedido ID: {pedido.id_envio} - Cliente: {pedido.razon_social}
-                                        <button onClick={() => marcarEntregaPedido(pedido.id_envio)}>
-                                            Marcar como Entregado
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>No hay pedidos despachados.</p>
-                        )}
-                    </div>
-                    
-
-                    { /* Renderizar pedidos entregados */}                                        
-                                        
-                    <div>
-                        <h2>Pedidos Entregados</h2>
-                        {pedidosEntregados && pedidosEntregados.envios.length > 0 ? (
-                            <ul>
-                                {pedidosEntregados.envios.map((pedido) => (
-                                    <li key={pedido.id_envio}>
-                                        Pedido ID: {pedido.id_envio} - Cliente: {pedido.razon_social}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>No hay pedidos entregados.</p>
-                        )}
-                    </div>
+                <div className="border-b border-gray-200">
+                    <nav className="-mb-px flex space-x-8 justify-center" aria-label="Tabs">
+                        <button
+                            onClick={() => setActiveTab('asignados')}
+                            className={`${
+                                activeTab === 'asignados'
+                                    ? 'border-details text-details'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-medium`}
+                        >
+                           Asignados
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('despachados')}
+                            className={`${
+                                activeTab === 'despachados'
+                                    ? 'border-details text-details'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-medium`}
+                        >
+                            Despachados
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('entregados')}
+                            className={`${
+                                activeTab === 'entregados'
+                                    ? 'border-details text-details'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-medium`}
+                        >
+                           Entregados
+                        </button>
+                    </nav>
                 </div>
 
+                <div className="mt-4">
+                    {activeTab === 'asignados' && (
+                        <div>
+                            <h2>Pedidos Asignados</h2>
+                            {pedidosAsignados && pedidosAsignados.envios.length > 0 ? (
+                                <ul>
+                                    {pedidosAsignados.envios.map((pedido) => (
+                                        <li key={pedido.id_envio}>
+                                            Pedido ID: {pedido.id_envio} - Cliente: {pedido.razon_social}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No hay pedidos asignados.</p>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'despachados' && (
+                        <div>
+                            <h2>Pedidos Despachados</h2>
+                            {pedidosDespachados && pedidosDespachados.envios.length > 0 ? (
+                                <ul>
+                                    {pedidosDespachados.envios.map((pedido) => (
+                                        <li key={pedido.id_envio}>
+                                            Pedido ID: {pedido.id_envio} - Cliente: {pedido.razon_social}
+                                            <button onClick={() => marcarEntregaPedido(pedido.id_envio)}>
+                                                Marcar como Entregado
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No hay pedidos despachados.</p>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'entregados' && (
+                        <div>
+                            <h2>Pedidos Entregados</h2>
+                            {pedidosEntregados && pedidosEntregados.envios.length > 0 ? (
+                                <ul>
+                                    {pedidosEntregados.envios.map((pedido) => (
+                                        <li key={pedido.id_envio}>
+                                            Pedido ID: {pedido.id_envio} - Cliente: {pedido.razon_social}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No hay pedidos entregados.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         )}
         </div>
