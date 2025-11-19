@@ -222,20 +222,21 @@ export default function Calendario({ planificacion }: Props) {
                         <div className="bg-white rounded-lg p-6 max-w-md w-full">
                                <h2 className="text-xl font-bold mb-4">Advertencia</h2>
                                <p className="mb-4">Seleccione la nueva fecha de entrega para la Orden #{selectedOrder?.id}?</p>
+                               <p className="text-gray-600 text-xs">la fecha debe ser mayor a la fecha solicitada del pedido</p>
                                <div>
                                     <input id="fechaEntrega" required type="date" min={selectedOrder?.fecha_entrega_solicitada ? new Date(selectedOrder.fecha_entrega_solicitada).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]} value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} className="w-full rounded border px-3 py-2" />
                                 </div>  
                                
                                <div className="flex justify-end mt-4">
                                    <button
-                                       onClick={() => setModalAdvertencia(false)}
+                                       onClick={() => {setModalAdvertencia(false); setFechaEntrega("")}}
                                        className="px-4 py-2 mx-1 bg-gray-300 text-black rounded"
                                    >
                                        Cancelar
                                    </button>
                                    <button
                                    type="submit"
-                                       disabled={!fechaEntrega || (selectedOrder?.fecha_entrega_solicitada ? fechaEntrega < new Date(selectedOrder.fecha_entrega_solicitada).toISOString().split("T")[0] : fechaEntrega < new Date().toISOString().split("T")[0])}
+                                       disabled={!fechaEntrega || (selectedOrder?.fecha_entrega_solicitada ? fechaEntrega > new Date(selectedOrder.fecha_entrega_solicitada).toISOString().split("T")[0] : fechaEntrega > new Date().toISOString().split("T")[0])}
                                        onClick={() => {
                                            // Lógica para replanificar la orden
                                            actualizarFecha(selectedOrder!.id_orden_venta, fechaEntrega);
