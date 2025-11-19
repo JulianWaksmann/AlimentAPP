@@ -74,7 +74,7 @@ function extractMessage(err: unknown): string | null {
                   <div className="text-xs text-gray-500">{l.descripcion}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded ${l.activa ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{l.activa ? 'Activa' : 'Inactiva'}</span>
+                  <span className={`text-xs px-2 py-1 rounded ${l.activa ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{l.activa ? 'Disponible' : 'Ocupada'}</span>
                 </div>
               </div>
 
