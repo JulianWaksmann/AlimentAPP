@@ -247,7 +247,7 @@ const FormNuevoPedido = () => {
       // zona: undefined,
       prioritario: urgente,
     };
-    // limpiarFormulario();
+    limpiarFormulario();
 
     try {
       // Llamar a la función para crear el nuevo pedido

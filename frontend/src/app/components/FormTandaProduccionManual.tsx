@@ -177,6 +177,21 @@ export default function GenerarTandaForm({ lineas: initialLineas, onUpdated }: P
             </div>
           </div>
 
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={handleGenerateClick}
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-success text-white rounded-md shadow-sm disabled:opacity-60"
+            >
+              {loading ? "Procesando..." : "Generar Tanda"}
+            </button>
+            <button
+              onClick={() => { setCheckedOrders({}); }}
+              className="px-4 py-2 bg-gray-100 rounded-md"
+            >
+              Limpiar
+            </button>
+          </div>
           <div className="space-y-2">
             {(lineaSeleccionada.ordenes_de_produccion_aceptadas ?? []).map((o) => {
               const kg = Number(o.cantidad_kg_orden_produccion) || 0;
@@ -238,7 +253,7 @@ export default function GenerarTandaForm({ lineas: initialLineas, onUpdated }: P
             )}
           </div>
 
-          <div className="mt-4 flex gap-2">
+          {/* <div className="mt-4 flex gap-2">
             <button
               onClick={handleGenerateClick}
               disabled={loading}
@@ -252,7 +267,7 @@ export default function GenerarTandaForm({ lineas: initialLineas, onUpdated }: P
             >
               Limpiar
             </button>
-          </div>
+          </div> */}
         </div>
       ) : (
         <div className="text-center text-sm text-gray-500">Seleccioná una línea para ver órdenes.</div>

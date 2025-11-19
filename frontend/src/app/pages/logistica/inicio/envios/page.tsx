@@ -1,12 +1,12 @@
 "use client";
 import Header from "@/app/components/Header";
 import { Flota } from "@/app/models/Flota";
-import { OrdenVentaAPI, PedidosPorZonaAPI, PedidosTerminados } from "@/app/models/PedidosVentas";
+import { PedidosTerminados } from "@/app/models/PedidosVentas";
 import React, { useEffect, useState } from "react";
 import { GetFlotas, crearEnvio } from "@/app/api/logistica"; // Asegúrate de que crearEnvio esté importado
 import { getPedidosTerminados } from "@/app/api/pedidosVenta";
  
-const ZONAS = ["zona norte", "zona sur", "zona este", "zona oeste"];
+// const ZONAS = ["zona norte", "zona sur", "zona este", "zona oeste"];
 
 const EnviosPage = () => {
 
@@ -16,7 +16,7 @@ const EnviosPage = () => {
 
     // Estados para la lógica de asignación
     const [selectedFlotaId, setSelectedFlotaId] = useState<number | null>(null);
-    const [selectedZona, setSelectedZona] = useState<string>("");
+    // const [selectedZona, setSelectedZona] = useState<string>("");
     const [pedidosSeleccionados, setPedidosSeleccionados] = useState<Record<number, boolean>>({});
     
     const [isConfirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -44,7 +44,7 @@ const EnviosPage = () => {
                     valor_total_pedido: orden.valor_total_pedido,
                     peso_total_kg: orden.peso_total_pedido,
                     direccion_entrega: orden.direccion_entrega,
-                    zona: zona.zona,
+                    // zona: zona.zona,
                 }))
             );
             setPedidos(allPedidos);
@@ -69,9 +69,9 @@ const EnviosPage = () => {
     }, [selectedFlotaId, flotas]);
 
     const pedidosFiltrados = React.useMemo(() => {
-        if (!selectedZona) return [];
-        return pedidos.filter((p) => p.zona.toLowerCase() === selectedZona.toLowerCase());
-    }, [selectedZona, pedidos]);
+        // Ya no filtramos por zona: mostramos todos los pedidos terminados
+        return pedidos;
+    }, [pedidos]);
 
     const pesoTotalSeleccionado = React.useMemo(() => {
         return pedidosFiltrados.reduce((acc, pedido) => {
@@ -108,13 +108,12 @@ const EnviosPage = () => {
 
     const resetState = () => {
         setSelectedFlotaId(null);
-        setSelectedZona("");
         setPedidosSeleccionados({});
     };
 
     const handleFinalizarAsignacion = () => {
-        if (!vehiculoSeleccionado || !selectedZona || Object.keys(pedidosSeleccionados).filter(k => pedidosSeleccionados[Number(k)]).length === 0) {
-            setModalContent({ title: "Datos incompletos", message: "Debe seleccionar un vehículo, una zona y al menos un pedido.", isError: true });
+        if (!vehiculoSeleccionado || Object.keys(pedidosSeleccionados).filter(k => pedidosSeleccionados[Number(k)]).length === 0) {
+            setModalContent({ title: "Datos incompletos", message: "Debe seleccionar un vehículo y al menos un pedido.", isError: true });
             setResultModalOpen(true);
             return;
         }
@@ -171,13 +170,13 @@ const EnviosPage = () => {
                             {flotas.map(f => <option key={f.id} value={f.id}>{f.nombre_conductor} - {f.modelo} (Cap: {f.capacidad_kg} kg)</option>)}
                         </select>
                     </div>
-                    <div>
+                    {/* <div>
                         <label htmlFor="zona" className="block text-sm font-medium text-gray-700 mb-1">Seleccionar Zona</label>
                         <select id="zona" value={selectedZona} onChange={(e) => { setSelectedZona(e.target.value); setPedidosSeleccionados({}); }} className="w-full p-2 border rounded-md bg-white shadow-sm">
                             <option value="" disabled>-- Seleccione una zona --</option>
                             {ZONAS.map(z => <option key={z} value={z}>{z.charAt(0).toUpperCase() + z.slice(1)}</option>)}
                         </select>
-                    </div>
+                    </div> */}
                 </div>
 
                 {vehiculoSeleccionado && (
@@ -193,7 +192,7 @@ const EnviosPage = () => {
 
                 {loading ? <p className="text-center text-gray-500">Cargando pedidos...</p> :
                     <div className="space-y-3">
-                        <h3 className="text-lg font-semibold">Pedidos para {selectedZona || '...'}</h3>
+                        {/* <h3 className="text-lg font-semibold">Pedidos para {selectedZona || '...'}</h3> */}
                         {pedidosFiltrados.length > 0 ? (
                             pedidosFiltrados.map(pedido => {
                                 const isChecked = !!pedidosSeleccionados[pedido.id_pedido_venta];
@@ -209,12 +208,12 @@ const EnviosPage = () => {
                                 );
                             })
                         ) : (
-                            <p className="text-center text-gray-500 py-4">No hay pedidos para la zona seleccionada o seleccione una zona.</p>
+                            <p className="text-center text-gray-500 py-4">No hay pedidos disponibles.</p>
                         )}
                     </div>
                 }
 
-                <button onClick={handleFinalizarAsignacion} disabled={isSubmitting || !vehiculoSeleccionado || !selectedZona || Object.keys(pedidosSeleccionados).filter(k => pedidosSeleccionados[Number(k)]).length === 0} className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition-opacity disabled:opacity-50">
+                <button onClick={handleFinalizarAsignacion} disabled={isSubmitting || !vehiculoSeleccionado || Object.keys(pedidosSeleccionados).filter(k => pedidosSeleccionados[Number(k)]).length === 0} className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition-opacity disabled:opacity-50">
                     {isSubmitting ? "Procesando..." : "Finalizar Asignación"}
                 </button>
 
@@ -225,7 +224,6 @@ const EnviosPage = () => {
                             <h3 className="text-xl font-bold mb-4">Confirmar Asignación</h3>
                             <div className="text-sm space-y-2 mb-6">
                                 <p><strong>Vehículo:</strong> {vehiculoSeleccionado?.modelo}</p>
-                                <p><strong>Zona:</strong> {selectedZona}</p>
                                 <p><strong>Peso Total:</strong> {pesoTotalSeleccionado.toFixed(2)} kg</p>
                                 <p className="font-bold">Pedidos a asignar ({pedidosParaConfirmacion.length}):</p>
                                 <ul className="list-disc list-inside max-h-40 overflow-y-auto">

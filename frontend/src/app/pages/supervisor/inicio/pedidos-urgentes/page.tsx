@@ -27,7 +27,7 @@ const PedidosUrgentesPage = () => {
     }
 
     async function cancelarPedido(id:number){
-        // await updateEstadoSolicitudVenta(id,  "cancelada" );
+        await updateEstadoSolicitudVenta(id,  "cancelada" );
         console.log(`Pedido ${id} cancelado.`);
         fetchPedidosUrgentes();
     }

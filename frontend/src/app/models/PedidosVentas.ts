@@ -39,7 +39,7 @@ export interface PedidosTerminados {
     valor_total_pedido: number;
     peso_total_kg: number; // from peso_total_pedido
     direccion_entrega: string;
-    zona: string;
+    // zona: string;
 }
 
 // This represents the actual structure from the /get-pedidos-por-zona endpoint

@@ -6,15 +6,17 @@ import { verificarEntrega, verPedidos } from "@/app/api/logistica"
 import Header from "../components/Header"
 
 const EnviosPage = () => {
-    const [verificado, setVerificado] = useState(true)
+    const [verificado, setVerificado] = useState(false)
     const [dniTransportista, setDniTransportista] = useState("")
     const [pedidosAsignados, setPedidosAsignados] = useState<PedidosAsignadosResponse>() //estado "pendiente"
     const [pedidosDespachados, setPedidosDespachados] = useState<PedidosAsignadosResponse>() //estado "despachado"
     const [pedidosEntregados, setPedidosEntregados] = useState<PedidosAsignadosResponse>() //estado "entregada"
     const [cuilCliente, setCuilCliente] = useState("")
     const [activeTab, setActiveTab] = useState('asignados')
+    const [modalError, setModalError] = useState<boolean>(false);
 
     async function consultarPedidos(){
+        console.log("Consultando pedidos para DNI:", dniTransportista);
         try{
             const pedidosAsignadosResponse = await verPedidos(dniTransportista, "pendiente");
             setPedidosAsignados(pedidosAsignadosResponse);
@@ -28,8 +30,10 @@ const EnviosPage = () => {
             setPedidosEntregados(pedidosEntregadosResponse);
             console.log("Pedidos Entregados:", pedidosEntregadosResponse);
 
+            setVerificado(true);
         } catch (error) {
             console.error("Error al consultar el DNI:", error);
+            setModalError(true);
         }
     }
 
@@ -161,6 +165,20 @@ const EnviosPage = () => {
             </div>
         )}
         </div>
+        {modalError && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg">
+                    <h2 className="text-xl font-bold mb-4">Error</h2>
+                    <p className="mb-4">Por favor, verifique su DNI nuevamente.</p>
+                    <button
+                        onClick={() => setModalError(false)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        )}
     </div>
     )
     }
