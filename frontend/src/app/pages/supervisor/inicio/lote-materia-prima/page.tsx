@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { LotesMP } from "@/app/models/MateriaPrima"
 import { getLotes } from "@/app/api/materiaPrima"
 import Header from "@/app/components/Header"
+import { obtenerPDF } from "@/app/api/materiaPrima"
 
 const LoteMateriaPrimaPage = () => {
   const [materias, setMaterias] = useState<LotesMP[]>([])
@@ -15,7 +16,6 @@ const LoteMateriaPrimaPage = () => {
       setLoading(true)
       try {
         const response = await getLotes()
-        // soporta respuesta con { materias_primas: [...] } o directamente [...]
         function hasMateriasPrimas(obj: unknown): obj is { materias_primas: LotesMP[] } {
           return (
             typeof obj === "object" &&
@@ -35,6 +35,45 @@ const LoteMateriaPrimaPage = () => {
     }
     fetchData()
   }, [])
+
+  async function descargarPDF(id_lote: number) {
+    let objectUrl: string | null = null;
+    try{
+        const base64String = await obtenerPDF(id_lote);
+
+        const pdfBlob = base64ToBlob(base64String, 'application/pdf');
+
+        objectUrl = URL.createObjectURL(pdfBlob);
+
+        const newWindow = window.open(objectUrl, '_blank');
+        
+        if (!newWindow) {
+             console.warn("La ventana emergente fue bloqueada por el navegador. Habilítela para ver el PDF.");
+        }
+
+    } catch (error) {
+        console.error("Error al abrir el PDF:", error);
+    } 
+        if (objectUrl) {
+       URL.revokeObjectURL(objectUrl);
+    }
+
+}
+
+function base64ToBlob(base64: string, mimeType: string = 'application/pdf'): Blob {
+    // 1. Decodificar la cadena Base64
+    const byteCharacters = atob(base64);
+    
+    // 2. Crear un array de bytes binarios (Uint8Array)
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    
+    // 3. Crear el Blob especificando el tipo MIME
+    return new Blob([byteArray], { type: mimeType });
+}
 
   const selectedMateria = materias.find(m => m.id_materia_prima === selectedId) ?? null
 
@@ -128,7 +167,7 @@ const LoteMateriaPrimaPage = () => {
                         </div>
                         <div className="ml-3">
                           <button
-                            onClick={() => console.log("Descargar informe - id_lote:", lote.id_lote)}
+                            onClick={() => {console.log("Descargar informe - id_lote:", lote.id_lote); descargarPDF(lote.id_lote) }}
                             className="px-3 py-2 bg-primary text-white rounded-md text-sm"
                           >
                             Descargar informe
