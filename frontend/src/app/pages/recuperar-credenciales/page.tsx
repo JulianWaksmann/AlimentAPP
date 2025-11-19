@@ -95,7 +95,7 @@ const RecuperarCredencialesPage = () => {
         return (
             <div>
                 <Header />
-                <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+                <div className="min-h-screen bg-neutral-light flex flex-col items-center justify-center px-4">
                     <div className="w-full max-w-sm bg-white rounded-lg shadow-md p-6 mt-6">
                         <h1 className="text-2xl font-bold text-center mb-4 text-primary">Recuperar Credenciales</h1>
                         {step === 1 && (

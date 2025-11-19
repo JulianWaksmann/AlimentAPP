@@ -1,5 +1,6 @@
 import { Flota } from "../models/Flota";
 import { PedidoRetiro } from "../models/PedidosVentas";
+import { PedidosAsignadosResponse } from "../pages/vendedor/inicio/pedidos-en-camino/page";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function CreateFlota(flota: Flota) {
@@ -81,6 +82,44 @@ export async function entregarPedido(idPedido: number) {
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Error al marcar el pedido como entregado");
+    }
+    return response.json();
+}
+
+
+export async function verPedidos(dni: string, estado: string): Promise<PedidosAsignadosResponse> {
+    const data = {
+        dni_conductor : dni,
+        estado_envio: estado
+    }
+    const response = await fetch(`${apiUrl}/gestion-envios/post-obtener-envios-por-estado-y-conductor`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        throw new Error("Error fetching pedidos para retiro");
+    }
+    return response.json();
+}
+
+export async function verificarEntrega(dni: string, id_envio: number) {
+    const data = {
+        dni_cliente : dni,
+        id_envio: id_envio
+    }
+    const response = await fetch(`${apiUrl}/gestion-envios/post-verificar-entrega`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al verificar la entrega");
     }
     return response.json();
 }

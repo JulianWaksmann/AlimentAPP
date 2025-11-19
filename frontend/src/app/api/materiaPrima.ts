@@ -1,4 +1,5 @@
 
+import { LotesMP } from "../models/MateriaPrima";
 import { MateriaPrimaXProovedor } from "../models/MateriaPrimaXProovedor";
 import { PedidoMateriaPrima } from "../models/PedidoMateriaPrima";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -151,5 +152,21 @@ export async function aceptarMP() {
     return data;
 
   // return response.json();
+
+}
+
+export async function getLotes(): Promise<LotesMP[]>  {
+  const response = await fetch(`${apiUrl}/gestion-materia-prima/get-all-lotes-materia-prima`, {
+    method: "GET",
+    headers: {
+    "Content-Type": "application/json",
+  },
+});
+  if (!response.ok) {
+    throw new Error("Error fetching stock materia prima");
+  }
+    const data = await response.json();
+    return data.materias_primas;
+
 
 }

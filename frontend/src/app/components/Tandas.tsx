@@ -131,6 +131,7 @@ const Tandas: React.FC<TandasProps> = ({
       setConfirmLoading(true);
       await cambiarEstado(selectedLinea.ids);
       await fetchTandas();
+      window.location.reload();
     } catch (err) {
       console.error(err);
     } finally {
