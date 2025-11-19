@@ -1,4 +1,4 @@
-import { PedidoCliente, PedidosPorZonaAPI, PedidosVentas } from "../models/PedidosVentas";
+import { PedidoCliente, PedidosTerminados, PedidosVentas } from "../models/PedidosVentas";
 import { SolicitudVenta } from "../models/SolicitudVenta";
 import { PedidosAsignadosResponse } from "../pages/logistica/inicio/pedidos-asignados/page";
 import { PedidosVentasReprogramado } from "../pages/vendedor/inicio/pedidos-reprogramados/page";
@@ -97,8 +97,8 @@ export async function updateEstadoSolicitudVenta(id: number, estado: "confirmada
 }
 
 
-export async function getPedidosTerminados(): Promise<PedidosPorZonaAPI[]> {
-  const response = await fetch(`${apiUrl}/gestion-envios/get-pedidos-por-zona`, {
+export async function getPedidosTerminados(): Promise<PedidosTerminados[]> {
+  const response = await fetch(`${apiUrl}/get-orden-venta/get-orden-venta-lista-con-envio`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -108,7 +108,7 @@ export async function getPedidosTerminados(): Promise<PedidosPorZonaAPI[]> {
     throw new Error("Error fetching pedidos terminados");
   }
    const data = await response.json();
-return data.zonas;
+return data.pedidos;
 }
 
 

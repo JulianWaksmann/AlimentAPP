@@ -92,6 +92,7 @@ export async function verPedidos(dni: string, estado: string): Promise<PedidosAs
         dni_conductor : dni,
         estado_envio: estado
     }
+    console.log(JSON.stringify(data));
     const response = await fetch(`${apiUrl}/gestion-envios/post-obtener-envios-por-estado-y-conductor`, {
         method: "POST",
         headers: {
@@ -102,7 +103,8 @@ export async function verPedidos(dni: string, estado: string): Promise<PedidosAs
     if (!response.ok) {
         throw new Error("Error fetching pedidos para retiro");
     }
-    return response.json();
+    const responseData = await response.json();
+    return responseData.vehiculo[0];
 }
 
 export async function verificarEntrega(dni: string, id_envio: number) {
@@ -110,7 +112,7 @@ export async function verificarEntrega(dni: string, id_envio: number) {
         dni_cliente : dni,
         id_envio: id_envio
     }
-    const response = await fetch(`${apiUrl}/gestion-envios/post-verificar-entrega`, {
+    const response = await fetch(`${apiUrl}/gestion-envios/post-entregar-envio-por-dni`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -118,6 +120,7 @@ export async function verificarEntrega(dni: string, id_envio: number) {
         body: JSON.stringify(data),
     });
     if (!response.ok) {
+        console.log("Error en la respuesta de verificarEntrega");
         const errorData = await response.json();
         throw new Error(errorData.error || "Error al verificar la entrega");
     }

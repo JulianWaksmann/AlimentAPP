@@ -35,18 +35,18 @@ export interface PedidosTerminados {
         cantidad: number;
     }[];
     fecha_pedido: string;
-    fecha_entrega: string;
+    fecha_entrega_solicitada: string;
     valor_total_pedido: number;
     peso_total_kg: number; // from peso_total_pedido
-    direccion_entrega: string;
+    direccion_text: string;
     // zona: string;
 }
 
 // This represents the actual structure from the /get-pedidos-por-zona endpoint
-export interface PedidosPorZonaAPI {
-    zona: string;
-    ordenes_venta: OrdenVentaAPI[];
-}
+// export interface PedidosPorZonaAPI {
+//     zona: string;
+//     ordenes_venta: OrdenVentaAPI[];
+// }
 
 export interface OrdenVentaAPI {
     id_orden_venta: number;

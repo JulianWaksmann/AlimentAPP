@@ -28,26 +28,26 @@ const EnviosPage = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const pedidosPorZonaResponse = await getPedidosTerminados();
-            const allPedidos: PedidosTerminados[] = pedidosPorZonaResponse.flatMap(zona =>
-                zona.ordenes_venta.map(orden => ({
-                    id_pedido_venta: orden.id_orden_venta,
-                    id_cliente: orden.id_cliente,
-                    razon_social: orden.razon_social,
-                    email: orden.email,
-                    nombre_contacto: orden.nombre_contacto,
-                    apellido_contacto: orden.apellido_contacto,
-                    telefono: orden.telefono,
-                    productos: orden.productos,
-                    fecha_pedido: orden.fecha_pedido,
-                    fecha_entrega: orden.fecha_entrega,
-                    valor_total_pedido: orden.valor_total_pedido,
-                    peso_total_kg: orden.peso_total_pedido,
-                    direccion_entrega: orden.direccion_entrega,
-                    // zona: zona.zona,
-                }))
-            );
-            setPedidos(allPedidos);
+            const pedidosResponse = await getPedidosTerminados();
+            // const allPedidos: PedidosTerminados[] = pedidosPorZonaResponse.flatMap(zona =>
+            //     zona.ordenes_venta.map(orden => ({
+            //         id_pedido_venta: orden.id_orden_venta,
+            //         id_cliente: orden.id_cliente,
+            //         razon_social: orden.razon_social,
+            //         email: orden.email,
+            //         nombre_contacto: orden.nombre_contacto,
+            //         apellido_contacto: orden.apellido_contacto,
+            //         telefono: orden.telefono,
+            //         productos: orden.productos,
+            //         fecha_pedido: orden.fecha_pedido,
+            //         fecha_entrega_solicitada: orden.fecha_entrega_solicitada,
+            //         valor_total_pedido: orden.valor_total_pedido,
+            //         peso_total_kg: orden.peso_total_pedido,
+            //         direccion_text: orden.direccion_entrega,
+            //         // zona: zona.zona,
+            //     }))
+            // );
+            setPedidos(pedidosResponse);
 
             const flotasResponse = await GetFlotas();
             setFlotas(flotasResponse);
@@ -76,14 +76,18 @@ const EnviosPage = () => {
     const pesoTotalSeleccionado = React.useMemo(() => {
         return pedidosFiltrados.reduce((acc, pedido) => {
             if (pedidosSeleccionados[pedido.id_pedido_venta]) {
-                return acc + (pedido.peso_total_kg || 0);
+                const peso = Number(pedido.peso_total_kg) || 0;
+                return acc + peso;
+                // return acc + (pedido.peso_total_kg || 0);
             }
             return acc;
         }, 0);
+        
+
     }, [pedidosSeleccionados, pedidosFiltrados]);
 
     const capacidadRestante = vehiculoSeleccionado
-        ? vehiculoSeleccionado.capacidad_kg - pesoTotalSeleccionado
+        ? (Number(vehiculoSeleccionado.capacidad_kg ) || 0)  -  pesoTotalSeleccionado
         : 0;
 
     const handleSelectPedido = (pedidoId: number, peso: number) => {
@@ -196,13 +200,19 @@ const EnviosPage = () => {
                         {pedidosFiltrados.length > 0 ? (
                             pedidosFiltrados.map(pedido => {
                                 const isChecked = !!pedidosSeleccionados[pedido.id_pedido_venta];
+                                const pesoPedido = Number(pedido.peso_total_kg) || 0;
+
                                 return (
                                     <div key={pedido.id_pedido_venta} className={`p-3 rounded-lg shadow-sm border flex items-start gap-4 ${!isChecked && capacidadRestante < (pedido.peso_total_kg || 0) ? 'bg-gray-100 opacity-60' : 'bg-white'}`}>
-                                        <input type="checkbox" checked={isChecked} onChange={() => handleSelectPedido(pedido.id_pedido_venta, pedido.peso_total_kg || 0)} disabled={!isChecked && capacidadRestante < (pedido.peso_total_kg || 0)} className="mt-1 h-5 w-5" />
+                                        {/* <input type="checkbox" checked={isChecked} onChange={() => handleSelectPedido(pedido.id_pedido_venta, pedido.peso_total_kg || 0)} disabled={!isChecked && capacidadRestante < (pedido.peso_total_kg || 0)} className="mt-1 h-5 w-5" /> */}
+                                       <input type="checkbox" checked={isChecked} onChange={() => handleSelectPedido(pedido.id_pedido_venta, pesoPedido)} disabled={!isChecked && capacidadRestante < pesoPedido} className="mt-1 h-5 w-5" />
+
                                         <div className="flex-grow">
                                             <p className="font-bold">Pedido #{pedido.id_pedido_venta} - {pedido.razon_social}</p>
-                                            <p className="text-sm text-gray-600">{pedido.direccion_entrega}</p>
-                                            <p className="text-sm"><strong>Peso:</strong> {pedido.peso_total_kg || 0} kg</p>
+                                            <p className="text-sm text-gray-600">{pedido.direccion_text}</p>
+                                            <p className="text-sm"><strong>Peso:</strong> {pesoPedido} kg</p>
+
+                                            {/* <p className="text-sm"><strong>Peso:</strong> {pedido.peso_total_kg || 0} kg</p> */}
                                         </div>
                                     </div>
                                 );
