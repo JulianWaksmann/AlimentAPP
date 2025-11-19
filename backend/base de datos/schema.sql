@@ -2,6 +2,7 @@ DROP TYPE IF EXISTS estado_orden_venta;
 CREATE TYPE estado_orden_venta AS ENUM (
     'pendiente',
     'pendiente_supervision',
+    'en_supervision_por_urgencia',
     'confirmada',
     'cancelada',
     'en_produccion',
