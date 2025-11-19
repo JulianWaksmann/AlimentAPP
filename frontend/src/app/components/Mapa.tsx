@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import * as L from 'leaflet';
-import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
-// import { ApiData, RoutePoint, OrsRouteResponse } from './types'; // Ajusta la ruta
-
-// src/types.ts
 
 // Interfaz para cada punto del recorrido
 export interface RoutePoint {
@@ -29,11 +25,8 @@ export interface OrsRouteResponse {
       coordinates: [number, number][]; // [lon, lat][]
       type: string;
     };
-    // ... otros campos de ORS
   }>;
-  // ... otros campos de ORS
 }
-// Clave de ORS: ¡Reemplázala con tu clave real!
 const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImEyZmE4YTA1MDJhYjQ0NGJiNGQ0NmRiNGNlMjhlMzVlIiwiaCI6Im11cm11cjY0In0=";
 
 // Datos de ejemplo que recibirías de tu API
@@ -83,39 +76,19 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
       setRouteCoords([]);
       return;
     }
-
     // ORS requiere las coordenadas en formato [lon, lat]
     const orsCoordinates = data.ordered_points.map(p => [p.lon, p.lat]);
 
     const fetchRoute = async () => {
-    //   try {
-    //     const response = await axios.post<OrsRouteResponse>(
-    //       'https://api.openrouteservice.org/v2/directions/driving-car/geojson',
-    //       {
-    //         coordinates: orsCoordinates,
-    //         // Otras opciones: profile, options, etc.
-    //       },
-    //       {
-    //         headers: {
-    //           'Authorization': ORS_API_KEY,
-    //           'Content-Type': 'application/json'
-    //         }
-    //       }
-    //     );
+
     try {
         const response = await fetch(
           'https://api.openrouteservice.org/v2/directions/driving-car/geojson',
           {
-            // Método de la petición
             method: 'POST', 
-            
-            // Cuerpo de la petición: debe ser una cadena JSON
             body: JSON.stringify({
               coordinates: orsCoordinates,
-              // Otras opciones si las necesitas
             }),
-            
-            // Encabezados (Headers)
             headers: {
               'Authorization': ORS_API_KEY,
               'Content-Type': 'application/json'

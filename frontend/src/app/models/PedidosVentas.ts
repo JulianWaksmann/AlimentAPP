@@ -39,8 +39,11 @@ export interface PedidosTerminados {
     valor_total_pedido: number;
     peso_total_kg: number; // from peso_total_pedido
     direccion_text: string;
-    // zona: string;
+    latitud: number;
+    longitud: number;
 }
+    // zona: string;
+
 
 // This represents the actual structure from the /get-pedidos-por-zona endpoint
 // export interface PedidosPorZonaAPI {
