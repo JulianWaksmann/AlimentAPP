@@ -83,7 +83,7 @@ const RoleLogin: React.FC<RoleLoginProps> = ({ roleName, colorClass, redirectPat
         />
         <button
           type="submit"
-          className={`${colorClass} border border-details py-2 font-bold text-white transition hover:opacity-90`}
+          className={`bg-details border border-details py-2 font-bold text-primary transition hover:opacity-90`}
         >
           Ingresar
         </button>

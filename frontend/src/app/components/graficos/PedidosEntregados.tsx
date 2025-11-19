@@ -10,7 +10,7 @@ type Props = {
 const PedidosEntregadosGrafico: React.FC<Props> = ({data}) => {
   return (
     <BarChart
-      style={{ width: '100%', maxWidth: '700px', maxHeight: '70vh', aspectRatio: 1.618 }}
+      style={{ width: '100%', maxHeight: '70vh', aspectRatio: 1.618 }}
       responsive
       data={data}
       margin={{
@@ -25,8 +25,8 @@ const PedidosEntregadosGrafico: React.FC<Props> = ({data}) => {
       <YAxis width="auto" />
       <Tooltip />
       <Legend />
-      <Bar dataKey="tarde" stackId="a" fill="#cc303a" />
-      <Bar dataKey="a_tiempo" stackId="a" fill="#82dd9d" />
+      <Bar dataKey="tarde" stackId="a" fill="#D1460F" />
+      <Bar dataKey="a_tiempo" stackId="a" fill="#05ABFF" />
     </BarChart>
   );
 };
@@ -36,7 +36,7 @@ export default PedidosEntregadosGrafico;
 const PedidosEntregadosPorMesGrafico: React.FC<Props> = ({data}) => {
   return (
     <BarChart
-      style={{ width: '100%', maxWidth: '700px', maxHeight: '70vh', aspectRatio: 1.618 }}
+      style={{ width: '100%', maxHeight: '70vh', aspectRatio: 1.618 }}
       responsive
       data={data}
       margin={{
@@ -51,8 +51,8 @@ const PedidosEntregadosPorMesGrafico: React.FC<Props> = ({data}) => {
       <YAxis width="auto" />
       <Tooltip />
       <Legend />
-      <Bar dataKey="tarde" stackId="a" fill="#cc303a" />
-      <Bar dataKey="a_tiempo" stackId="a" fill="#82dd9d" />
+      <Bar dataKey="tarde" stackId="a" fill="#D1460F" />
+      <Bar dataKey="a_tiempo" stackId="a" fill="#05ABFF" />
     </BarChart>
   );
 };

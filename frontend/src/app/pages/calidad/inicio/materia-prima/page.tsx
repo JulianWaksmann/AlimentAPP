@@ -11,6 +11,7 @@ const MateriaPrimaPage = () => {
       try {
         const response = await aceptarMP()
         console.log("Materia prima aceptada:", response);
+        window.location.reload();
       } catch (error) {
         console.error("Error al aceptar la materia prima:", error);
       }
@@ -20,7 +21,7 @@ const MateriaPrimaPage = () => {
   }
   return (<div className="min-h-screen bg-neutral-light">
     <Header />
-    <button onClick={() => aceptarMateriaPrima()} className="btn "> ACEPTAR TODO TEST / DESARROLLO</button>
+    <button onClick={() => aceptarMateriaPrima()} className="rounded bg-success p-2 text-white m-2 text-sm"> ACEPTAR TODO (solo para desarrollo)</button>
     <main className="p-6 space-y-4">
       <TablaPedidosMateriaPrima  />
       

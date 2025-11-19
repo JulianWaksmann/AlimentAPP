@@ -84,7 +84,7 @@ const PedidosReprogramadosPage = () => {
                   <span className="font-bold text-primary">
                     Pedido #{pedido.idpedido}
                   </span>
-                  <button className="bg-red-800 rounded p-1 text-white" onClick={() => {cancelarPedido(pedido.idpedido); setOpenModal(true)}}>
+                  <button className="bg-error rounded p-1 text-white" onClick={() => {cancelarPedido(pedido.idpedido); setOpenModal(true)}}>
                     Cancelar Pedido
                   </button>
                 </div>

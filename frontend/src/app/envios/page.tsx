@@ -4,6 +4,7 @@ import { useState } from "react"
 import { PedidosAsignadosResponse } from "@/app/pages/logistica/inicio/pedidos-asignados/page"
 import { verificarEntrega, verPedidos } from "@/app/api/logistica"
 import Header from "../components/Header"
+import Mapa, { ApiData } from "../components/Mapa"
 
 const EnviosPage = () => {
     const [verificado, setVerificado] = useState(false)
@@ -17,8 +18,17 @@ const EnviosPage = () => {
     const [modalVerificarCliente, setModalVerificarCliente] = useState<boolean>(false);
     const [idPedidoAEntregar, setIdPedidoAEntregar] = useState<number>(0);
     const [modalErrorDNI, setModalErrorDNI] = useState<boolean>(false);
+    const [verMapa, setVerMapa] = useState<boolean>(false);
 
-
+    const mockData: ApiData = {
+      "count": 4,
+      "ordered_points": [
+        {"sequence":1,"id_orden":199,"lat":-34.521667, "lon":-58.701182},
+        {"sequence":2,"id_orden":201,"lat":-34.498857,"lon":-58.677598},
+        {"sequence":3,"id_orden":202,"lat":-34.481442,"lon":-58.669840},
+        {"sequence":4,"id_orden":203,"lat":-34.459143,"lon":-58.682599}
+      ]
+    };
     async function consultarPedidos(){
         console.log("Consultando pedidos para DNI:", dniTransportista);
         try{
@@ -149,6 +159,7 @@ const EnviosPage = () => {
                             {activeTab === 'despachados' && (
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-700 mb-2">Pedidos Despachados</h3>
+                                    <button onClick={() => setVerMapa(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md text-sm">Ver Mapa</button>
                                     {pedidosDespachados && pedidosDespachados.envios != null ? (
                                         <ul className="space-y-3">
                                             {pedidosDespachados.envios.map((pedido) => (
@@ -257,6 +268,33 @@ const EnviosPage = () => {
                     <div className="flex justify-end">
                         <button
                             onClick={() => setModalErrorDNI(false)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+
+        {/* Modal: Ver Mapa */}
+        {verMapa && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-40 px-4">
+                <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg p-6">
+                    <h2 className="text-lg font-semibold mb-2">Mapa de Entregas</h2>
+                    <div className="w-full h-96 mb-4">
+                        {/* Aquí puedes integrar un mapa real usando una librería como Leaflet o Google Maps */}
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            {/* <p className="text-gray-500">[Mapa Placeholder]</p> */}
+
+                            <Mapa data={mockData} />
+                        </div>
+                    </div>
+                    <div className="flex justify-end">
+                        
+                        <button
+                            onClick={() => setVerMapa(false)}
                             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
                         >
                             Cerrar
