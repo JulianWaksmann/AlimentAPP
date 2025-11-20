@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     buildActivity: false,
   },
   trailingSlash: true,
+  devTools: false,
 };
 
 export default nextConfig;
