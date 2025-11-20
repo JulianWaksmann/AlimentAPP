@@ -5,8 +5,9 @@ import { PedidosTerminados } from "@/app/models/PedidosVentas";
 import React, { useEffect, useState } from "react";
 import { GetFlotas, crearEnvio } from "@/app/api/logistica"; // Asegúrate de que crearEnvio esté importado
 import { getPedidosTerminados } from "@/app/api/pedidosVenta";
-import MapaPedidos from "@/app/components/MapaPedidos";
- 
+// import MapaPedidos from "@/app/components/MapaPedidos";
+import dynamic from "next/dynamic";
+const MapaPedidos = dynamic(() => import("@/app/components/MapaPedidos"), { ssr: false });
 
 const EnviosPage = () => {
 

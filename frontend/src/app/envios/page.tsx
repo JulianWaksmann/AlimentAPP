@@ -1,11 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { PedidosAsignadosResponse } from "@/app/pages/logistica/inicio/pedidos-asignados/page"
 import { verificarEntrega, verPedidos } from "@/app/api/logistica"
+import dynamic from "next/dynamic"
 import Header from "../components/Header"
-import Mapa, { ApiData } from "../components/Mapa"
+// import Mapa, { ApiData } from "../components/Mapa"
+import type { ApiData } from "../components/Mapa"
 import { getRecorrido } from "../api/logistica"
+const Mapa = dynamic(() => import('../components/Mapa'), { ssr: false });
 
 const EnviosPage = () => {
     const [verificado, setVerificado] = useState(false)
@@ -29,16 +32,6 @@ const EnviosPage = () => {
         }
 
         
-
-    const mockData: ApiData = {
-    //   "count": 4,
-      "ordered_points": [
-        {"sequence":0,"orden_venta_id":199,"lat":-34.521667, "lon":-58.701182, envio_id: 123},
-        {"sequence":1,"orden_venta_id":201,"lat":-34.498857,"lon":-58.677598, envio_id: 124},
-        {"sequence":2,"orden_venta_id":202,"lat":-34.481442,"lon":-58.669840, envio_id: 125},
-        {"sequence":3,"orden_venta_id":203,"lat":-34.459143,"lon":-58.682599, envio_id: 126}
-      ]
-    };
     async function consultarPedidos(){
         console.log("Consultando pedidos para DNI:", dniTransportista);
         try{

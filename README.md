@@ -1,6 +1,10 @@
 # Core
 
-Proyecto estudiantil para un sistema web de trazabilidad y producción usando S3, API Gateway (HTTP API), VPC, Lambda (Python con pg8000) y RDS (PostgreSQL). Lambdas en VPC sin acceso a internet, invocadas solo por API Gateway.
+Proyecto de aplicación integral para PYMES alimenticias, diseñado para optimizar la trazabilidad y la producción. Gestiona eficientemente desde la recepción de materia prima hasta la entrega del producto final.
+
+## Enlaces Útiles
+- Chatbot de Documentación: [https://notebooklm.google.com/notebook/580abcc6-6d39-4f7a-a9d9-7fbc39167c87](https://notebooklm.google.com/notebook/580abcc6-6d39-4f7a-a9d9-7fbc39167c87)
+- Aplicación Web: [http://webapp-core-system.s3-website-us-east-1.amazonaws.com/](http://webapp-core-system.s3-website-us-east-1.amazonaws.com/)
 
 ## Estructura
 - `backend/`: código backend en Python (módulos y capa común).
@@ -62,5 +66,3 @@ Proyecto estudiantil para un sistema web de trazabilidad y producción usando S3
 - Completar helpers de DB en `src/layers/common/python/common/db.py`.
 - Crear migraciones SQL iniciales.
 - Conectar endpoints reales en cada una de las Lambda.
-
-
