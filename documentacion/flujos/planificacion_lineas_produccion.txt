@@ -1,0 +1,159 @@
+Flujo Avanzado de Planificación de Producción
+===========================================
+
+Este documento describe el sistema de planificación de producción de AlimentAPP, un cerebro orquestador que abarca desde la asignación automática de órdenes hasta la simulación de escenarios complejos para la toma de decisiones.
+
+## Documentos Relacionados
+- `flujo_orden_venta.txt`: La confirmación de una OV es el principal disparador para que una Orden de Producción (OP) entre al ciclo de planificación.
+- `flujo_asignacion_materia_prima.txt`: Una OP solo puede ser planificada si tiene su materia prima completamente asignada (estado `lista_para_produccion`).
+- `schema.sql` y `data_dictionary.txt`: Definen las tablas y campos clave como `orden_produccion`, `tanda_produccion`, `linea_produccion`, etc.
+
+## 1. Conceptos Fundamentales
+
+- **Orden de Producción (OP):** Representa la necesidad total de fabricar un producto para una orden de venta. Se define por su `id`, producto y `cantidad` en unidades, que se convierte a `kg` para la planificación. Su estado inicial es `planificada` y avanza a `lista_para_produccion` cuando la materia prima está asegurada.
+- **Línea de Producción:** Una instalación física (ej. "Línea de Masas") con dos atributos clave:
+    - `capacidad_maxima_kg`: El peso máximo que puede procesar en un ciclo o "batch". Es un límite físico de la maquinaria.
+    - `activa`: Un booleano que indica si la línea está operativa y puede ser considerada por el planificador.
+- **Tanda de Producción:** Es la unidad mínima de trabajo ejecutable. Representa una fracción de una OP que ha sido asignada a una línea y a una secuencia específicas. Se almacena en la tabla `tanda_produccion` y contiene `id_orden_produccion`, `id_linea_produccion`, `cantidad_kg` y `secuencia_en_linea`.
+- **Capacidad Total del Período:** El peso total en KG que una línea puede producir en un ciclo de planificación (ej. un día). Se calcula multiplicando `capacidad_maxima_kg` por un factor configurable (`CAPACIDAD_DIARIA_FACTOR`), permitiendo que una línea ejecute múltiples tandas en el período.
+
+## 2. El Corazón del Sistema: El Planificador Automático (Greedy)
+
+Esta es la funcionalidad central, implementada en la Lambda `planificador_ordenes_produccion`. Su objetivo es generar la secuencia de producción más óptima posible de manera reactiva, basándose en la urgencia y la capacidad disponible.
+
+**Disparador:** Se ejecuta cada vez que se necesita recalcular el plan. Esto puede ser por un evento (nueva OP `lista_para_produccion`), de forma programada (cada N minutos) o por una invocación manual.
+
+### Algoritmo Detallado
+
+**Paso 1: Limpieza del Plan Anterior (Reset)**
+- El sistema **elimina todas las tandas en estado `planificada`**. Esto es crucial para la reactividad del sistema: si una nueva orden muy urgente entra en el sistema, debe tener la oportunidad de "adelantarse" a otras que, aunque llegaron antes, todavía no han comenzado a producirse. Las tandas `en_progreso` o `completada` no se tocan.
+
+**Paso 2: Recopilación y Cálculo de Datos**
+- **Líneas Activas:** Obtiene de la base de datos todas las `linea_produccion` con `activa = TRUE`.
+- **Órdenes Pendientes:** Busca todas las OPs con estado `lista_para_produccion`. Para cada una, calcula los `kg_pendientes` restando la suma de los `cantidad_kg` de las tandas que ya están `en_progreso` o `completada` para esa OP.
+- **Capacidad del Período:** Calcula la capacidad total para cada línea activa usando el `CAPACIDAD_DIARIA_FACTOR`.
+
+**Paso 3: Priorización por Urgencia**
+- Las OPs pendientes se ordenan de la más a la menos urgente según el siguiente criterio:
+    1.  `fecha_entrega_solicitada` de la orden de venta asociada (la más próxima primero).
+    2.  En caso de empate, `fecha_creacion` de la OP (la más antigua primero).
+
+**Paso 4: Asignación de Tandas (Bucle Voraz)**
+- El sistema itera sobre la lista ordenada de OPs y, para cada una, intenta planificar sus `kg_pendientes` en una o más tandas.
+- **Bucle Interno (Fragmentación de la OP):** Mientras a la OP le queden `kg_pendientes` y haya capacidad en alguna línea:
+    1.  **Selección de Línea Óptima (`seleccionar_linea`):**
+        - Se buscan las líneas compatibles con el producto de la OP (`producto_por_linea_produccion`).
+        - De ellas, se filtran aquellas cuya carga ya planificada sea menor a su capacidad total del período.
+        - De las restantes, se elige la "más libre" (menor carga y menor número de tandas ya asignadas).
+    2.  **Cálculo del Tamaño de la Tanda:**
+        - Si se encuentra una línea, se calcula el `kg_tanda` como el valor **mínimo** de tres límites:
+            a. Los `kg_pendientes` de la OP.
+            b. La `capacidad_maxima_kg` de la línea (límite físico por batch).
+            c. La `capacidad_diaria_restante` de la línea en el período.
+    3.  **Creación de la Tanda:**
+        - Se crea un registro en `tanda_produccion` con los datos calculados.
+        - Se actualizan los `kg_pendientes` de la OP y la `carga_planificada` de la línea.
+        - El bucle interno se repite para la misma OP si aún le quedan `kg_pendientes` (buscando de nuevo la mejor línea disponible para el fragmento restante).
+
+**Paso 5: Finalización y Salida**
+- El proceso termina cuando todas las OPs han sido procesadas. Las que no pudieron ser planificadas por falta de capacidad quedan pendientes para la siguiente ejecución.
+- La Lambda devuelve la información de la **próxima tanda prioritaria** (la de menor `secuencia_en_linea`), para que la UI pueda mostrar al operario cuál es su siguiente tarea inmediata.
+
+## 3. Proyección y Prognosis: El Planificador Diario (Shadow Preview)
+
+Implementado en la Lambda `planificador_ordenes_produccion_daily`, esta herramienta ofrece una vista a futuro sin alterar el estado real de la producción.
+
+**Objetivo:** Simular cómo se distribuiría la carga de trabajo en los próximos N días hábiles si se siguiera el algoritmo de planificación. Es una herramienta de pronóstico para la UI.
+
+**Mecanismo:**
+1.  **Invocación:** Recibe como parámetro el número de días a simular (ej: `{ "dias": 5 }`).
+2.  **Transacción Sombra:** Inicia una transacción de base de datos que **nunca se confirma (COMMIT)**.
+3.  **Simulación Día a Día:** Ejecuta el algoritmo de planificación principal repetidamente, una vez por cada día a simular. En cada iteración, avanza la "fecha actual" y considera la capacidad de ese día.
+4.  **Recopilación de Resultados:** Almacena en memoria las tandas que se generarían cada día.
+5.  **Rollback:** Al finalizar, deshace todos los cambios en la base de datos con un `ROLLBACK`.
+6.  **Respuesta:** Devuelve un JSON con la estructura: `[ { "YYYY-MM-DD": [ { op_id, producto, kg, ... } ] }, ... ]`.
+
+## 4. Análisis de Impacto: Simulación de Órdenes de Venta Urgentes
+
+Esta es la funcionalidad más avanzada, destinada a los supervisores para tomar decisiones informadas. Está implementada en la Lambda `planificador_ordenes_produccion_simulacion_ov`.
+
+**Objetivo:** Responder a la pregunta: "Si aceptamos esta nueva orden de venta urgente, ¿qué órdenes de otros clientes se verán retrasadas y para cuándo?".
+
+**Flujo de Simulación:**
+1.  **Parámetro de Entrada:** El `id_orden_venta` de la OV que se quiere simular.
+2.  **Obtener el Plan Base:** Invoca a la Lambda del planificador diario para obtener el plan de producción actual y determina qué OPs ya están `atrasadas` (el `baseline`). También guarda la fecha planificada original de cada OP.
+3.  **Promoción Temporal:**
+    - Identifica todas las OPs asociadas a la OV a simular.
+    - Cambia temporalmente el estado de estas OPs a `lista_para_produccion` (si no lo están ya).
+    - **Confirma (COMMIT)** este cambio para que sea visible para otras Lambdas.
+4.  **Obtener el Nuevo Plan:** Vuelve a invocar al planificador diario. Con las OPs de la nueva OV compitiendo por los recursos, el plan resultante será diferente. Se extrae el nuevo conjunto de OPs `atrasadas`.
+5.  **Calcular el Impacto:**
+    - Compara el conjunto de OPs atrasadas del `baseline` con el del `nuevo plan`.
+    - Las OPs que aparecen en el nuevo conjunto pero no en el original son las **órdenes afectadas** por la simulación. Se excluyen las OPs de la propia OV simulada.
+6.  **Reversión (Cleanup):**
+    - Restaura los estados originales de las OPs que fueron promovidas temporalmente y confirma (COMMIT) la reversión.
+    - Vuelve a invocar al planificador diario una última vez para regenerar la caché del plan diario y dejarla consistente con el estado real.
+7.  **Respuesta Enriquecida:** Devuelve un JSON con las `ordenes_afectadas`, detallando para cada una su `id`, su `fecha_planificada_original` y su `fecha_planificada_nueva`.
+
+## 5. Flexibilidad y Control Manual
+
+Aunque el sistema busca maximizar la automatización y la optimización, se reconoce la necesidad de flexibilidad para adaptarse a imprevistos del mundo real (averías de máquinas, escasez súbita de materia prima, cambios de prioridad urgentes no modelados, etc.). Por ello, se proveen mecanismos para que usuarios autorizados (operarios o supervisores) puedan intervenir manualmente sobre el plan:
+
+-   **Creación Manual de Tandas:** Los operarios pueden crear nuevas `tanda_produccion` directamente, asignándolas a una línea y especificando la cantidad, incluso si no provienen de una OP `lista_para_produccion` o si se necesita adelantar una fracción de una OP.
+-   **Modificación de Tandas Existentes:** Es posible ajustar la `cantidad_kg`, `id_linea_produccion`, o `secuencia_en_linea` de tandas ya `planificada`s. Por ejemplo, mover una tanda a otra línea disponible o cambiar su prioridad de ejecución.
+-   **Cancelación de Tandas:** Las tandas que aún no han sido iniciadas (estado `planificada`) pueden ser canceladas manualmente por un operario o supervisor. Esto libera la capacidad de la línea y el planificador automático la considerará libre en la siguiente ejecución.
+
+Estas intervenciones manuales permiten que el personal de planta ajuste el plan de producción al momento, garantizando la capacidad de respuesta ante situaciones no previstas por el algoritmo automático. Es fundamental que toda intervención manual quede registrada para mantener la trazabilidad y auditoría del proceso.
+
+## Diagrama de Flujo General
+
+```
+.-----------------------.
+| Nueva OP llega a      |
+| "lista_para_produccion"|
+'-----------+-----------'
+            |
+            v
+.-----------------------.      .-----------------------------.
+| Planificador Automático |----->| BD: tabla tanda_produccion  |
+| (Lambda Principal)    |      | (se actualiza el plan real) |
+'-----------------------'      '-----------------------------'
+            |
+            v
+.-----------------------.
+| UI Operario ve la     |
+| "próxima tanda"       |
+'-----------------------'
+
+
+.-----------------------.      .-----------------------------.      .------------------------------.
+| Supervisor solicita   |----->| Planificador Diario (Shadow)|----->| BD (Transacción con ROLLBACK)|
+| vista de 5 días       |      | (Lambda Diario)             |      | (no se guarda nada)          |
+'-----------------------'      '-----------------------------'      '------------------------------'
+            |
+            v
+.-----------------------.
+| UI Supervisor ve el   |
+| plan para 5 días      |
+'-----------------------'
+
+
+.--------------------------.
+| Supervisor quiere simular|
+| una OV urgente           |
+'------------+-------------'
+             |
+             v
+.--------------------------.      .-------------------------------------.
+| Lambda de Simulación OV  |----->| 1. Invoca Planificador Diario (base)  |
+| (Orquestador)            |      | 2. Modifica estado OP en BD (COMMIT)  |
+'------------+-------------'      | 3. Invoca Planificador Diario (nuevo) |
+             |                    | 4. Revierte estado OP en BD (COMMIT)|
+             |                    '-------------------------------------'
+             |
+             v
+.--------------------------.
+| UI Supervisor ve qué OPs |
+| se retrasan y para cuándo|
+'--------------------------'
+```

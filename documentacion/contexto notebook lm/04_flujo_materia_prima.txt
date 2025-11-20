@@ -1,0 +1,119 @@
+Flujo de Materia Prima por Lote
+===============================
+
+Objetivo
+--------
+Garantizar que al confirmar una orden de venta se gestione el abastecimiento de materia prima, se trace cada lote usado en la produccion y se mantenga la calidad mediante el rol de Encargado de Calidad.
+
+Resumen del proceso
+-------------------
+1. Creacion de orden de venta para productos finales.
+2. Verificacion de stock de materia prima segun receta (materia_prima_por_producto).
+3. Seleccion y reserva automatica de lotes validos (lote_materia_prima) o generacion de requisicion al proveedor.
+4. Recepcion y carga de lotes por Encargado de Calidad en estado en_cuarentena.
+5. Control de calidad y liberacion (estado disponible) o rechazo de lote.
+6. Consumo de lotes en ordenes de produccion (materia_prima_por_orden_produccion) y ajuste de stock/estados.
+
+Reglas de negocio
+-----------------
+- Solo se dispara el proceso al pasar la orden de venta a estado "confirmada".
+- Para cada producto se consulta materia_prima_por_producto y se calcula la cantidad total de cada insumo requerida (cantidad * unidades del pedido).
+- Los lotes candidatos deben cumplir:
+  * estado = disponible.
+  * fecha_vencimiento >= fecha actual + 14 dias (umbral minimo).
+  * cantidad_disponible suficiente para cubrir la necesidad.
+- Se aplica politica FEFO (First-Expire, First-Out): priorizar el lote cuya fecha de vencimiento esta mas proxima dentro del umbral.
+- Si no hay stock suficiente, se crea requisicion automatica al proveedor, enviando correo con detalles (materia prima, cantidad, fecha objetivo). Esta accion queda registrada y pendiente de confirmacion humana.
+- El Encargado de Calidad registra nuevos lotes utilizando un endpoint dedicado; los lotes ingresan con estado en_cuarentena y cantidad_total = cantidad_disponible.
+- El Encargado de Calidad realiza inspeccion y cambia el estado a disponible o rechazado. Los lotes rechazados no pueden usarse.
+- Si la inspeccion detecta problemas, el estado permanece en_cuarentena hasta re-evaluacion o se marca como rechazado.
+- Automatizacion: al confirmar la orden de venta, el backend selecciona lotes, crea los registros en materia_prima_por_orden_produccion y descuenta stock sin intervencion manual.
+- Al asignar un lote a una orden de produccion:
+  * Se inserta registro en materia_prima_por_orden_produccion con la cantidad_utilizada.
+  * Se descuenta cantidad_utilizada de lote_materia_prima.cantidad_disponible.
+  * Si la cantidad_disponible llega a 0, estado pasa a agotado.
+- Control de vencimientos:
+  * Un proceso diario revisa lotes donde fecha_vencimiento <= hoy y los marca como vencido (si no estan agotados).
+  * Lotes vencidos no pueden asignarse a nuevas ordenes; cualquier reserva previa debe replanificarse.
+
+Interacciones con usuarios/roles
+--------------------------------
+- Vendedor/Ventas: genera orden de venta; el sistema maneja requisicion automatica.
+- Encargado de Calidad: registra lotes (estado en_cuarentena) y decide liberacion (disponible) o rechazo.
+- Supervisor: revisa requisiciones que superan umbrales criticos y puede intervenir manualmente.
+- Operario: consume lotes al ejecutar ordenes de produccion; el sistema actualiza cantidades automaticamente.
+
+Diagrama ASCII del flujo
+------------------------
+
+             +---------------------+
+             |  Orden de venta     |
+             |  estado = pendiente |
+             +----------+----------+
+                        |
+                        | confirmada
+                        v
+             +-------------------------+
+             | Calcular requerimientos |
+             |  (materia_prima_por_    |
+             |  producto)              |
+             +-----------+-------------+
+                         |
+             +-----------v-------------+
+             | Seleccionar lotes auto  |
+             |  FEFO (venc prox)       |
+             |  estado=disponible      |
+             |  venc >= hoy+14, stock  |
+             +-----------+-------------+
+                         |
+            +------------v------------+
+            | Stock suficiente?       |
+            +------+------------------+
+                   |SI               |NO
+                   |                v
+                   |      +---------------------+
+                   |      | Generar requisicion |
+                   |      |  + enviar correo    |
+                   |      +----------+----------+
+                   |                 |
+                   |                 v
+                   |      +---------------------+
+                   |      | Esperar recepcion   |
+                   |      | Encargado de Calidad|
+                   |      +----------+----------+
+                   |                 |
+                   |                 v
+                   |      +---------------------+
+                   |      | Registrar lote       |
+                   |      | estado=en_cuarentena |
+                   |      +----------+----------+
+                   |                 |
+                   |                 v
+                   |      +---------------------+
+                   |      | Control de calidad  |
+                   |      | disponible/rechazado|
+                   |      +----------+----------+
+                   |                 |
+                   +-----------------+
+                         (lotes disponibles)
+                         |
+                         v
+             +-----------------------------+
+             | Asignar lote a OP (auto)   |
+             |  materia_prima_por_        |
+             |  orden_produccion          |
+             +--------------+--------------+
+                            |
+                            v
+             +-----------------------------+
+             | Descontar stock de lote     |
+             |  cantidad_disponible -= uso |
+             |  si 0 -> estado=agotado     |
+             |  si vence hoy -> estado=venc|
+             +-----------------------------+
+
+Notas adicionales
+-----------------
+- Registro de eventos: mantener auditoria de reservas, requisiciones y cambios de estado de lotes.
+- Manejo de concurrencia: usar transacciones o bloqueos al descontar cantidades para evitar sobre-asignacion.
+- Alertas: notificar al supervisor cuando el stock disponible quede por debajo de un umbral definido.

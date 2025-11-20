@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="General" id="3NQKazdsHHwbIv12-Uwj">
-        <mxGraphModel dx="2278" dy="2900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#000000" math="0" shadow="0">
+        <mxGraphModel dx="1623" dy="2033" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#000000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -38,43 +38,26 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="6PGobpr0RwCLXdiU7A31-9" value="S3&lt;br&gt;(HTML, CSS, JS)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#7AA116;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" parent="1" vertex="1">
-                    <mxGeometry x="300" y="-30" width="78" height="78" as="geometry"/>
+                    <mxGeometry x="480" y="174.5" width="78" height="78" as="geometry"/>
                 </mxCell>
                 <mxCell id="6PGobpr0RwCLXdiU7A31-10" value="ApiGateway" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.api_gateway;" parent="1" vertex="1">
                     <mxGeometry x="300" y="174.5" width="78" height="78" as="geometry"/>
                 </mxCell>
-                <mxCell id="6PGobpr0RwCLXdiU7A31-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="6PGobpr0RwCLXdiU7A31-9" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="528.3333333333335" y="167" as="sourcePoint"/>
-                        <Array as="points">
-                            <mxPoint x="528" y="9"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
                 <mxCell id="6PGobpr0RwCLXdiU7A31-21" value="&lt;font style=&quot;font-size: 25px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Arquitectura Cloud - General&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="120" y="-170" width="390" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="6PGobpr0RwCLXdiU7A31-24" value="Route53" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.route_53;" parent="1" vertex="1">
-                    <mxGeometry x="660" y="174.5" width="78" height="78" as="geometry"/>
-                </mxCell>
-                <mxCell id="6PGobpr0RwCLXdiU7A31-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="6PGobpr0RwCLXdiU7A31-24" target="6PGobpr0RwCLXdiU7A31-26" edge="1">
+                <mxCell id="6PGobpr0RwCLXdiU7A31-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="6PGobpr0RwCLXdiU7A31-10" edge="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="566.5" y="213.5" as="targetPoint"/>
+                        <mxPoint x="480.00000000000045" y="214.11111111111086" as="sourcePoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="6PGobpr0RwCLXdiU7A31-26" value="CloudFront" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudfront;" parent="1" vertex="1">
-                    <mxGeometry x="480" y="170" width="88" height="88" as="geometry"/>
-                </mxCell>
-                <mxCell id="6PGobpr0RwCLXdiU7A31-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="6PGobpr0RwCLXdiU7A31-26" target="6PGobpr0RwCLXdiU7A31-10" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="6PGobpr0RwCLXdiU7A31-28" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Descripción&lt;/h1&gt;&lt;p&gt;&lt;b&gt;Route 53:&lt;/b&gt; Traduce el dominio web (URL) a la dirección de CloudFront.&lt;/p&gt;&lt;p&gt;&lt;b&gt;CloudFront:&lt;/b&gt; Acelera y distribuye el frontend (desde S3) y enruta las peticiones de API a API Gateway.&lt;/p&gt;&lt;p&gt;&lt;b&gt;S3:&lt;/b&gt; Almacena los archivos estáticos del frontend (HTML, CSS, JS compilado).&lt;/p&gt;&lt;p&gt;&lt;b&gt;API Gateway:&lt;/b&gt; Punto de entrada único y seguro para la API. Gestiona y protege el acceso al backend.&lt;/p&gt;&lt;p&gt;&lt;b&gt;VPC:&lt;/b&gt; Red privada que aísla y protege el backend (EC2 y RDS) de internet.&lt;/p&gt;&lt;p&gt;&lt;b&gt;EC2/Lambda Backend:&lt;/b&gt; Ejecuta el código de la aplicación (backend). Procesa la lógica de negocio y se conecta a la base de datos.&lt;/p&gt;&lt;p&gt;&lt;b&gt;DB (RDS):&lt;/b&gt; Base de datos relacional gestionada que almacena de forma segura todos los datos de la aplicación.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Security Group (del EC2):&lt;/b&gt; Firewall que permite acceso al EC2 únicamente desde API Gateway.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Security Group (de la RDS):&lt;/b&gt; Firewall que permite acceso a la Base de Datos únicamente desde la EC2.&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+                <mxCell id="6PGobpr0RwCLXdiU7A31-28" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Descripción&lt;/h1&gt;&lt;p&gt;&lt;b&gt;S3:&lt;/b&gt; Almacena los archivos estáticos del frontend (HTML, CSS, JS compilado).&lt;/p&gt;&lt;p&gt;&lt;b&gt;API Gateway:&lt;/b&gt; Punto de entrada único y seguro para la API. Gestiona y protege el acceso al backend.&lt;/p&gt;&lt;p&gt;&lt;b&gt;VPC:&lt;/b&gt; Red privada que aísla y protege el backend (EC2 y RDS) de internet.&lt;/p&gt;&lt;p&gt;&lt;b&gt;EC2/Lambda Backend:&lt;/b&gt; Ejecuta el código de la aplicación (backend). Procesa la lógica de negocio y se conecta a la base de datos.&lt;/p&gt;&lt;p&gt;&lt;b&gt;DB (RDS):&lt;/b&gt; Base de datos relacional gestionada que almacena de forma segura todos los datos de la aplicación.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Security Group (del EC2):&lt;/b&gt; Firewall que permite acceso al EC2 únicamente desde API Gateway.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Security Group (de la RDS):&lt;/b&gt; Firewall que permite acceso a la Base de Datos únicamente desde la EC2.&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="800" y="-110" width="387" height="460" as="geometry"/>
                 </mxCell>
                 <mxCell id="6PGobpr0RwCLXdiU7A31-32" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cdeb8b;strokeColor=#36393d;" parent="1" vertex="1">
                     <mxGeometry x="-390" y="510" width="540" height="270" as="geometry"/>
                 </mxCell>
-                <mxCell id="6PGobpr0RwCLXdiU7A31-33" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Extras Backend&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Si hay que hacer face recognition, contemplar:&lt;/li&gt;&lt;ul&gt;&lt;li&gt;LAMBDA (Integración)&lt;/li&gt;&lt;li&gt;REKOGNITION (IA Gestión facial)&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;Casos de nuevas implementaciónes, como eventos, compatibles con FAAS:&lt;/li&gt;&lt;ul&gt;&lt;li&gt;Lambda&lt;/li&gt;&lt;li&gt;Api Gateway&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;NoSQL:&lt;/li&gt;&lt;ul&gt;&lt;li&gt;DynamoDB&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+                <mxCell id="6PGobpr0RwCLXdiU7A31-33" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Extras Backend&lt;/h1&gt;&lt;ul&gt;&lt;li&gt;Casos de nuevas implementaciónes, como eventos, compatibles con FAAS:&lt;/li&gt;&lt;ul&gt;&lt;li&gt;Lambda&lt;/li&gt;&lt;li&gt;Api Gateway&lt;/li&gt;&lt;/ul&gt;&lt;li&gt;NoSQL:&lt;/li&gt;&lt;ul&gt;&lt;li&gt;DynamoDB&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="-335" y="535" width="450" height="245" as="geometry"/>
                 </mxCell>
                 <mxCell id="3" style="edgeStyle=none;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="6PGobpr0RwCLXdiU7A31-10" target="2" edge="1">

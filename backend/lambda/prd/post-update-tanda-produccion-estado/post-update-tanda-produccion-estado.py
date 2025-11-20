@@ -266,7 +266,9 @@ def actualizar_ordenes(cur, orden_ids: List[int]) -> List[Dict[str, Any]]:
         planificadas = int(resumen["tandas_planificadas"] or 0)
 
         nuevo_estado = None
-        if kg_firmes >= kg_total and en_progreso == 0 and planificadas == 0:
+        print('entra en finalizada? ', int(kg_firmes) >= int(kg_total), en_progreso == 0, planificadas == 0)
+        
+        if int(kg_firmes) >= int(kg_total) and en_progreso == 0 and planificadas == 0:
             nuevo_estado = "finalizada"
 
         if nuevo_estado and nuevo_estado != estado_actual:
