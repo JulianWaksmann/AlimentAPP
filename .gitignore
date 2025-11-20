@@ -26,4 +26,3 @@ backend/layers/**/*.zip
 .DS_Store
 Thumbs.db
 frontend/.next/
-contexto notebook lm/

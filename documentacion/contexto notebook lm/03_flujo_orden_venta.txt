@@ -1,0 +1,125 @@
+Flujo de Orden de Venta
+=======================
+
+Objetivo
+--------
+Orquestar desde la captura de un pedido por parte del vendedor hasta la entrega final, asegurando aprobaciones, planificacion de produccion y reservas de materia prima.
+
+Roles involucrados
+------------------
+- Vendedor: crea y edita ordenes de venta.
+- Supervisor: aprueba ordenes que superan el umbral definido.
+- Encargado de Calidad: libera lotes de materia prima (ver flujo materia_prima_lote).
+- Operario: avanza estados de ordenes de produccion.
+- Sistema: automatiza creacion de ordenes de produccion, reservas de lotes y notificaciones.
+
+Resumen del proceso
+-------------------
+1. Vendedor registra la orden de venta; se crea en estado `pendiente`.
+2. Se generan ordenes de produccion hijas (una por producto) en estado `pendiente`.
+3. El sistema evalua el umbral (THRESHOLD_SUPERVISOR) por producto.
+   - Si alguna cantidad supera el umbral -> orden de venta pasa a `pendiente_supervision` y se notifica al supervisor.
+   - Caso contrario -> se confirma automaticamente (estado `confirmada`).
+4. Supervisor revisa ordenes `pendiente_supervision`.
+   - Si aprueba -> estado `confirmada`.
+   - Si rechaza -> estado `cancelada` y se cancelan las ordenes de produccion.
+5. Al pasar a `confirmada`:
+   - Ordenes de produccion se actualizan a `planificada`.
+   - Se dispara la reserva/compra de materia prima (flujo materia_prima_lote).
+6. Cuando cada orden de produccion consigue lote asignado (`materia_prima_por_orden_produccion`), pasa a `lista_para_produccion`.
+7. Operario inicia ejecucion -> `lista_para_produccion` -> `en_proceso`. Al finalizar -> `finalizada`.
+8. Estado de la orden de venta evoluciona automaticamente:
+   - Si alguna OP esta `en_proceso` -> `en_produccion`.
+   - Si todas las OP estan `finalizada` -> `lista`.
+   - Tras entrega al cliente -> `entregada` (vendedor registra la entrega o sistema de logistica).
+9. Cancelaciones pueden ocurrir en cualquier punto (estado `cancelada`), propagando cancelacion a OPs.
+
+Reglas de negocio
+-----------------
+- THRESHOLD_SUPERVISOR configurable (por producto o global) almacenado en configuracion.
+- Ordenes `pendiente_supervision` quedan bloqueadas hasta decision del supervisor.
+- Confirmar orden genera correo/resumen hacia operacion y dispara verificacion de materia prima.
+- Ordenes de produccion `lista_para_produccion` requieren que el sistema haya registrado reservas de lotes suficientes.
+- Cambios manuales de estados solo permitidos al rol Operario (lista_para_produccion -> en_proceso -> finalizada) y Supervisor (pendiente_supervision -> confirmada/cancelada).
+- Estados de orden de venta se recalculan automaticamente en base al progreso de sus ordenes de produccion.
+- Rechazo de lote o falta de materia prima puede devolver la OP a `planificada` y la OV a `pendiente_supervision` para nueva autorizacion (si la nueva compra supera umbral).
+
+Integraciones
+-------------
+- Flujo materia_prima_lote: usado al confirmar una orden para reservar lotes o generar requisiciones.
+- Notificaciones: correo a supervisor cuando OV requiere aprobacion; correo a proveedor cuando se emiten requisiciones automaticas.
+- Auditoria: registrar cambios de estado con usuario, timestamp y motivo.
+
+Diagrama ASCII del flujo
+------------------------
+
+             +---------------------+
+             |   Vendedor crea     |
+             |   Orden de Venta    |
+             |   estado=pendiente  |
+             +----------+----------+
+                        |
+                        v
+             +-------------------------+
+             | Generar OP por producto |
+             | estado=pendiente        |
+             +-----------+-------------+
+                         |
+             +-----------v-------------+
+             | Evaluar umbral          |
+             | (THRESHOLD_SUPERVISOR)  |
+             +-----------+-------------+
+                         |
+            +------------v------------+
+            | Supera umbral?          |
+            +------+------------------+
+                   |SI               |NO
+                   |                v
+                   |      +---------------------+
+                   |      | Confirmar automat.  |
+                   |      | estado=confirmada   |
+                   |      +----------+----------+
+                   |                 |
+                   v                 v
+      +----------------------+    +---------------------+
+      | Notificar supervisor |    | OP -> planificada   |
+      | estado=pte_superv.   |    | Reservar materia    |
+      +----------+-----------+    +----------+----------+
+                 |                          |
+                 v                          v
+      +----------------------+    +-----------------------------+
+      | Supervisor decide    |    | Flujo materia_prima_lote    |
+      | aprobar/cancelar     |    |  (reserva o requisicion)    |
+      +----------+-----------+    +--------------+--------------+
+                 |aprobada                  |
+                 |                          v
+                 |                +-----------------------------+
+                 |                | OP con lote asignado        |
+                 |                | estado=lista_para_produccion|
+                 |                +--------------+--------------+
+                 |                               |
+                 |                               v
+                 |                +-----------------------------+
+                 |                | Operario inicia             |
+                 |                | lista_para_produccion ->    |
+                 |                | en_proceso -> finalizada    |
+                 |                +--------------+--------------+
+                 |                               |
+                 |                               v
+                 |                +-----------------------------+
+                 |                | Actualizar OV               |
+                 |                | en_produccion / lista /     |
+                 |                | entregada                   |
+                 |                +-----------------------------+
+                 |
+                 v
+      +----------------------+
+      | estado=cancelada     |
+      | Cancelar OP hijas    |
+      +----------------------+
+
+Notas adicionales
+-----------------
+- Mantener un historial de aprobaciones de supervisor con comentario obligatorio.
+- Implementar jobs que revisen OV u OP estancadas (por ejemplo, lista_para_produccion sin avanzar en N horas).
+- Garantizar idempotencia en automatismos para evitar duplicar OP o reservas.
