@@ -143,6 +143,6 @@ export async function getRecorrido(dni: string): Promise<ApiData> {
         throw new Error("Error fetching recorrido del conductor");
     }
     const responseData = await response.json();
-    console.log(responseData);
+    console.log("respuesta ordenes: " + responseData);
     return responseData;
 }

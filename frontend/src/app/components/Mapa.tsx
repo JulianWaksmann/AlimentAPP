@@ -8,6 +8,7 @@ export interface RoutePoint {
   sequence: number;
   envio_id: number;
   orden_venta_id: number;
+  // id_orden: number;
   lat: number;
   lon: number;
 }
@@ -72,6 +73,7 @@ const START_POINT: RoutePoint = {
   sequence: 0,
   envio_id: -1,
   orden_venta_id: -1,
+  // id_orden: -1,
   lat: -34.52271017111954,
   lon: -58.70043496251298
 };
@@ -89,6 +91,10 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
   // Reemplazar la obtención directa de apiPoints por una lista augmentada
   // que siempre incluye el START_POINT en sequence 0 y desplaza las secuencias existentes.
   const augmentedOrderedPoints = useMemo(() => {
+    console.log("Puntos recibidos de la API:", data.ordered_points);
+    if (!data.ordered_points || data.ordered_points.length === 0) {
+      return [START_POINT];
+    }
     const shifted = data.ordered_points.map(p => ({ ...p, sequence: p.sequence + 1 }));
     return [START_POINT, ...shifted];
   }, [data.ordered_points]);
@@ -173,11 +179,16 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
         scrollWheelZoom={true} // Permite hacer zoom con la rueda del mouse
       >
         {/* Capa base de Leaflet */}
-        <TileLayer
+          <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  maxZoom={20}
+                />
+        {/* <TileLayer
           attribution="© OpenMapTiles © OpenStreetMap"
           url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png"
           maxZoom={20}
-        />
+        /> */}
 
         {/* Polilínea de la Ruta de ORS */}
         {routeCoords.length > 0 && (
@@ -200,7 +211,8 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
             >
               <Popup>
                 {isStart ? <strong>Punto de inicio</strong> : <>Orden #{point.orden_venta_id}</>} <br />
-                {/* { !isStart && <>ID: {point.orden_venta_id} <br /></> } */}
+
+                { !isStart && <>Entrega: {point.sequence-1}° <br /></> }
                 {/* Lat: {point.lat.toFixed(6)}, Lon: {point.lon.toFixed(6)} */}
               </Popup>
             </Marker>

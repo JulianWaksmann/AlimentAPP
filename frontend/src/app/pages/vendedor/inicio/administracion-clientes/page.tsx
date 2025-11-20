@@ -62,6 +62,10 @@ const GestionClientesPage = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.log(errorData)
+        setModalMsg(`Error al crear el cliente: ${errorData.detalles || "Error del servidor"}`);
+        setModalType("error");
+        setModalOpen(true);
         throw new Error(errorData.error || "Error del servidor");
       }
 
@@ -75,10 +79,11 @@ const GestionClientesPage = () => {
 
     } catch (error: unknown) {
       console.error("Error al crear el cliente:", error);
-      const message = error instanceof Error ? error.message : String(error);
-      setModalMsg(`Hubo un error al crear el cliente: ${message}`);
-      setModalType("error");
-      setModalOpen(true);
+      // const detalle = error as { detalles: string };
+      // const message = error instanceof Error ? error.message : String(error);
+      // setModalMsg(`Hubo un error al crear el cliente: ${detalle}`);
+      // setModalType("error");
+      // setModalOpen(true);
     }
   };
 

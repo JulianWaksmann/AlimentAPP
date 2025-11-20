@@ -4,7 +4,8 @@ import Image from 'next/image';
 export default function FloatingHelpButton() {
     return (
         <a
-            href="https://notebooklm.google.com/notebook/ed51e06c-32f3-49d1-9569-708cdb4c5bee"
+            // href="https://notebooklm.google.com/notebook/ed51e06c-32f3-49d1-9569-708cdb4c5bee"
+            href="https://notebooklm.google.com/notebook/580abcc6-6d39-4f7a-a9d9-7fbc39167c87/preview"
             target="_blank"
             rel="noopener noreferrer"
 

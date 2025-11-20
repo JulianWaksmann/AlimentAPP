@@ -48,16 +48,16 @@ const MapaPedidos: React.FC<Props> = ({ pedidos }) => {
   return (
     <div className="w-full h-96">
       <MapContainer center={center} zoom={10} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
-        {/* <TileLayer
+        <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        /> */}
+        />
                 {/* Capa base de Leaflet */}
-                <TileLayer
+                {/* <TileLayer
                   attribution="© OpenMapTiles © OpenStreetMap"
                   url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png"
                   maxZoom={20}
-                />
+                /> */}
         {grouped.map((g, idx) => (
           <Marker key={`${g.lat}-${g.lng}-${idx}`} position={[g.lat, g.lng]}>
 
