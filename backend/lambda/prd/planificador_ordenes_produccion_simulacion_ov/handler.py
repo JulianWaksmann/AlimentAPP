@@ -185,6 +185,23 @@ def revertir_estados(cur, originales: Dict[int, str]) -> int:
     return total
 
 
+def build_date_map(agenda: List[Dict[str, List[Dict[str, Any]]]]) -> Dict[int, str]:
+    """Creates a mapping from id_orden_produccion to its planned date string."""
+    date_map = {}
+    for daily_plan in agenda:
+        if not daily_plan:
+            continue
+        for date_str, ops in daily_plan.items():
+            for op in ops:
+                try:
+                    op_id = int(op.get("id_orden_produccion"))
+                    if op_id:
+                        date_map[op_id] = date_str
+                except (ValueError, TypeError):
+                    continue
+    return date_map
+
+
 def lambda_handler(event, context):
     """Entry de simulación: compara atrasados antes y después de sumar OP de una OV (GET id_orden_venta)."""
     logger.info("Simulación OV - evento: %s", event)
@@ -201,6 +218,7 @@ def lambda_handler(event, context):
     try:
         agenda_base = invoke_daily_agenda()
         atrasados_base = extract_atrasados(agenda_base)
+        original_dates = build_date_map(agenda_base) # Fecha original de cada OP
         logger.info("Baseline atrasados: %s OP", len(atrasados_base))
     except SimulationError as exc:
         return {"statusCode": 502, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": f"Planificador diario: {str(exc)}"})}
@@ -230,11 +248,21 @@ def lambda_handler(event, context):
         # 3) Replanificar con OV incluida
         agenda_new = invoke_daily_agenda()
         atrasados_new = extract_atrasados(agenda_new)
+        new_dates = build_date_map(agenda_new) # Nueva fecha de cada OP
 
         # 4) Calcular afectadas (nuevas atrasadas), excluyendo OP de la OV
-        afectadas = sorted(list((atrasados_new - atrasados_base) - set(op_ids)))
+        afectadas_ids = sorted(list((atrasados_new - atrasados_base) - set(op_ids)))
 
-        # 5) Revertir estados y restaurar planificacion_diaria
+        # 5) Enriquecer la respuesta con las fechas
+        afectadas_con_detalle = []
+        for op_id in afectadas_ids:
+            afectadas_con_detalle.append({
+                "id_orden_produccion": op_id,
+                "fecha_planificada_original": original_dates.get(op_id, "N/A"),
+                "fecha_planificada_nueva": new_dates.get(op_id, "N/A")
+            })
+
+        # 6) Revertir estados y restaurar planificacion_diaria
         if promover:
             r = revertir_estados(cur, {oid: originales[oid] for oid in promover})
             conn.commit()
@@ -246,7 +274,7 @@ def lambda_handler(event, context):
         except Exception:
             logger.warning("No se pudo regenerar planificacion_diaria al final de la simulación")
 
-        return {"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"afectadas": afectadas})}
+        return {"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"ordenes_afectadas": afectadas_con_detalle})}
 
     except Exception as exc:
         logger.exception("Error en simulación OV")

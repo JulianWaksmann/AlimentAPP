@@ -220,18 +220,11 @@ def ordenar_ordenes(ordenes: List[Dict[str, Any]]) -> None:
 
 
 def seleccionar_linea(lineas_compatibles: List[int], disponibilidad: Dict[int, Dict[str, Any]]) -> Optional[int]:
-    """Elige la línea compatible con capacidad diaria disponible y menor carga."""
-    # Filtra solo líneas que tienen capacidad diaria restante.
-    candidatas = [
-        linea
-        for linea in lineas_compatibles
-        if linea in disponibilidad
-        and disponibilidad[linea]["carga_planificada"] < disponibilidad[linea]["capacidad_diaria"]
-    ]
+    """Elige la línea compatible con menor secuencia y carga acumulada."""
+    # Devuelve la línea más libre entre las compatibles.
+    candidatas = [linea for linea in lineas_compatibles if linea in disponibilidad]
     if not candidatas:
         return None
-
-    # Ordena por la línea más libre (menor secuencia y carga ya planificada).
     candidatas.sort(
         key=lambda linea: (
             disponibilidad[linea]["sec"],
@@ -280,16 +273,9 @@ def planificar(cur) -> Dict[str, Any]:
 
     ordenar_ordenes(ordenes)
 
-    # Se añade el concepto de capacidad diaria total por línea.
-    capacidades_diarias = {
-        lid: data["capacidad"] * Decimal(str(CAPACIDAD_DIARIA_FACTOR))
-        for lid, data in lineas.items()
-    }
-
     disponibilidad = {
         linea_id: {
-            "capacidad": data["capacidad"],  # Capacidad por tanda
-            "capacidad_diaria": capacidades_diarias.get(linea_id, Decimal("0")),
+            "capacidad": data["capacidad"],
             "sec": secuencias.get(linea_id, 0) + 1,
             "carga_planificada": Decimal("0"),
         }
@@ -317,38 +303,30 @@ def planificar(cur) -> Dict[str, Any]:
         kg_restantes = kg_pendientes
         tandas_creadas = 0
 
-        # Este bucle ahora se detendrá si las líneas se llenan.
         while kg_restantes > Decimal("0"):
             linea_id = seleccionar_linea(lineas_compatibles, disponibilidad)
             if linea_id is None:
-                # Si no hay líneas con capacidad diaria disponible, se detiene la planificación para esta orden.
-                if kg_restantes > 0:
-                    alertas.append(
-                        {
-                            "orden_id": orden_id,
-                            "motivo": "sin_linea_disponible_con_capacidad",
-                            "kg_pendientes": float(kg_restantes),
-                        }
-                    )
+                alertas.append(
+                    {
+                        "orden_id": orden_id,
+                        "motivo": "sin_linea_disponible",
+                        "kg_pendientes": float(kg_restantes),
+                    }
+                )
                 break
 
-            capacidad_tanda = disponibilidad[linea_id]["capacidad"]
-            capacidad_diaria_restante = (
-                disponibilidad[linea_id]["capacidad_diaria"]
-                - disponibilidad[linea_id]["carga_planificada"]
-            )
-
-            if capacidad_diaria_restante <= Decimal("0"):
-                # Doble chequeo, aunque seleccionar_linea ya debería prevenir esto.
+            capacidad_linea = disponibilidad[linea_id]["capacidad"]
+            if capacidad_linea <= Decimal("0"):
+                alertas.append(
+                    {
+                        "orden_id": orden_id,
+                        "motivo": "capacidad_no_valida",
+                        "linea_id": linea_id,
+                    }
+                )
                 break
 
-            # El tamaño de la tanda es el mínimo entre lo que falta, la capacidad de la tanda y la capacidad diaria restante.
-            kg_a_planificar = min(capacidad_tanda, capacidad_diaria_restante)
-            kg_tanda = min(kg_restantes, kg_a_planificar)
-
-            if kg_tanda <= Decimal("0"):
-                break
-
+            kg_tanda = kg_restantes if kg_restantes <= capacidad_linea else capacidad_linea
             secuencia = disponibilidad[linea_id]["sec"]
 
             insertar_tanda(cur, orden_id, linea_id, kg_tanda, secuencia)
@@ -475,39 +453,6 @@ def preview_por_dias(cur, dias: int, desde: Optional[str]) -> List[Dict[str, Lis
     return agenda
 
 
-def obtener_siguiente_tanda(cur) -> Optional[Dict[str, Any]]:
-    """Busca la tanda planificada con mayor prioridad (menor secuencia)."""
-    sql = f"""
-        SELECT
-            t.id AS tanda_id,
-            t.orden_produccion_id,
-            t.linea_produccion_id,
-            t.cantidad_kg,
-            t.secuencia_en_linea,
-            op.id_producto,
-            p.nombre AS producto_nombre,
-            l.nombre AS linea_nombre
-        FROM {ENV}.tanda_produccion t
-        JOIN {ENV}.orden_produccion op ON op.id = t.orden_produccion_id
-        JOIN {ENV}.producto p ON p.id = op.id_producto
-        JOIN {ENV}.linea_produccion l ON l.id = t.linea_produccion_id
-        WHERE t.estado = 'planificada'
-        ORDER BY
-            t.secuencia_en_linea ASC,
-            t.linea_produccion_id ASC,
-            t.id ASC
-        LIMIT 1
-    """
-    tandas = fetch_all(cur, sql)
-    if not tandas:
-        return None
-
-    # Convertir Decimal a float para serialización JSON
-    siguiente_tanda = tandas[0]
-    siguiente_tanda["cantidad_kg"] = float(siguiente_tanda["cantidad_kg"])
-    return siguiente_tanda
-
-
 def lambda_handler_preview(event, context):
     """Entry point alternativo para preview por días (modo sombra)."""
     # explicacion funcionalidad: devuelve [{fecha:[items]}] sin escribir, usando rollback al final.
@@ -559,7 +504,8 @@ def parse_event(event: Any) -> Dict[str, Any]:
 
 
 def lambda_handler(event, context):
-    """Entry point de AWS Lambda para recalcular la agenda y devolver la siguiente tanda."""
+    """Entry point de AWS Lambda para recalcular la agenda de tandas."""
+    # Ejecuta la planificación en transacción y devuelve resumen JSON.
     logger.info("Iniciando planificacion de tandas. Evento: %s", event)
     try:
         _ = parse_event(event)  # Reservado para filtros futuros
@@ -574,17 +520,13 @@ def lambda_handler(event, context):
     try:
         conn = get_connection()
         cur = conn.cursor()
-        resultado_plan = planificar(cur)
-        logger.info("Planificacion completada. Resumen: %s", resultado_plan)
-
-        siguiente_tanda = obtener_siguiente_tanda(cur)
+        resultado = planificar(cur)
         conn.commit()
-
-        logger.info("Siguiente tanda a ejecutar: %s", siguiente_tanda)
+        logger.info("Planificacion completada. Resultado: %s", resultado)
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(siguiente_tanda or {}),
+            "body": json.dumps(resultado),
         }
     except PlanningError as exc:
         if conn:

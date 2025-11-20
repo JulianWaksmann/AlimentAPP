@@ -384,7 +384,7 @@ WITH RequerimientosTotales AS (
         materia_prima_por_producto mpp ON op.id_producto = mpp.id_producto
     WHERE
         -- Consideramos solo órdenes que consumirán stock en el futuro.
-        op.estado IN ('pendiente', 'planificada', 'lista_para_produccion', 'en_proceso')
+        op.estado IN ('pendiente', 'planificada')
     GROUP BY
         mpp.id_materia_prima
 ),
