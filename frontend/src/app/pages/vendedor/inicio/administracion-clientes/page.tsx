@@ -1,7 +1,7 @@
 'use client';
 
 import ClienteTable from "@/app/components/ClientesTable";
-import React, { useState, useEffect } from "react"; 
+import React, { useState } from "react"; 
 
 
 const GestionClientesPage = () => {
@@ -19,6 +19,7 @@ const GestionClientesPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
   const [modalType, setModalType] = useState<"error" | "success">("error");
+  const [abrirCrearCliente, setAbrirCrearCliente] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,10 +69,14 @@ const GestionClientesPage = () => {
       setModalType("success");
       setModalOpen(true);
       limpiarFormulario();
+      setAbrirCrearCliente(false);
+      window.location.reload();
 
-    } catch (error: any) {
+
+    } catch (error: unknown) {
       console.error("Error al crear el cliente:", error);
-      setModalMsg(`Hubo un error al crear el cliente: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      setModalMsg(`Hubo un error al crear el cliente: ${message}`);
       setModalType("error");
       setModalOpen(true);
     }
@@ -110,8 +115,13 @@ const GestionClientesPage = () => {
           </div>
         </div>
       )}
+      {!abrirCrearCliente &&(
+      <button className="rounded bg-primary text-white px-4 py-2 m-2" onClick={() => setAbrirCrearCliente(true)}>Crear Cliente</button>
+      )}
+
 
       {/* Formulario de Creación */}
+      {abrirCrearCliente && (
       <div className="mx-auto max-w-4xl rounded-lg bg-white p-4 shadow-lg md:p-6 mb-8">
         <h2 className="mb-6 text-center text-xl font-bold text-primary">
           Crear Nuevo Cliente
@@ -205,10 +215,10 @@ const GestionClientesPage = () => {
           <div className="mt-8 flex justify-end gap-3 pt-4">
             <button
               type="button"
-              onClick={limpiarFormulario}
+              onClick={() => {limpiarFormulario(); setAbrirCrearCliente(false);}}
               className="rounded bg-neutral-dark px-6 py-2 text-white transition hover:opacity-90"
             >
-              Limpiar
+              Cerrar
             </button>
             <button
               type="submit"
@@ -219,7 +229,7 @@ const GestionClientesPage = () => {
           </div>
         </form>
       </div>
-      
+      )}
       {/* Tabla de Clientes Existentes */}
       <ClienteTable />
     </div>
