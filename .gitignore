@@ -19,6 +19,7 @@ backend/layers/**/*.zip
 # Env/Secrets
 .env
 .env.*
+*.pem
 
 # IDE/OS
 .idea/
