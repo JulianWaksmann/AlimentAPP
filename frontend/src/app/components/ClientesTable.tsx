@@ -65,18 +65,17 @@ const ClientesTable = () => {
 
   };
 
-  const handleUpdate = async (updatedCliente: Cliente) => {
-    if (!updatedCliente.id) return;
-    try {
-      await updateCliente(updatedCliente);
-      alert('Cliente actualizado con éxito!');
-      handleModalClose();
-      // Here you might want to trigger a refetch of the clientes data
-    } catch (error) {
-      console.error("Error updating client:", error);
-      alert('Error al actualizar el cliente.');
-    }
-  };
+  // const handleUpdate = async (updatedCliente: Cliente) => {
+  //   if (!updatedCliente.id) return;
+  //   try {
+  //     await updateCliente(updatedCliente);
+  //     alert('Cliente actualizado con éxito!');
+  //     handleModalClose();
+  //   } catch (error) {
+  //     console.error("Error updating client:", error);
+  //     alert('Error al actualizar el cliente.');
+  //   }
+  // };
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg shadow-lg">
@@ -112,7 +111,6 @@ const ClientesTable = () => {
 
               <p className="text-sm text-gray-600">{cliente.email}</p>
               <p className='text-sm text-gray-600'>{cliente.telefono}</p>
-              {/* <p className="text-sm text-gray-500">{cliente.ciudad}, {cliente.provincia}</p> */}
               {cliente.cuil && <p className="text-xs text-gray-500 mt-1">CUIL: {cliente.cuil}</p>}
               {cliente.direcciones_asociadas && cliente.direcciones_asociadas.length > 0 && (
                 <div className="mt-2">
@@ -164,7 +162,7 @@ const ClientesTable = () => {
         <ClienteEditModal
           cliente={selectedCliente}
           onClose={handleModalClose}
-          onSave={handleUpdate}
+          onSave={() => console.log('Saved')}
         />
       )}
     </div>
@@ -190,15 +188,47 @@ const ClienteEditModal: React.FC<ModalProps> = ({ cliente, onClose, onSave }) =>
     const [modalMsg, setModalMsg] = useState("");
     const [modalType, setModalType] = useState<"error" | "success">("error");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+    const [nuevoEmail, setNuevoEmail] = useState<string>(cliente.email);
+    const [nuevoTelefono, setNuevoTelefono] = useState<string>(cliente.telefono? cliente.telefono : '');
+    const [nuevaRazonSocial, setNuevaRazonSocial] = useState<string>(cliente.razon_social || '');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target;
+  //   setFormData(prev => ({ ...prev, [name]: value }));
+  // };
+
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   onSave(formData);
+  // };
+
+  async function guardarCambios() {
+    if (cliente.id == null) {
+      setModalMsg("ID de cliente no disponible. No se pueden guardar los cambios.");
+      setModalType("error");
+      setModalOpen(true);
+      return;
+    }
+
+    const updatedCliente = {
+      id_cliente: cliente.id,
+      email: nuevoEmail,
+      razon_social: nuevaRazonSocial,
+      telefono: nuevoTelefono,
+    };
+
+    try {
+      await updateCliente(updatedCliente);
+      setModalMsg("Cliente actualizado con éxito.");
+      setModalType("success");
+      setModalOpen(true);
+    } catch (error) {
+      console.error("Error updating client:", error);
+      setModalMsg("Error al actualizar el cliente.");
+      setModalType("error");
+      setModalOpen(true);
+    }
+  }
 
     const verificarDireccion = async () => {
       if(!nuevaCalle || !nuevoNumero || !nuevaCiudad || !nuevaProvincia){
@@ -215,7 +245,6 @@ const ClienteEditModal: React.FC<ModalProps> = ({ cliente, onClose, onSave }) =>
       setModalMsg("Direccion creada con éxito.");
         setModalType("success");
         setModalOpen(true);
-        // setAbrirModalNuevaDireccion(false);
       } catch (error) {
         console.error("Error al crear la direccion:", error);
         setModalMsg(
@@ -257,32 +286,33 @@ const ClienteEditModal: React.FC<ModalProps> = ({ cliente, onClose, onSave }) =>
       )}
       <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
         <h3 className="text-xl font-bold mb-4">Modificar Cliente</h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* <form onSubmit={handleSubmit} className="space-y-4"> */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="nombre_contacto" className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-              <input id="nombre_contacto" type="text" name="nombre_contacto" value={formData.nombre_contacto} onChange={handleChange} placeholder="Nombre" className="border p-2 rounded-lg w-full" />
+              <input id="nombre_contacto" type="text" name="nombre_contacto" value={formData.nombre_contacto} disabled placeholder="Nombre" className="border p-2 rounded-lg w-full" />
             </div>
             <div>
               <label htmlFor="apellido_contacto" className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
-              <input id="apellido_contacto" type="text" name="apellido_contacto" value={formData.apellido_contacto} onChange={handleChange} placeholder="Apellido" className="border p-2 rounded-lg w-full" />
+              <input id="apellido_contacto" type="text" name="apellido_contacto" value={formData.apellido_contacto} disabled placeholder="Apellido" className="border p-2 rounded-lg w-full" />
             </div>
           </div>
           <div>
+            <label htmlFor="cuil" className="block text-sm font-medium text-gray-700 mb-1">CUIL</label>
+            <input id="cuil" type="text" name="cuil" value={formData.cuil || ''} disabled placeholder="CUIL" className="border p-2 rounded-lg w-full" />
+          </div>
+          <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input id="email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="border p-2 rounded-lg w-full" />
+            <input id="email" type="email" name="email" value={nuevoEmail} onChange={e => setNuevoEmail(e.target.value)} placeholder="Email" className="border p-2 rounded-lg w-full" />
           </div>
           <div>
             <label htmlFor="razon_social" className="block text-sm font-medium text-gray-700 mb-1">Razón Social</label>
-            <input id="razon_social" type="text" name="razon_social" value={formData.razon_social || ''} onChange={handleChange} placeholder="Razón Social" className="border p-2 rounded-lg w-full" />
+            <input id="razon_social" type="text" name="razon_social" value={nuevaRazonSocial} onChange={e => setNuevaRazonSocial(e.target.value)} placeholder="Razón Social" className="border p-2 rounded-lg w-full" />
           </div>
-          <div>
-            <label htmlFor="cuil" className="block text-sm font-medium text-gray-700 mb-1">CUIL</label>
-            <input id="cuil" type="text" name="cuil" value={formData.cuil || ''} onChange={handleChange} placeholder="CUIL" className="border p-2 rounded-lg w-full" />
-          </div>
+          
           <div>
             <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-            <input id="telefono" type="text" name="telefono" value={formData.telefono || ''} onChange={handleChange} placeholder="Teléfono" className="border p-2 rounded-lg w-full" />
+            <input id="telefono" type="text" name="telefono" value={nuevoTelefono} onChange={e => setNuevoTelefono(e.target.value)} placeholder="Teléfono" className="border p-2 rounded-lg w-full" />
           </div>
           {cliente.direcciones_asociadas && cliente.direcciones_asociadas.length > 0 && (
             <div>
@@ -301,10 +331,10 @@ const ClienteEditModal: React.FC<ModalProps> = ({ cliente, onClose, onSave }) =>
 
           <div className="flex justify-end gap-4 mt-6">
             <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancelar</button>
-            <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Guardar Cambios</button>
+            <button type="submit" onClick={() => guardarCambios()} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Guardar Cambios</button>
           </div>
 
-        </form>
+        {/* </form> */}
       </div>
       {agregarDireccion && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-100 p-4">

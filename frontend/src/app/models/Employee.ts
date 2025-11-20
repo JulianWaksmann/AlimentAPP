@@ -6,4 +6,5 @@ export interface Employee {
   telefono: string;
   email: string;
   password?: string;
+  dni? : string;
 }
