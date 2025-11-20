@@ -129,7 +129,12 @@ def build_story(lote_materia_prima, ordenes_de_produccion):
     cantidad_disponible_actual = lote_materia_prima.get('cantidad_unitaria_disponible', Decimal('0.00'))
     vencido = lote_materia_prima.get('fecha_vencimiento') and lote_materia_prima['fecha_vencimiento'] < date.today()
     
-    estado_restante = f"<font color='{COLOR_ROJO}'>Vencido desde {formato_fecha(lote_materia_prima['fecha_vencimiento'])}</font>" if vencido else f"<font color='{COLOR_VERDE}'>Disponible</font>"
+    if cantidad_disponible_actual == 0:
+        estado_restante = f"<font color='{COLOR_ROJO}'>Agotado</font>"
+    elif vencido:
+        estado_restante = f"<font color='{COLOR_ROJO}'>Vencido desde {formato_fecha(lote_materia_prima['fecha_vencimiento'])}</font>"
+    else:
+        estado_restante = f"<font color='{COLOR_VERDE}'>Disponible</font>"
 
     resumen_data = [
         [Paragraph(f"<b>Total Consumido del Lote:</b> {total_consumido} {lote_materia_prima['unidad_medida']}", styles['Body'])],
