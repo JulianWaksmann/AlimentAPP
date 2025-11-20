@@ -6,14 +6,15 @@ import 'leaflet/dist/leaflet.css';
 // Interfaz para cada punto del recorrido
 export interface RoutePoint {
   sequence: number;
-  id_orden: number;
+  envio_id: number;
+  orden_venta_id: number;
   lat: number;
   lon: number;
 }
 
 // Interfaz para la respuesta de tu API
 export interface ApiData {
-  count: number;
+  // count: number;
   ordered_points: RoutePoint[];
 }
 
@@ -30,15 +31,15 @@ export interface OrsRouteResponse {
 const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImEyZmE4YTA1MDJhYjQ0NGJiNGQ0NmRiNGNlMjhlMzVlIiwiaCI6Im11cm11cjY0In0=";
 
 // Datos de ejemplo que recibirías de tu API
-const mockData: ApiData = {
-  "count": 4,
-  "ordered_points": [
-    {"sequence":0,"id_orden":199,"lat":-34.521667, "lon":-58.701182},
-    {"sequence":1,"id_orden":201,"lat":-34.498857,"lon":-58.677598},
-    {"sequence":2,"id_orden":202,"lat":-34.481442,"lon":-58.669840},
-    {"sequence":3,"id_orden":203,"lat":-34.459143,"lon":-58.682599}
-  ]
-};
+// const mockData: ApiData = {
+//   "count": 4,
+//   "ordered_points": [
+//     {"sequence":0,"orden_venta_id":199,"lat":-34.521667, "lon":-58.701182, envio_id: 123},
+//     {"sequence":1,"orden_venta_id":201,"lat":-34.498857,"lon":-58.677598, envio_id: 124},
+//     {"sequence":2,"orden_venta_id":202,"lat":-34.481442,"lon":-58.669840, envio_id: 125},
+//     {"sequence":3,"orden_venta_id":203,"lat":-34.459143,"lon":-58.682599, envio_id: 126}
+//   ]
+// };
 
 // Define el color de la polilínea (la ruta)
 const polylineOptions = { color: 'blue', weight: 4 };
@@ -46,7 +47,7 @@ const polylineOptions = { color: 'blue', weight: 4 };
 // Define un icono de marcador personalizado (opcional)
 // Esto soluciona problemas comunes de iconos en React-Leaflet
 const customMarkerIcon = new L.Icon({
-  iconUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon.png',
+  iconUrl: 'https://img.icons8.com/?size=100&id=vfv1AbUEfpHl&format=png&color=000000',
   iconRetinaUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon-2x.png',
   shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
   iconSize: [25, 41],
@@ -54,6 +55,26 @@ const customMarkerIcon = new L.Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
+
+// Icono distinto para el punto de inicio (puede usar otra imagen)
+const startMarkerIcon = new L.Icon({
+  iconUrl: 'https://img.icons8.com/?size=100&id=7880&format=png&color=221E5F',
+  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Punto de inicio fijo
+const START_POINT: RoutePoint = {
+  sequence: 0,
+  envio_id: -1,
+  orden_venta_id: -1,
+  lat: -34.52271017111954,
+  lon: -58.70043496251298
+};
 
 // Props del componente (podrías recibir los datos por props)
 interface RouteMapProps {
@@ -65,9 +86,17 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
   
   // 1. Preparar las coordenadas de los puntos de la API
   // Las coordenadas de Leaflet son [lat, lon]
-  const apiPoints: L.LatLngTuple[] = useMemo(() => 
-    data.ordered_points.map(p => [p.lat, p.lon]),
-    [data.ordered_points]
+  // Reemplazar la obtención directa de apiPoints por una lista augmentada
+  // que siempre incluye el START_POINT en sequence 0 y desplaza las secuencias existentes.
+  const augmentedOrderedPoints = useMemo(() => {
+    const shifted = data.ordered_points.map(p => ({ ...p, sequence: p.sequence + 1 }));
+    return [START_POINT, ...shifted];
+  }, [data.ordered_points]);
+
+  // Las coordenadas para Leaflet a partir de augmentedOrderedPoints
+  const apiPoints: L.LatLngTuple[] = useMemo(() =>
+    augmentedOrderedPoints.map(p => [p.lat, p.lon]),
+    [augmentedOrderedPoints]
   );
 
   // 2. Obtener la ruta de OpenRouteService
@@ -77,7 +106,7 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
       return;
     }
     // ORS requiere las coordenadas en formato [lon, lat]
-    const orsCoordinates = data.ordered_points.map(p => [p.lon, p.lat]);
+    const orsCoordinates = augmentedOrderedPoints.map(p => [p.lon, p.lat]);
 
     const fetchRoute = async () => {
 
@@ -104,7 +133,7 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
 
         // Parsear la respuesta JSON
         const data: OrsRouteResponse = await response.json();
-        console.log("Respuesta de ORS:", data);
+        // console.log("Respuesta de ORS:", data);
 
         // La geometría del GeoJSON viene en [lon, lat], hay que revertir a [lat, lon] para Leaflet.
         // Además, la respuesta de ORS ya puede ser una polilínea decodificada, solo la extraemos.
@@ -122,7 +151,7 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
     };
 
     fetchRoute();
-  }, [data.ordered_points]);
+  }, [augmentedOrderedPoints]); // <-- depende de la lista augmentada
 
 
   // 3. Calcular el centro del mapa
@@ -145,8 +174,9 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
       >
         {/* Capa base de Leaflet */}
         <TileLayer
-          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="© OpenMapTiles © OpenStreetMap"
+          url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png"
+          maxZoom={20}
         />
 
         {/* Polilínea de la Ruta de ORS */}
@@ -159,19 +189,23 @@ const Mapa: React.FC<RouteMapProps> = ({ data }) => {
         
 
         {/* Marcadores de los Puntos de la API */}
-        {data.ordered_points.map((point: RoutePoint) => (
-          <Marker 
-            key={point.sequence} 
-            position={[point.lat, point.lon]} 
-            icon={customMarkerIcon}
-          >
-            <Popup>
-              **Orden #{point.sequence}** <br />
-              ID: {point.id_orden} <br />
-              Lat: {point.lat.toFixed(6)}, Lon: {point.lon.toFixed(6)}
-            </Popup>
-          </Marker>
-        ))}
+        {augmentedOrderedPoints.map((point: RoutePoint) => {
+          const isStart = point.sequence === 0;
+          const icon = isStart ? startMarkerIcon : customMarkerIcon;
+          return (
+            <Marker 
+              key={point.sequence} 
+              position={[point.lat, point.lon]} 
+              icon={icon}
+            >
+              <Popup>
+                {isStart ? <strong>Punto de inicio</strong> : <>Orden #{point.orden_venta_id}</>} <br />
+                {/* { !isStart && <>ID: {point.orden_venta_id} <br /></> } */}
+                {/* Lat: {point.lat.toFixed(6)}, Lon: {point.lon.toFixed(6)} */}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     </div>
   );

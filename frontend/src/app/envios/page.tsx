@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { PedidosAsignadosResponse } from "@/app/pages/logistica/inicio/pedidos-asignados/page"
 import { verificarEntrega, verPedidos } from "@/app/api/logistica"
 import Header from "../components/Header"
 import Mapa, { ApiData } from "../components/Mapa"
+import { getRecorrido } from "../api/logistica"
 
 const EnviosPage = () => {
     const [verificado, setVerificado] = useState(false)
@@ -19,14 +20,23 @@ const EnviosPage = () => {
     const [idPedidoAEntregar, setIdPedidoAEntregar] = useState<number>(0);
     const [modalErrorDNI, setModalErrorDNI] = useState<boolean>(false);
     const [verMapa, setVerMapa] = useState<boolean>(false);
+    const [recorrido, setRecorrido] = useState<ApiData>();
+
+        async function fetchRecorrido() {
+            const response = await getRecorrido(dniTransportista);
+            setRecorrido(response);
+            console.log("Recorrido obtenido:", response);
+        }
+
+        
 
     const mockData: ApiData = {
-      "count": 4,
+    //   "count": 4,
       "ordered_points": [
-        {"sequence":1,"id_orden":199,"lat":-34.521667, "lon":-58.701182},
-        {"sequence":2,"id_orden":201,"lat":-34.498857,"lon":-58.677598},
-        {"sequence":3,"id_orden":202,"lat":-34.481442,"lon":-58.669840},
-        {"sequence":4,"id_orden":203,"lat":-34.459143,"lon":-58.682599}
+        {"sequence":0,"orden_venta_id":199,"lat":-34.521667, "lon":-58.701182, envio_id: 123},
+        {"sequence":1,"orden_venta_id":201,"lat":-34.498857,"lon":-58.677598, envio_id: 124},
+        {"sequence":2,"orden_venta_id":202,"lat":-34.481442,"lon":-58.669840, envio_id: 125},
+        {"sequence":3,"orden_venta_id":203,"lat":-34.459143,"lon":-58.682599, envio_id: 126}
       ]
     };
     async function consultarPedidos(){
@@ -35,17 +45,18 @@ const EnviosPage = () => {
             const pedidosAsignadosResponse = await verPedidos(dniTransportista, "pendiente");
             console.log(pedidosAsignadosResponse);
             setPedidosAsignados(pedidosAsignadosResponse);
-            console.log("Pedidos Asignados:", pedidosAsignadosResponse);
+            // console.log("Pedidos Asignados:", pedidosAsignadosResponse);
             
             const pedidosDespachadosResponse = await verPedidos(dniTransportista, "despachado");
             setPedidosDespachados(pedidosDespachadosResponse);
-            console.log("Pedidos Despachados:", pedidosDespachadosResponse);
+            // console.log("Pedidos Despachados:", pedidosDespachadosResponse);
 
             const pedidosEntregadosResponse = await verPedidos(dniTransportista, "entregado");
             setPedidosEntregados(pedidosEntregadosResponse);
-            console.log("Pedidos Entregados:", pedidosEntregadosResponse);
+            // console.log("Pedidos Entregados:", pedidosEntregadosResponse);
 
             setVerificado(true);
+            fetchRecorrido();
         } catch (error) {
             console.log("Error al consultar el DNI:", error);
             // console.error("Error al consultar el DNI:", error);
@@ -288,7 +299,8 @@ const EnviosPage = () => {
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                             {/* <p className="text-gray-500">[Mapa Placeholder]</p> */}
 
-                            <Mapa data={mockData} />
+                            <Mapa data={recorrido ? recorrido : { ordered_points: [] }} />
+                            {/* <Mapa data={mockData} /> */}
                         </div>
                     </div>
                     <div className="flex justify-end">
