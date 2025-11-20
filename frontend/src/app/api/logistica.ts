@@ -1,5 +1,7 @@
+import { ApiData } from "../components/Mapa";
 import { Flota } from "../models/Flota";
 import { PedidoRetiro } from "../models/PedidosVentas";
+import { PedidosAsignadosResponse } from "../pages/vendedor/inicio/pedidos-en-camino/page";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function CreateFlota(flota: Flota) {
@@ -83,4 +85,64 @@ export async function entregarPedido(idPedido: number) {
         throw new Error(errorData.error || "Error al marcar el pedido como entregado");
     }
     return response.json();
+}
+
+
+export async function verPedidos(dni: string, estado: string): Promise<PedidosAsignadosResponse> {
+    const data = {
+        dni_conductor : dni,
+        estado_envio: estado
+    }
+    console.log(JSON.stringify(data));
+    const response = await fetch(`${apiUrl}/gestion-envios/post-obtener-envios-por-estado-y-conductor`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        throw new Error("Error fetching pedidos para retiro");
+    }
+    const responseData = await response.json();
+    return responseData.vehiculo[0];
+}
+
+export async function verificarEntrega(dni: string, id_envio: number) {
+    const data = {
+        dni_cliente : dni,
+        id_envio: id_envio
+    }
+    const response = await fetch(`${apiUrl}/gestion-envios/post-entregar-envio-por-dni`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        console.log("Error en la respuesta de verificarEntrega");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al verificar la entrega");
+    }
+    return response.json();
+}
+
+export async function getRecorrido(dni: string): Promise<ApiData> {
+    const data = {
+        dni_conductor : dni
+    }
+    const response = await fetch(`${apiUrl}/gestion-envios/post-get-camino-optimo-por-conductor`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        throw new Error("Error fetching recorrido del conductor");
+    }
+    const responseData = await response.json();
+    console.log(responseData);
+    return responseData;
 }

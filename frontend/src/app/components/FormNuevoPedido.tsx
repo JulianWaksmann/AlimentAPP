@@ -189,12 +189,7 @@ const FormNuevoPedido = () => {
 
 
   const handleGuardar = async () => {
-    // if (!idCliente || !fechaEntrega || productosPedido.length === 0) {
-    //   setModalMsg("Completa todos los campos antes de guardar.");
-    //   setModalType("error");
-    //   setModalOpen(true);
-    //   return;
-    // }
+
     if (!idClienteSeleccionado) {
       //no hay cliente seleccionado
       setModalMsg("Debe seleccionar un cliente antes de continuar.");
@@ -219,7 +214,6 @@ const FormNuevoPedido = () => {
     }
     if (
       conEnvio &&
-      // !SeleccionoEnvioNuevaDireccion &&
       !idDireccionSeleccionada
     ) {
       setModalMsg("Selecciona una dirección de envío o agrega una nueva.");
@@ -241,13 +235,9 @@ const FormNuevoPedido = () => {
       id_direccion_entrega: idDireccionSeleccionada
         ? idDireccionSeleccionada
         : undefined,
-      // direccion_nueva_opcional: SeleccionoEnvioNuevaDireccion? nuevaDireccion: undefined,
-      // direccion_nueva_opcional: undefined,
-      // zona: SeleccionoEnvioNuevaDireccion ? zonaNuevaDireccion : undefined,
-      // zona: undefined,
       prioritario: urgente,
     };
-    // limpiarFormulario();
+    limpiarFormulario();
 
     try {
       // Llamar a la función para crear el nuevo pedido
@@ -369,14 +359,7 @@ const FormNuevoPedido = () => {
                         {dir.id_direccion} - {dir.direccion_text} - {dir.zona}{" "}
                       </option>
                     ))}
-                    {/* {IDDireccionNueva !== null && (
-                      <option
-                        key={IDDireccionNueva.id_direccion}
-                        value={IDDireccionNueva.id_direccion}
-                      >
-                        {IDDireccionNueva.id_direccion} - {nuevaCalle} {nuevoNumero} , {nuevaCiudad} , {nuevaProvincia}
-                      </option>
-                    )} */}
+
                 </select>
                 <button
                   type="button"
@@ -459,29 +442,10 @@ const FormNuevoPedido = () => {
               />
             </div>
             <div className="mt-4">
-              {/* <label
-                htmlFor="zonaNuevaDireccion"
-                className="mb-1 block text-sm font-medium"
-              >
-                Zona de la nueva dirección
-              </label> */}
-              {/* <select
-                value={zonaNuevaDireccion}
-                onChange={(e) => setZonaNuevaDireccion(e.target.value)}
-                className="w-full rounded border px-3 py-2"
-              >
-                <option value="" disabled>
-                  Selecciona una zona
-                </option>
-                <option value="zona norte">Zona Norte</option>
-                <option value="zona sur">Zona Sur</option>
-                <option value="zona este">Zona Este</option>
-                <option value="zona oeste">Zona Oeste</option>
-              </select> */}
+
             </div>
             <button
               onClick={() => {
-                // setSeleccionoEnvioNuevADireccion(false);
                 setAbrirModalNuevaDireccion(false);
               }}
               className="mt-2 text-sm border rounded bg-error text-white px-4 py-2"
@@ -491,7 +455,6 @@ const FormNuevoPedido = () => {
             <button
               onClick={() => {
                 setIdDireccionSeleccionada(null);
-                // setSeleccionoEnvioNuevADireccion(true);
                 setAbrirModalNuevaDireccion(false);
                 verificarDireccion();
               }}
@@ -502,26 +465,6 @@ const FormNuevoPedido = () => {
             </button>
           </div>
         )}
-
-        {/* vista de la seleccion nueva ingresada */}
-        {/* {SeleccionoEnvioNuevaDireccion && (
-          <div className="border p-4 mt-4 rounded bg-neutral-light flex justify-between items-center">
-            <label htmlFor="">
-              Enviar a la direccion: {nuevaDireccion} - {zonaNuevaDireccion}
-            </label>
-            <button
-              onClick={() => {
-                setSeleccionoEnvioNuevADireccion(false);
-                setNuevaDireccion("");
-                setZonaNuevaDireccion("");
-              }}
-              className="mt-2 text-sm border rounded bg-error text-white px-4 py-2"
-            >
-              {" "}
-              cancelar
-            </button>
-          </div>
-        )} */}
 
         <div>
           <label

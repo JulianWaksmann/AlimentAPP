@@ -107,8 +107,8 @@ const ClientesTable = () => {
         {paginatedClientes.map(cliente => (
           <div key={cliente.id} className="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex-grow">
-              <p className="font-bold text-lg text-blue-600">{cliente.razon_social}</p>
-              <p className="font-bold text-md text-blue-600">{`${cliente.nombre_contacto} ${cliente.apellido_contacto}`}</p>
+              <p className="font-bold text-lg text-primary">{cliente.razon_social}</p>
+              <p className="font-bold text-md text-primary">{`${cliente.nombre_contacto} ${cliente.apellido_contacto}`}</p>
 
               <p className="text-sm text-gray-600">{cliente.email}</p>
               <p className='text-sm text-gray-600'>{cliente.telefono}</p>
@@ -127,7 +127,7 @@ const ClientesTable = () => {
             </div>
             <button
               onClick={() => handleEditClick(cliente)}
-              className="flex items-center gap-2 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-sm"
+              className="flex items-center gap-2 bg-success text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-sm"
             >
               <Edit size={16} />
               Modificar

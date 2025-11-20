@@ -23,7 +23,7 @@ const GananciasChart: React.FC<Props> = ({Finanza}) => {
       <XAxis dataKey="fecha" />
       <YAxis width="auto" />
       <Tooltip />
-      <Area type="monotone" dataKey="ganancias" stroke="#88ffd8" fill="#43dd64" />
+      <Area type="monotone" dataKey="ganancias" stroke="#00D8C4" fill="#00D8C4" />
     </AreaChart>
   );
 };

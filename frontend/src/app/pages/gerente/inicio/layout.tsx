@@ -16,7 +16,7 @@ const GerenteLayout = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-neutral-light">
+    <div className="flex h-screen bg-white">
       {/* Menú lateral: ocultable en mobile/tablet, fijo en desktop (lg+) */}
       <div
         className={`fixed top-0 left-0 z-50 h-full w-64 transform bg-primary p-4 text-white transition-transform lg:static ${

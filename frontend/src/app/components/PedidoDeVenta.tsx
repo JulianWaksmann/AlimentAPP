@@ -126,7 +126,7 @@ export default function PedidoVenta({ pedidos }: Props) {
             <div className="flex justify-between items-center mb-2">
               <span className="font-bold text-primary">Pedido #{pedido.idPedido}</span>
               <span className={`px-2 py-1 rounded-full text-xs font-semibold ${estadoColor[pedido.estado] || "bg-gray-200 text-gray-700"}`}>
-                {pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1)}
+                {pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1).replaceAll("_", " ")}
               </span>
             </div>
             <div className="mb-1 text-sm"><span className="font-semibold">Cliente {pedido.idCliente} :</span> {pedido.nombreCliente} {pedido.apellidoCliente}</div>

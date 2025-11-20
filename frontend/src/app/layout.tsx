@@ -1,3 +1,4 @@
+import FloatingHelpButton from "./components/FloatingHelpButton";
 import "./globals.css";
 export default function RootLayout({
   children,
@@ -9,7 +10,10 @@ export default function RootLayout({
       <body
       >
         {children}
+        <FloatingHelpButton />
       </body>
     </html>
   );
 }
+
+

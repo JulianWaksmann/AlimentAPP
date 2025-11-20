@@ -74,7 +74,7 @@ function extractMessage(err: unknown): string | null {
                   <div className="text-xs text-gray-500">{l.descripcion}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded ${l.activa ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{l.activa ? 'Activa' : 'Inactiva'}</span>
+                  <span className={`text-xs px-2 py-1 rounded ${l.activa ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{l.activa ? 'Disponible' : 'Ocupada'}</span>
                 </div>
               </div>
 
@@ -84,10 +84,10 @@ function extractMessage(err: unknown): string | null {
                     className="flex-1 bg-blue-500 text-white rounded px-3 py-2 text-sm"
                     onClick={() => setEditingId(editingId === l.id ? null : l.id ?? null)}
                   >{editingId === l.id ? 'Cancelar edición' : 'Editar línea'}</button>
-                  <button
+                  {/* <button
                     className={`flex-1 ${l.activa ? 'bg-error text-white' : 'bg-success text-white'} rounded px-3 py-2 text-sm`}
                     onClick={() => setConfirmToggleId(l.id ?? null)}
-                  >{l.activa ? 'Desactivar' : 'Activar'}</button>
+                  >{l.activa ? 'Desactivar' : 'Activar'}</button> */}
                 </div>
 
                 {confirmToggleId === l.id && (

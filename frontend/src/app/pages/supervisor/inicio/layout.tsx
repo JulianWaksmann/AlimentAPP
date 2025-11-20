@@ -13,6 +13,8 @@ const menuItems = [
   { name: "Pedir Materia Prima", href: "/pages/supervisor/inicio/materia-prima" },
   { name: "Ventas Pendientes de Aprobación", href: "/pages/supervisor/inicio/ventas-pendientes-aprobacion" },
   { name: "Pedidos Urgentes", href: "/pages/supervisor/inicio/pedidos-urgentes" },
+  { name: "Lotes de Materia Prima", href: "/pages/supervisor/inicio/lote-materia-prima" },
+
 ];
 
 const SupervisorLayout = ({ children }: { children: React.ReactNode }) => {

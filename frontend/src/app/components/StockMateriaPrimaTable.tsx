@@ -43,14 +43,14 @@ const StockMateriaPrimaTable: React.FC<Props> = ({ materiasPrimas }) => {
       <div className="flex justify-center items-center mb-4 gap-4">
         <button
           onClick={() => toggleSort('nombre_materia_prima')}
-          className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition ${sortKey === 'nombre_materia_prima' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+          className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition ${sortKey === 'nombre_materia_prima' ? 'bg-success text-white' : 'bg-white'}`}
         >
           Ordenar por Nombre
           {sortKey === 'nombre_materia_prima' && (sortAsc ? <ArrowUp size={16} /> : <ArrowDown size={16} />)}
         </button>
         <button
           onClick={() => toggleSort('cantidad_disponible')}
-          className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition ${sortKey === 'cantidad_disponible' ? 'bg-blue-500 text-white' : 'bg-white'}`}
+          className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition ${sortKey === 'cantidad_disponible' ? 'bg-success text-white' : 'bg-white'}`}
         >
           Ordenar por Cantidad
           {sortKey === 'cantidad_disponible' && (sortAsc ? <ArrowUp size={16} /> : <ArrowDown size={16} />)}
@@ -63,11 +63,11 @@ const StockMateriaPrimaTable: React.FC<Props> = ({ materiasPrimas }) => {
           <div key={mp.id_materia_prima} className="bg-white rounded-lg shadow p-4 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Package size={24} className="text-blue-500" />
+                <Package size={24} className="text-primary" />
                 <h3 className="font-bold text-lg text-gray-800 truncate">{mp.nombre_materia_prima}</h3>
               </div>
               <div className="flex items-center gap-3 text-gray-600">
-                 <Beaker size={20} className="text-green-500" />
+                 <Beaker size={20} className="text-details" />
                  <p className="text-2xl font-semibold">{mp.cantidad_disponible?.toLocaleString() || '0'} <span className="text-base font-normal">{mp.unidad_medida}</span></p>
               </div>
             </div>

@@ -16,12 +16,12 @@ const estadoColor: Record<string, string> = {
 
 const sortOptions = [
   { value: "id_orden_produccion", label: "ID Orden" },
-  { value: "id_pedido", label: "ID Pedido" },
+  { value: "id_orden_venta", label: "ID Pedido" },
   { value: "id_cliente", label: "ID Cliente" },
   { value: "id_producto", label: "ID Producto" },
   { value: "fecha_creacion_orden_venta", label: "Fecha Creación" },
-  { value: "fechaentrega_orden_venta", label: "Fecha Entrega" },
-  { value: "estado_orden_produccion", label: "Estado" },
+  { value: "fecha_entrega_solicitada_orden_venta", label: "Fecha Entrega" },
+  // { value: "estado_orden_produccion", label: "Estado" },
 ];
 
 export default function OrdenesDeProduccionTable({ ordenes }: Props) {
@@ -60,7 +60,7 @@ export default function OrdenesDeProduccionTable({ ordenes }: Props) {
       }
       if (
         sortKey === "fecha_creacion_orden_venta" ||
-        sortKey === "fechaentrega_orden_venta"
+        sortKey === "fecha_entrega_solicitada_orden_venta"
       ) {
         valueA = new Date(valueA as string).getTime();
         valueB = new Date(valueB as string).getTime();

@@ -17,7 +17,7 @@ module.exports = {
         },
         neutral: {
           dark: "#111827",
-          light: "#F3F4F6",
+          light: "#CCCCCC",
         },
         details: "#00D8C4",
         success: "#05ABFF",
