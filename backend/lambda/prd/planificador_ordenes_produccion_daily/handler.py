@@ -489,42 +489,48 @@ def parse_event(event: Any) -> Dict[str, Any]:
     raise PlanningError("Evento no soportado")
 
 
+CORS_HEADERS = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "OPTIONS,GET,POST",
+}
+
 def lambda_handler(event, context):
-    """entrypoint de preview; ejecuta sombra y rollback, no persiste."""
     logger.info("Preview diario - evento: %s", event)
+    
+    if event.get("httpMethod") == "OPTIONS":
+        return {"statusCode": 200, "headers": CORS_HEADERS}
+    
     try:
         payload = parse_event(event)
     except PlanningError as exc:
-        return {"statusCode": 400, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": str(exc)})}
+        return {"statusCode": 400, "headers": CORS_HEADERS, "body": json.dumps({"error": str(exc)})}
 
     conn = None
     try:
         conn = get_connection()
         cur = conn.cursor()
         agenda = preview_sin_limite(cur)
-        # Persistimos la planificación efímera en una nueva conexión (TRUNCATE + INSERT + COMMIT)
         try:
             total = guardar_planificacion(agenda)
             logger.info("[preview] planificacion_diaria regenerada: %s filas", total)
         except Exception:
             logger.exception("No se pudo persistir planificacion_diaria")
-            # No abortamos la respuesta; la preview sigue siendo válida
-        conn.rollback()  # sombra: garantizamos no persistir tandas ni efectos colaterales
-        return {"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": json.dumps(agenda)}
+        conn.rollback()
+        return {"statusCode": 200, "headers": CORS_HEADERS, "body": json.dumps(agenda)}
     except PlanningError as exc:
         if conn:
             conn.rollback()
-        logger.warning("Preview interrumpida: %s", exc)
-        return {"statusCode": 400, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": str(exc)})}
+        return {"statusCode": 400, "headers": CORS_HEADERS, "body": json.dumps({"error": str(exc)})}
     except Exception as exc:
         if conn:
             conn.rollback()
         logger.exception("Error inesperado en preview diario")
-        return {"statusCode": 500, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": "Error interno", "detail": str(exc)})}
+        return {"statusCode": 500, "headers": CORS_HEADERS, "body": json.dumps({"error": "Error interno", "detail": str(exc)})}
     finally:
         if conn:
             conn.close()
-
 
 def guardar_planificacion(agenda: List[Dict[str, List[Dict[str, Any]]]]) -> int:
     """TRUNCATE + INSERT en {ENV}.planificacion_diaria usando una conexión separada."""

@@ -2,9 +2,8 @@ import json
 import logging
 import os
 import ssl
-import random
-from typing import Any, Dict, List
 from datetime import datetime
+from typing import Any, Dict
 import boto3
 import pg8000
 
@@ -13,8 +12,15 @@ logger.setLevel(logging.INFO)
 
 ENV = os.getenv("DB_SCHEMA", "dev")
 ssm_client = boto3.client("ssm")
+lambda_client = boto3.client("lambda")
 
 DB_CONFIG = None  # cache SSM
+
+LAMBDA_ASIGNAR_MP = os.getenv(
+    "LAMBDA_POST_ASIGNAR_MATERIA_PRIMA",
+    "asignacion-lote-materia-prima-orden-produccion",
+)
+
 
 class ValidationError(Exception):
     """Error de validación."""
@@ -71,9 +77,10 @@ def run_query(cur, sql: str, params: tuple = None):
     return [dict(zip(columns, row)) for row in rows]
 
 
-def run_command(cur, sql: str):
+def run_command(cur, sql: str, params: tuple = None):
     """INSERT/UPDATE/DELETE; no retorna filas."""
-    cur.execute(sql)
+    cur.execute(sql, params or ())
+
 
 def lambda_handler(event, context):
     logger.info("Evento recibido: %s", event)
@@ -90,7 +97,11 @@ def lambda_handler(event, context):
     required = ["id_lote", "nuevo_estado"]
     missing = [k for k in required if not payload.get(k)]
     if missing:
-        return {"statusCode": 400, "headers": cors_headers, "body": json.dumps({"error": f"Faltan campos: {', '.join(missing)}"})}
+        return {
+            "statusCode": 400,
+            "headers": cors_headers,
+            "body": json.dumps({"error": f"Faltan campos: {', '.join(missing)}"})
+        }
 
     conn = None
     try:
@@ -112,34 +123,80 @@ def lambda_handler(event, context):
         if not exists:
             raise ValidationError("El lote indicado no existe")
 
-        query = f"""
-        UPDATE {ENV}.lote_materia_prima SET fecha_ingreso = '{fecha_ingreso}' WHERE id = {id_lote};
-        UPDATE {ENV}.lote_materia_prima SET estado = '{nuevo_estado}' WHERE id = {id_lote}
-        """
-        run_command(cur, query)
+        # Actualizaciones principales
+        run_command(cur, f"""
+            UPDATE {ENV}.lote_materia_prima
+            SET fecha_ingreso = %s, estado = %s
+            WHERE id = %s
+        """, (fecha_ingreso, nuevo_estado, id_lote))
 
         if fecha_vencimiento:
-            query = f"UPDATE {ENV}.lote_materia_prima SET fecha_vencimiento = '{fecha_vencimiento}' WHERE id = {id_lote}"
-            run_command(cur, query)
+            run_command(cur, f"""
+                UPDATE {ENV}.lote_materia_prima
+                SET fecha_vencimiento = %s
+                WHERE id = %s
+            """, (fecha_vencimiento, id_lote))
 
         if observaciones:
-            query = f"UPDATE {ENV}.lote_materia_prima SET observaciones = '{observaciones}' WHERE id = {id_lote}"
-            run_command(cur, query)
+            run_command(cur, f"""
+                UPDATE {ENV}.lote_materia_prima
+                SET observaciones = %s
+                WHERE id = %s
+            """, (observaciones, id_lote))
 
         if codigo_lote:
-            query = f"UPDATE {ENV}.lote_materia_prima SET codigo_lote = '{codigo_lote}' WHERE id = {id_lote}"
-            run_command(cur, query)
+            run_command(cur, f"""
+                UPDATE {ENV}.lote_materia_prima
+                SET codigo_lote = %s
+                WHERE id = %s
+            """, (codigo_lote, id_lote))
 
         conn.commit()
+
+        # 🔹 INVOCAR LAMBDA DE ASIGNACIÓN AUTOMÁTICA
+        asignacion_resultado = None
+        if nuevo_estado == "disponible":
+            try:
+                logger.info("Invocando lambda de asignación de materia prima: %s", LAMBDA_ASIGNAR_MP)
+                payload_asignacion = json.dumps({}).encode("utf-8")
+                response = lambda_client.invoke(
+                    FunctionName=LAMBDA_ASIGNAR_MP,
+                    InvocationType="Event",  # asincrónica, no bloquea
+                    Payload=payload_asignacion,
+                )
+                asignacion_resultado = {"status_code": response.get("StatusCode")}
+            except Exception as exc:
+                logger.exception("Fallo al invocar la lambda de asignación de materia prima")
+                asignacion_resultado = {"error": str(exc)}
 
         return {
             "statusCode": 200,
             "headers": cors_headers,
-            "body": json.dumps({"message": f"Estado del lote {id_lote} actualizado a {nuevo_estado}"}),
+            "body": json.dumps({
+                "message": f"Estado del lote {id_lote} actualizado a {nuevo_estado}",
+                "asignacion_materia_prima": asignacion_resultado
+            }),
+        }
+
+    except ValidationError as e:
+        if conn:
+            conn.rollback()
+        return {
+            "statusCode": 400,
+            "headers": cors_headers,
+            "body": json.dumps({"error": str(e)}),
         }
 
     except Exception as e:
-        if conn: conn.rollback()
-        return {"statusCode": 500, "headers": cors_headers, "body": json.dumps({"error": str(e)})}
+        if conn:
+            conn.rollback()
+        logger.exception("Error general en actualización de lote")
+        return {
+            "statusCode": 500,
+            "headers": cors_headers,
+            "body": json.dumps({"error": str(e)}),
+        }
+
     finally:
-        if conn: conn.close()
+        if conn:
+            conn.close()

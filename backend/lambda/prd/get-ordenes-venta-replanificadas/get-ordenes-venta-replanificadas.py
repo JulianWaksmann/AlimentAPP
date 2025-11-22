@@ -101,44 +101,50 @@ def lambda_handler(event, context):
         cur = conn.cursor()
 
         query_pedidos = f"""
-            SELECT 
-                id_orden_venta idPedido, 
-                ov.id_cliente idCliente, 
-                c.nombre_contacto nombreCliente,
-                c.apellido_contacto apellidoCliente,
-                c.email, 
+            WITH ProductosPorOrden AS (
+                SELECT
+                    op.id_orden_venta,
+                    json_agg(
+                        json_build_object(
+                            'idProducto', op.id_producto,
+                            'nombre', p.nombre,
+                            'cantidad', op.cantidad
+                        )
+                    ) AS productos
+                FROM {ENV}.orden_produccion op
+                JOIN {ENV}.producto p ON op.id_producto = p.id
+                GROUP BY op.id_orden_venta
+            ),
+            MaxFechaPlanificada AS (
+                SELECT
+                    op.id_orden_venta,
+                    MAX(pd.fecha) AS fechaPlanificada
+                FROM {ENV}.planificacion_diaria pd
+                JOIN {ENV}.orden_produccion op ON pd.id_orden_produccion = op.id
+                GROUP BY op.id_orden_venta
+            )
+            SELECT
+                ov.id AS idPedido,
+                ov.id_cliente AS idCliente,
+                c.nombre_contacto AS nombreCliente,
+                c.apellido_contacto AS apellidoCliente,
+                c.email,
                 c.telefono,
-                json_agg(
-                    json_build_object(
-                    'idProducto', op.id_producto,
-                    'nombre', p.nombre, 
-                    'cantidad', op.cantidad
-                    )
-                ) AS productos,
-                cast(ov.fecha_pedido as DATE) fechaPedido,
-                cast(ov.fecha_entrega_solicitada as DATE) fechaSolicitada,
-                MAX(pd.fecha) fechaPlanificada,
-                ov.valor_total_pedido valorPedido
-            FROM {ENV}.planificacion_diaria pd
-            JOIN {ENV}.orden_produccion op 
-                ON pd.id_orden_produccion = op.id
-            JOIN {ENV}.orden_venta ov 
-                ON op.id_orden_venta = ov.id
+                ppo.productos,
+                cast(ov.fecha_pedido as DATE) AS fechaPedido,
+                cast(ov.fecha_entrega_solicitada as DATE) AS fechaSolicitada,
+                mfp.fechaPlanificada,
+                ov.valor_total_pedido AS valorPedido
+            FROM {ENV}.orden_venta ov
             JOIN {ENV}.cliente c 
                 ON ov.id_cliente = c.id
-            JOIN {ENV}.producto p 
-                ON op.id_producto = p.id
-            WHERE pd.fecha > CAST(ov.fecha_entrega_solicitada AS DATE) AND ov.estado = 'confirmada'
-            GROUP BY 
-                id_orden_venta, 
-                ov.id_cliente, 
-                c.nombre_contacto,
-                c.apellido_contacto,
-                c.email, 
-                c.telefono, 
-                cast(ov.fecha_pedido as DATE),
-                cast(ov.fecha_entrega_solicitada as DATE),
-                ov.valor_total_pedido;
+            JOIN ProductosPorOrden ppo 
+                ON ov.id = ppo.id_orden_venta
+            JOIN MaxFechaPlanificada mfp 
+                ON ov.id = mfp.id_orden_venta
+            WHERE
+                ov.estado = 'confirmada'
+                AND mfp.fechaPlanificada > CAST(ov.fecha_entrega_solicitada AS DATE);
             """
         
         pedidos = run_query(cur, query_pedidos)

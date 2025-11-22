@@ -117,7 +117,10 @@ def lambda_handler(event, context):
                 ) ORDER BY op.id_producto
             ) AS productos,
             ov.fecha_pedido::date AS fecha_pedido,
-            ov.fecha_entrega_solicitada::date AS fecha_entrega
+            ov.fecha_entrega_solicitada::date AS fecha_entrega,
+            ov.con_envio,
+            ov.prioritario,
+            ov.valor_total_pedido
         FROM {ENV}.orden_produccion op
         INNER JOIN {ENV}.producto p
             ON op.id_producto = p.id
