@@ -1,3 +1,4 @@
+import { Employee } from "../models/Employee";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 export async function getEmpleados(){
@@ -38,6 +39,27 @@ export async function createEmpleado(empleadoData: {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.error || "Error creating empleado");
+  }
+  return response.json();
+}
+
+export async function updateEmpleado(empleado :{
+  id_empleado?: number;
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  email: string;
+}) {
+  const response = await fetch(`${apiUrl}/all-empleados/post-update-empleado`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(empleado),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Error updating empleado");
   }
   return response.json();
 }

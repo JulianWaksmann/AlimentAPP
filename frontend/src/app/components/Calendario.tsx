@@ -236,7 +236,7 @@ export default function Calendario({ planificacion }: Props) {
                                    </button>
                                    <button
                                    type="submit"
-                                       disabled={!fechaEntrega || (selectedOrder?.fecha_entrega_solicitada ? fechaEntrega > new Date(selectedOrder.fecha_entrega_solicitada).toISOString().split("T")[0] : fechaEntrega > new Date().toISOString().split("T")[0])}
+                                       disabled={!fechaEntrega || (selectedOrder?.fecha_entrega_solicitada ? fechaEntrega < new Date(selectedOrder.fecha_entrega_solicitada).toISOString().split("T")[0] : fechaEntrega > new Date().toISOString().split("T")[0])}
                                        onClick={() => {
                                            // Lógica para replanificar la orden
                                            actualizarFecha(selectedOrder!.id_orden_venta, fechaEntrega);

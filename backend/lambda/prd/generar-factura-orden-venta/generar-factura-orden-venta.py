@@ -172,7 +172,15 @@ def formatear_moneda(valor: Decimal) -> str:
 
 def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> bytes:
     """Genera el PDF de la factura en memoria usando ReportLab."""
-    # Construye un layout con logos, encabezado y tabla de productos.
+
+    # --- Paleta de Colores ---
+    COLOR_PRIMARIO_OSCURO = colors.HexColor('#221E5F')  # primary.DEFAULT
+    COLOR_PRIMARIO_VIOLETA = colors.HexColor('#8E01FB') # primary.secondary
+    COLOR_FONDO_CLARO = colors.HexColor('#F3F4F6')      # neutral.gray-100
+    COLOR_BORDE = colors.HexColor('#CCCCCC')         # neutral.light
+    COLOR_TEXTO_OSCURO = colors.HexColor('#111827')       # neutral.dark
+    COLOR_TEXTO_GRIS = colors.HexColor('#6B7280')        # gray-500 for footer text
+
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=LETTER)
     width, height = LETTER
@@ -184,8 +192,8 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
     fecha_entrega_dt = fecha_entrega if isinstance(fecha_entrega, datetime) else None
 
     def dibujar_gradiente(canvas_obj, x_pos, y_pos, ancho, alto, color_inicio, color_fin, pasos=80):
-        inicio = colors.HexColor(color_inicio)
-        fin = colors.HexColor(color_fin)
+        inicio = color_inicio
+        fin = color_fin
         for i in range(pasos):
             ratio = i / (pasos - 1)
             r = inicio.red + (fin.red - inicio.red) * ratio
@@ -198,14 +206,15 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
     header_top = height - (margin / 2)
     accent_base = header_top - 58
 
-    pdf.setFillColor(colors.HexColor("#AD00FF"))
+    pdf.setFillColor(COLOR_PRIMARIO_VIOLETA)
     pdf.rect(0, accent_base + 6, width, 1.5, fill=True, stroke=False)
-    dibujar_gradiente(pdf, 0, accent_base, width, 6, "#4C00FF", "#AD00FF", pasos=80)
-    pdf.setFillColor(colors.HexColor("#4C00FF"))
+    # Gradient uses the two primary colors
+    dibujar_gradiente(pdf, 0, accent_base, width, 6, COLOR_PRIMARIO_OSCURO, COLOR_PRIMARIO_VIOLETA, pasos=80)
+    pdf.setFillColor(COLOR_PRIMARIO_OSCURO)
     pdf.rect(0, accent_base - 2, width, 1, fill=True, stroke=False)
 
     title_y = header_top - 22
-    pdf.setFillColor(colors.HexColor("#32127A"))
+    pdf.setFillColor(COLOR_PRIMARIO_OSCURO)
     pdf.setFont("Helvetica-Bold", 32)
     pdf.drawCentredString(width / 2, title_y, COMPANY_NAME.upper())
 
@@ -221,16 +230,16 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
 
     pdf.setFillColor(colors.white)
     pdf.roundRect(margin, company_card_bottom, card_width, company_card_height, 10, fill=True, stroke=False)
-    pdf.setStrokeColor(colors.HexColor("#E5DAFF"))
+    pdf.setStrokeColor(COLOR_BORDE)
     pdf.setLineWidth(1)
     pdf.roundRect(margin, company_card_bottom, card_width, company_card_height, 10, fill=False, stroke=True)
 
-    pdf.setFillColor(colors.HexColor("#4C00FF"))
+    pdf.setFillColor(COLOR_PRIMARIO_OSCURO)
     pdf.setFont("Helvetica-Bold", 11)
     pdf.drawString(margin + 18, company_card_top - 20, "Información de la empresa")
 
     pdf.setFont("Helvetica", 9)
-    pdf.setFillColor(colors.black)
+    pdf.setFillColor(COLOR_TEXTO_OSCURO)
     company_lines = [
         ("Dirección", COMPANY_ADDRESS),
         ("Email", COMPANY_EMAIL),
@@ -248,23 +257,23 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
 
     pdf.setFillColor(colors.white)
     pdf.roundRect(margin, card_bottom, card_width, card_height, 12, fill=True, stroke=False)
-    pdf.setStrokeColor(colors.HexColor("#DFCCFF"))
+    pdf.setStrokeColor(COLOR_BORDE)
     pdf.setLineWidth(1)
     pdf.roundRect(margin, card_bottom, card_width, card_height, 12, fill=False, stroke=True)
 
-    pdf.setFillColor(colors.HexColor("#AD00FF"))
+    pdf.setFillColor(COLOR_PRIMARIO_VIOLETA)
     pdf.roundRect(margin, card_top - 6, card_width, 6, 12, fill=True, stroke=False)
 
-    pdf.setStrokeColor(colors.HexColor("#E5DAFF"))
+    pdf.setStrokeColor(COLOR_BORDE)
     divider_x = margin + card_width / 2
     pdf.line(divider_x, card_bottom + 14, divider_x, card_top - 14)
 
-    pdf.setFillColor(colors.HexColor("#4C00FF"))
+    pdf.setFillColor(COLOR_PRIMARIO_OSCURO)
     pdf.setFont("Helvetica-Bold", 11)
     pdf.drawString(margin + 20, card_top - 25, "Datos del cliente")
     pdf.drawString(divider_x + 20, card_top - 25, "Detalle de factura")
 
-    pdf.setFillColor(colors.black)
+    pdf.setFillColor(COLOR_TEXTO_OSCURO)
     pdf.setFont("Helvetica", 10)
 
     detalles_cliente = [
@@ -316,16 +325,16 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
         obs_card_top = content_bottom - 12
         obs_card_bottom = obs_card_top - obs_card_altura
 
-        pdf.setFillColor(colors.HexColor("#F6F0FF"))
+        pdf.setFillColor(COLOR_FONDO_CLARO)
         pdf.roundRect(margin, obs_card_bottom, card_width, obs_card_altura, 10, fill=True, stroke=False)
-        pdf.setStrokeColor(colors.HexColor("#E5DAFF"))
+        pdf.setStrokeColor(COLOR_BORDE)
         pdf.roundRect(margin, obs_card_bottom, card_width, obs_card_altura, 10, fill=False, stroke=True)
 
-        pdf.setFillColor(colors.HexColor("#4C00FF"))
+        pdf.setFillColor(COLOR_PRIMARIO_OSCURO)
         pdf.setFont("Helvetica-Bold", 10)
         pdf.drawString(margin + 18, obs_card_top - 16, "Observaciones")
 
-        pdf.setFillColor(colors.black)
+        pdf.setFillColor(COLOR_TEXTO_OSCURO)
         pdf.setFont("Helvetica", 9)
         parrafo.drawOn(pdf, margin + 18, obs_card_top - 24 - parrafo_alto)
 
@@ -363,27 +372,22 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
         font_size = 10
         box_top = y_pos
         box_bottom = box_top - header_height
-        # --- INICIO CORRECCIÓN (Alineación vertical) ---
-        # Centra verticalmente el texto en la celda
         text_y = box_bottom + (header_height - font_size) / 2 + 1.5
-        # --- FIN CORRECCIÓN ---
 
         pdf.setFont("Helvetica-Bold", font_size)
-        pdf.setFillColor(colors.HexColor("#E9E1FF"))
+        pdf.setFillColor(COLOR_FONDO_CLARO)
         pdf.rect(tabla_x, box_bottom, tabla_ancho, header_height, fill=True, stroke=False)
-        pdf.setFillColor(colors.black)
+        pdf.setFillColor(COLOR_TEXTO_OSCURO)
         
         x_cursor = tabla_x
         for titulo, alineacion, ancho_columna in zip(encabezados, alineaciones, col_widths):
             if alineacion == "right":
-                # --- CORRECCIÓN: usa la nueva text_y ---
                 pdf.drawRightString(x_cursor + ancho_columna - padding_right, text_y, titulo)
             else:
-                # --- CORRECCIÓN: usa la nueva text_y ---
                 pdf.drawString(x_cursor + padding_left, text_y, titulo)
             x_cursor += ancho_columna
             
-        pdf.setStrokeColor(colors.HexColor("#D7C2FF"))
+        pdf.setStrokeColor(COLOR_BORDE)
         pdf.line(tabla_x, box_bottom, tabla_x + tabla_ancho, box_bottom)
         pdf.setFont("Helvetica", 9)
         return box_bottom - 6
@@ -391,7 +395,7 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
     y = dibujar_encabezado_tabla(y_inicio_tabla)
 
     total_factura = Decimal("0")
-    pdf.setFillColor(colors.black)
+    pdf.setFillColor(COLOR_TEXTO_OSCURO)
     row_height = 18
     font_size = 9
     
@@ -400,8 +404,8 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
             pdf.showPage()
             y = height - margin
             y = dibujar_encabezado_tabla(y)
-            pdf.setFillColor(colors.black)
-            pdf.setFont("Helvetica", font_size) # Restablecer fuente después de dibujar encabezado
+            pdf.setFillColor(COLOR_TEXTO_OSCURO)
+            pdf.setFont("Helvetica", font_size)
             
         cantidad = decimal_value(item["cantidad"], "cantidad de producto")
         precio = decimal_value(item["precio_venta"], "precio_unitario")
@@ -422,28 +426,22 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
         top = y
         bottom = y - row_height
         
-        # --- INICIO CORRECCIÓN (Alineación vertical) ---
-        # Centra verticalmente el texto en la celda
         text_y = bottom + (row_height - font_size) / 2 + 1.5
-        # --- FIN CORRECCIÓN ---
 
         if idx % 2 == 0:
-            pdf.setFillColor(colors.HexColor("#F8F3FF"))
+            pdf.setFillColor(COLOR_FONDO_CLARO)
             pdf.rect(tabla_x, bottom, tabla_ancho, row_height, fill=True, stroke=False)
-            pdf.setFillColor(colors.black)
+            pdf.setFillColor(COLOR_TEXTO_OSCURO)
 
-        # Esta es la lógica horizontal. Estaba correcta en tu código.
         x_cursor = tabla_x
         for valor, alineacion, ancho_columna in zip(valores, alineaciones, col_widths):
             if alineacion == "right":
-                # --- CORRECCIÓN: usa la nueva text_y ---
                 pdf.drawRightString(x_cursor + ancho_columna - padding_right, text_y, valor)
             else:
-                # --- CORRECCIÓN: usa la nueva text_y ---
                 pdf.drawString(x_cursor + padding_left, text_y, valor)
             x_cursor += ancho_columna
 
-        pdf.setStrokeColor(colors.HexColor("#ECE0FF"))
+        pdf.setStrokeColor(COLOR_BORDE)
         pdf.line(tabla_x, bottom, tabla_x + tabla_ancho, bottom)
 
         y = bottom
@@ -451,29 +449,24 @@ def generar_pdf_factura(orden: Dict[str, Any], items: List[Dict[str, Any]]) -> b
     # Totales
     total_box_height = 24
     total_box_bottom = y - total_box_height
-    pdf.setFillColor(colors.HexColor("#ECE0FF"))
+    pdf.setFillColor(COLOR_FONDO_CLARO)
     pdf.rect(tabla_x, total_box_bottom, tabla_ancho, total_box_height, fill=True, stroke=False)
-    pdf.setFillColor(colors.black)
+    pdf.setFillColor(COLOR_TEXTO_OSCURO)
 
-    # --- INICIO CORRECCIÓN (Alineación vertical) ---
-    # Centra verticalmente el texto en la celda
     font_size_label = 9
     font_size_total = 11
     text_y_label = total_box_bottom + (total_box_height - font_size_label) / 2 + 1.5
     text_y_total = total_box_bottom + (total_box_height - font_size_total) / 2 + 2
-    # --- FIN CORRECCIÓN ---
 
     pdf.setFont("Helvetica", font_size_label)
-    # --- CORRECCIÓN: usa la nueva text_y_label ---
     pdf.drawString(tabla_x + padding_left, text_y_label, "Importe total")
     
     pdf.setFont("Helvetica-Bold", font_size_total)
-    # --- CORRECCIÓN: usa la nueva text_y_total ---
     pdf.drawRightString(tabla_x + tabla_ancho - padding_right, text_y_total, formatear_moneda(total_factura))
-    y -= (total_box_height + 12) # y -= 36
+    y -= (total_box_height + 12)
 
     pdf.setFont("Helvetica", 9)
-    pdf.setFillColor(colors.HexColor("#636e72"))
+    pdf.setFillColor(COLOR_TEXTO_GRIS)
     pdf.drawCentredString(width / 2, 40, f"Gracias por confiar en nosotros. Ante cualquier consulta, escribinos a {COMPANY_EMAIL}")
 
     pdf.showPage()

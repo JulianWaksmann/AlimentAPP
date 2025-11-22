@@ -223,7 +223,7 @@ const Tandas: React.FC<TandasProps> = ({
                       : `Cambiar a ${destino}`
                   }
                 >
-                  Cambiar a “{destino}”
+                  Cambiar a “{destino.replaceAll("_", " ")}”
                 </button>
               </header>
 

@@ -1,3 +1,4 @@
+import { ApiData } from "../components/Mapa";
 import { Flota } from "../models/Flota";
 import { PedidoRetiro } from "../models/PedidosVentas";
 import { PedidosAsignadosResponse } from "../pages/vendedor/inicio/pedidos-en-camino/page";
@@ -125,4 +126,23 @@ export async function verificarEntrega(dni: string, id_envio: number) {
         throw new Error(errorData.error || "Error al verificar la entrega");
     }
     return response.json();
+}
+
+export async function getRecorrido(dni: string): Promise<ApiData> {
+    const data = {
+        dni_conductor : dni
+    }
+    const response = await fetch(`${apiUrl}/gestion-envios/post-get-camino-optimo-por-conductor`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        throw new Error("Error fetching recorrido del conductor");
+    }
+    const responseData = await response.json();
+    console.log("respuesta ordenes: " + responseData);
+    return responseData;
 }

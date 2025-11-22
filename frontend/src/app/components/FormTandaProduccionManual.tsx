@@ -187,7 +187,7 @@ export default function GenerarTandaForm({ lineas: initialLineas, onUpdated }: P
             </button>
             <button
               onClick={() => { setCheckedOrders({}); }}
-              className="px-4 py-2 bg-gray-100 rounded-md"
+              className="px-4 py-2 bg-error rounded-md"
             >
               Limpiar
             </button>

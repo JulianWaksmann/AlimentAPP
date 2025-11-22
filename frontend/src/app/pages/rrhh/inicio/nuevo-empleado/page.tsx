@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { createEmpleado } from "@/app/api/empleados";
 
-const roles = ["rrhh", "operario", "gerente", "supervisor","vendedor", "calidad"];
+const roles = ["rrhh", "operario", "gerente", "supervisor","vendedor", "calidad", "logistica"];
 
 const NuevoEmpleadoPage = () => {
     const [form, setForm] = useState({

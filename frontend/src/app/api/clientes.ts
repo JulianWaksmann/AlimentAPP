@@ -21,9 +21,14 @@ export async function GetNombreApellidoClientes(): Promise<Cliente[]> {
   // return response.json();
 }
 
-export async function updateCliente(cliente: Cliente) {
+export async function updateCliente(cliente: {
+  id_cliente: number;
+  telefono: string;
+  email: string;
+  razon_social: string;
+}) {
   console.log("Actualizar cliente: ", cliente);
-  const response = await fetch(`${apiUrl}/update-client`, {
+  const response = await fetch(`${apiUrl}/cliente/post-update-cliente`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -36,3 +41,4 @@ export async function updateCliente(cliente: Cliente) {
   }
   return response.json();
 }
+

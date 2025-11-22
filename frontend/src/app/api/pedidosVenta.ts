@@ -108,6 +108,7 @@ export async function getPedidosTerminados(): Promise<PedidosTerminados[]> {
     throw new Error("Error fetching pedidos terminados");
   }
    const data = await response.json();
+   console.log("Pedidos Terminados Data:", data.pedidos);
 return data.pedidos;
 }
 

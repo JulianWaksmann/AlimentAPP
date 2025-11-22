@@ -356,7 +356,7 @@ const FormNuevoPedido = () => {
                   {clienteSeleccionado.direcciones_asociadas &&
                     clienteSeleccionado.direcciones_asociadas.map((dir) => (
                       <option key={dir.id_direccion} value={dir.id_direccion}>
-                        {dir.id_direccion} - {dir.direccion_text} - {dir.zona}{" "}
+                        {dir.id_direccion} - {dir.direccion_text}{" "}
                       </option>
                     ))}
 

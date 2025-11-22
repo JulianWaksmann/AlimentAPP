@@ -166,7 +166,27 @@ export async function getLotes(): Promise<LotesMP[]>  {
     throw new Error("Error fetching stock materia prima");
   }
     const data = await response.json();
+    console.log(data);
     return data.materias_primas;
 
 
 }
+
+export async function obtenerPDF(id_lote: number): Promise<string> {
+  const response = await fetch(`${apiUrl}/gestion-materia-prima/post-pdf-trazabilidad-lote`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/pdf",
+    },
+    body: JSON.stringify({ lote_id: id_lote }),
+    });
+  if (!response.ok) {
+    throw new Error("Error fetching PDF");
+  }
+  // console.log("Respuesta del fetch PDF:", response);
+    const base = await response.text();
+    console.log("Blob del PDF:", base);
+    return base;
+}
+
+

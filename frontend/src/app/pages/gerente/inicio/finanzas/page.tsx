@@ -27,13 +27,13 @@ const FinanzasPage = () => {
   }, [mes, anio]);
 
   return (
-    <div>
+    <div className="bg-white">
       <Header />
-        <h1 className="text-3xl mt-2 font-bold text-primary mb-4 text-center">FINANZAS</h1>
-      <div className="p-6 w-full h-full border-b border-gray-300 mb-6  ">
+        <h1 className="text-3xl mt-2 font-bold text-primary mb-4 text-center bg-white">FINANZAS</h1>
+      <div className="p-6 w-full h-full border-b border-gray-300 mb-6 bg-white ">
              {/* Select para Mes */}
       <div className="flex justify-center mb-4">
-        <select value={mes} onChange={(e) => setMes(Number(e.target.value))} className="mr-4">
+        <select value={mes} onChange={(e) => setMes(Number(e.target.value))} className="mr-4 p-2 border border-gray-300 rounded">
           {[...Array(12)].map((_, index) => (
             <option key={index} value={index + 1}>
               {index + 1} {/* Muestra el mes como número (1-12) */}
@@ -42,27 +42,28 @@ const FinanzasPage = () => {
         </select>
 
         {/* Select para Año */}
-        <select value={anio} onChange={(e) => setAnio(Number(e.target.value))}>
+        <select value={anio} onChange={(e) => setAnio(Number(e.target.value))} className="p-2 border border-gray-300 rounded">
           {[2020, 2021, 2022, 2023, 2024, 2025].map((year) => (
             <option key={year} value={year}>
               {year}
             </option>
           ))}
         </select>
-      </div>
+      </div >
+      <div className="p-6 w-full h-full bg-white  border-b border-gray-300 mb-6 ">
         <h2 className="text-2xl font-bold text-primary mb-4 text-center">
           Ingresos y Costos por Fecha
         </h2>
         <FinanzasStack finanzas={finanzas} />
       </div>
-      <div className="p-6 w-full h-full bg-white-light  border-b border-gray-300 mb-6 ">
+      <div className="p-6 w-full h-full bg-white  border-b border-gray-300 mb-6 ">
         <h2 className="text-2xl font-bold text-primary mb-4 text-center">
           Ganancias por fecha
         </h2>
 
         <GananciasChart Finanza={gananciasTotales} />
       </div>
-
+      </div>
     </div>
   );
 };

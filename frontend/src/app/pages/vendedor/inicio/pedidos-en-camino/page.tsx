@@ -96,11 +96,11 @@ const PedidosenCaminoPage = () => {
                                 {envio.envios.map(pedido => (
                                     <div key={pedido.id_orden_venta} className="p-3 bg-gray-50 rounded-lg">
                                         <div className='flex justify-between'>
-                                        <p className="font-semibold text-gray-800">Pedido #{pedido.id_orden_venta}</p>
+                                        {/* <p className="font-semibold text-gray-800">Pedido #{pedido.id_orden_venta}</p>
                                         <button className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 "
                                          onClick={() =>handleEntrega(pedido.id_envio)}>
                                        ENTREGAR
-                                        </button>
+                                        </button> */}
                                        </div>
                                        <p className="text-sm text-gray-800">Cliente: {pedido.nombre_contacto} {pedido.apellido_contacto}</p>
                                         <p className="text-m text-green-900">Valor total: ${pedido.valor_total_pedido.toFixed(2)}</p>

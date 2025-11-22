@@ -30,7 +30,7 @@ const TablaOrdenesDeTrabajo: React.FC<TablaOrdenesDeTrabajoProps> = ({ ordenes, 
                         <li key={orden.id_orden_produccion} className="bg-white rounded-lg shadow p-3 flex flex-col gap-2">
                             <div className="flex justify-between items-center">
                                 <span className="font-bold text-primary">Orden #{orden.id_orden_produccion}</span>
-                                <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">{orden.estado_orden_produccion}</span>
+                                <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">{orden.estado_orden_produccion.replaceAll("_", " ")}</span>
                             </div>
                             <div className="text-sm"><span className="font-semibold">Cliente:</span> {orden.nombre_cliente} {orden.apellido_cliente}</div>
                             <div className="text-sm"><span className="font-semibold">Producto:</span> {orden.nombre_producto} </div>

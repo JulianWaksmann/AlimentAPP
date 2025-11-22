@@ -7,7 +7,7 @@ import { Menu } from "lucide-react";
 
 const menuItems = [
   { name: "Pedidos de Materia Prima", href: "/pages/calidad/inicio/materia-prima" },
-  { name: "Gestion de Productos", href: "/pages/calidad/inicio/productos" },
+  // { name: "Gestion de Productos", href: "/pages/calidad/inicio/productos" },
   { name: "Stock", href: "/pages/calidad/inicio/stock" },
 ];
 

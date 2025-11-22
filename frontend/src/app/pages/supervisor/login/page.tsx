@@ -5,7 +5,7 @@ import Header from "@/app/components/Header";
 const LoginSupervisor: React.FC = () => (
   <div>
     <Header />
-  <RoleLogin roleName="Supervisor" colorClass="bg-neutral-light" redirectPath="/pages/supervisor/inicio" />
+  <RoleLogin roleName="Supervisor" colorClass="bg-neutral-light" redirectPath="/pages/supervisor/inicio" emailDemo="luca.gonzalez@hotmail.com" passwordDemo="pass41455603"/>
   </div>
 );
 

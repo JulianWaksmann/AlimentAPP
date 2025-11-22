@@ -19,6 +19,7 @@ backend/layers/**/*.zip
 # Env/Secrets
 .env
 .env.*
+*.pem
 
 # IDE/OS
 .idea/
@@ -26,4 +27,3 @@ backend/layers/**/*.zip
 .DS_Store
 Thumbs.db
 frontend/.next/
-contexto notebook lm/
