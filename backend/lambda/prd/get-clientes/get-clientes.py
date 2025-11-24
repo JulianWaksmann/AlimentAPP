@@ -100,7 +100,36 @@ def lambda_handler(event, context):
         conn = get_connection()
         cur = conn.cursor()
 
-        get_clients_query = f'SELECT * FROM {ENV}.cliente'
+        get_clients_query = f"""
+        SELECT 
+            c.id,
+            c.razon_social,
+            c.email,
+            c.cuil,
+            c.nombre_contacto,
+            c.apellido_contacto,
+            c.telefono,
+            COALESCE(
+                JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'id_direccion', d.id,
+                        'direccion_text', d.direccion_text,
+                        'zona', d.zona
+                    ) ORDER BY d.es_principal ASC
+                ) FILTER (WHERE d.id IS NOT NULL),
+                '[]'
+            ) AS direcciones_asociadas
+        FROM {ENV}.cliente c
+        LEFT JOIN {ENV}.direccion d ON c.id = d.id_cliente
+        GROUP BY 
+            c.id,
+            c.razon_social,
+            c.email,
+            c.cuil,
+            c.nombre_contacto,
+            c.apellido_contacto,
+            c.telefono;
+        """
         clients = run_query(cur, get_clients_query)
 
         conn.commit()

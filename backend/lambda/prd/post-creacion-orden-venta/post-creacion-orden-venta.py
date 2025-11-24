@@ -7,7 +7,6 @@ from typing import Any, Dict, List
 
 import boto3
 import pg8000
-
 import urllib.request
 import urllib.error
 
@@ -20,7 +19,7 @@ lambda_client = boto3.client("lambda")
 
 DB_CONFIG = None  # cache SSM
 
-# Cantidad de productos que se pueden pedir sin pedir al supervisor la confirmación.
+# Umbrales para requerir supervisión
 THRESHOLD = {
     1: 10,
     2: 15,
@@ -35,12 +34,11 @@ class ValidationError(Exception):
     """Error de validación para orden de venta."""
 
 
+# --- CONEXIÓN ---
 def get_db_parameters() -> Dict[str, Any]:
-    """Lee parámetros de RDS desde SSM (cacheado)."""
     global DB_CONFIG
     if DB_CONFIG:
         return DB_CONFIG
-
     param_names = [
         "/alimentapp/db/host",
         "/alimentapp/db/password",
@@ -51,7 +49,6 @@ def get_db_parameters() -> Dict[str, Any]:
     if len(resp["Parameters"]) != len(param_names):
         missing = set(param_names) - {p["Name"] for p in resp["Parameters"]}
         raise RuntimeError(f"Parámetros faltantes en SSM: {', '.join(missing)}")
-
     data = {p["Name"].split("/")[-1]: p["Value"] for p in resp["Parameters"]}
     DB_CONFIG = {
         "host": data["host"],
@@ -64,7 +61,6 @@ def get_db_parameters() -> Dict[str, Any]:
 
 
 def get_connection():
-    """Abre conexión pg8000 + SSL con credenciales de SSM."""
     cfg = get_db_parameters()
     return pg8000.connect(
         host=cfg["host"],
@@ -77,9 +73,8 @@ def get_connection():
     )
 
 
-def run_query(cur, sql: str):
-    """SELECT; devuelve filas como dicts."""
-    cur.execute(sql)
+def run_query(cur, sql: str, params: tuple = None):
+    cur.execute(sql, params or ())
     rows = cur.fetchall()
     if not rows:
         return []
@@ -87,167 +82,149 @@ def run_query(cur, sql: str):
     return [dict(zip(columns, row)) for row in rows]
 
 
-def run_command(cur, sql: str):
-    """INSERT/UPDATE/DELETE; no retorna filas."""
-    cur.execute(sql)
+def run_command(cur, sql: str, params: tuple = None):
+    cur.execute(sql, params or ())
 
 
+# --- FUNCIONES AUXILIARES ---
 def create_production_orders(cur, order_id: int, items: List[Dict[str, int]]) -> str:
-    """Crea ordenes_produccion para cada producto con el estado correcto."""
-    
-    # 1. Primero, determina el estado que tendrán TODAS las órdenes de producción.
-    # Si CUALQUIER producto supera el umbral, todas las órdenes irán a 'pendiente'.
+    """Crea órdenes de producción asociadas a la orden de venta."""
     estado_general = 'planificada'
     for item in items:
-        cantidad_pedida = item['cantidad']
         cantidad_umbral = THRESHOLD.get(item['id_producto'])
-
-        # Se verifica si hay un umbral definido y si se supera
-        if cantidad_umbral is not None and cantidad_pedida > cantidad_umbral:
+        if cantidad_umbral and item['cantidad'] > cantidad_umbral:
             estado_general = 'pendiente'
-            break  # Encontramos uno, no es necesario seguir buscando.
+            break
 
-    # 2. Ahora, inserta cada orden de producción usando el estado general determinado.
     for item in items:
-        run_command(
-            cur,
-            # CORRECCIÓN: Usamos item['id_producto'] para obtener el ID del producto actual.
-            f"""
+        run_command(cur, f"""
             INSERT INTO {ENV}.orden_produccion (id_orden_venta, id_producto, cantidad, estado)
-            VALUES ({order_id}, {item['id_producto']}, {item['cantidad']}, '{estado_general}')
-            """,
-        )
-    
+            VALUES (%s, %s, %s, %s)
+        """, (order_id, item['id_producto'], item['cantidad'], estado_general))
     return estado_general
 
-
 def validate_sale_order_payload(cur, payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Valida payload: cliente, vendedor, productos, fechas."""
-    required = ["id_vendedor", "id_cliente", "productos", "fecha_entrega_solicitada", "comentario"]
-    missing = [k for k in required if not payload.get(k)]
+    """Valida y prepara los datos de la orden."""
+    required = ["id_vendedor", "id_cliente", "productos", "fecha_entrega_solicitada", "con_envio"]
+    missing = [k for k in required if k not in payload]
     if missing:
         raise ValidationError(f"Faltan campos obligatorios: {', '.join(missing)}")
 
-    fecha_entrega = payload["fecha_entrega_solicitada"]
+    id_cliente = int(payload["id_cliente"])
+    id_vendedor = int(payload["id_vendedor"])
+    con_envio = bool(payload["con_envio"])
+    prioritario = bool(payload.get("prioritario", False))  # <--- NUEVO CAMPO
+    id_direccion_entrega = payload.get("id_direccion_entrega")
+
+    # Validaciones básicas
+    if not run_query(cur, f"SELECT 1 FROM {ENV}.cliente WHERE id = %s", (id_cliente,)):
+        raise ValidationError("El id_cliente indicado no existe.")
+    if not run_query(cur, f"SELECT 1 FROM {ENV}.empleado WHERE id = %s AND activo = TRUE", (id_vendedor,)):
+        raise ValidationError("El id_vendedor indicado no existe o está inactivo.")
+
+    # Fecha
     try:
-        fecha_entrega_date = date.fromisoformat(fecha_entrega)
+        fecha_entrega_date = date.fromisoformat(payload["fecha_entrega_solicitada"])
     except ValueError:
         raise ValidationError("fecha_entrega_solicitada debe tener formato AAAA-MM-DD.")
     if fecha_entrega_date <= date.today():
         raise ValidationError("fecha_entrega_solicitada debe ser posterior a hoy.")
 
-    # Parsear string (AAAA-MM-DD) → date → datetime a medianoche
-    fecha_entrega_dt = datetime.combine(
-        datetime.fromisoformat(fecha_entrega).date(),
-        time.min
-    )
+    fecha_entrega_iso = (datetime.combine(fecha_entrega_date, time.min) + timedelta(hours=3)).isoformat()
 
-    # Sumar 3 horas obligatoriamente
-    fecha_entrega_dt += timedelta(hours=3)
+    # Validación de dirección
+    if con_envio:
+        if not id_direccion_entrega:
+            raise ValidationError("Debe especificar id_direccion_entrega.")
+        else:
+            direccion = run_query(cur, f"""
+                SELECT 1 FROM {ENV}.direccion WHERE id = %s AND id_cliente = %s
+            """, (id_direccion_entrega, id_cliente))
+            if not direccion:
+                raise ValidationError("La dirección seleccionada no pertenece al cliente.")
+    else:
+        id_direccion_entrega = None
 
-    # Volver a string ISO (por ejemplo '2025-10-27T03:00:00')
-    fecha_entrega = fecha_entrega_dt.isoformat()
-
-    if not run_query(cur, f"SELECT 1 FROM {ENV}.cliente WHERE id = {int(payload['id_cliente'])}"):
-        raise ValidationError("El id_cliente indicado no existe.")
-    if not run_query(
-        cur,
-        f"SELECT 1 FROM {ENV}.empleado WHERE id = {int(payload['id_vendedor'])} AND activo = TRUE",
-    ):
-        raise ValidationError("El id_vendedor indicado no existe o está inactivo.")
-
+    # Productos
     productos = payload["productos"]
     if not isinstance(productos, list) or not productos:
         raise ValidationError("productos debe ser una lista con al menos un ítem.")
 
-    items: List[Dict[str, int]] = []
-    total = 0.0
+    items, total = [], 0.0
     for item in productos:
         if "id_producto" not in item or "cantidad" not in item:
             raise ValidationError("Cada producto debe incluir id_producto y cantidad.")
         if item["cantidad"] <= 0:
             raise ValidationError("cantidad debe ser mayor que cero.")
 
-        producto = run_query(
-            cur,
-            f"SELECT precio_venta FROM {ENV}.producto WHERE id = {int(item['id_producto'])} AND activo = TRUE",
-        )
+        producto = run_query(cur, f"""
+            SELECT precio_venta FROM {ENV}.producto WHERE id = %s AND activo = TRUE
+        """, (item["id_producto"],))
         if not producto:
             raise ValidationError(f"Producto {item['id_producto']} inexistente o inactivo.")
-
         precio_unit = float(producto[0]["precio_venta"])
         total += precio_unit * item["cantidad"]
         items.append({"id_producto": int(item["id_producto"]), "cantidad": int(item["cantidad"])})
 
+    comentario = payload.get("comentario", "Sin comentarios")
+
     return {
-        "id_cliente": int(payload["id_cliente"]),
-        "id_vendedor": int(payload["id_vendedor"]),
-        "fecha_entrega_solicitada": fecha_entrega,
+        "id_cliente": id_cliente,
+        "id_vendedor": id_vendedor,
+        "fecha_entrega_solicitada": fecha_entrega_iso,
         "productos": items,
         "total": total,
-        "comentario": payload["comentario"],
+        "comentario": comentario,
+        "con_envio": con_envio,
+        "id_direccion_entrega": id_direccion_entrega,
+        "prioritario": prioritario  # <--- NUEVO
     }
 
 
 def insert_sale_order(cur, validated: Dict[str, Any]):
-    """Inserta orden_venta y ordenes_produccion asociadas."""
-    run_command(
-        cur,
-        f"""
-        INSERT INTO {ENV}.orden_venta
-            (id_cliente, id_empleado, fecha_entrega_solicitada, estado, valor_total_pedido, observaciones)
-        VALUES ({validated['id_cliente']},
-                {validated['id_vendedor']},
-                '{validated['fecha_entrega_solicitada']}',
-                'pendiente',
-                {validated['total']},
-                '{validated['comentario']}')
-        """,
-    )
+    """Inserta la orden de venta y genera sus órdenes de producción."""
+    run_command(cur, f"""
+    INSERT INTO {ENV}.orden_venta
+        (id_cliente, id_empleado, fecha_entrega_solicitada, estado, valor_total_pedido,
+         observaciones, con_envio, id_direccion_entrega, prioritario)
+    VALUES (%s, %s, %s, 'pendiente', %s, %s, %s, %s, %s)
+    """, (
+    validated['id_cliente'],
+    validated['id_vendedor'],
+    validated['fecha_entrega_solicitada'],
+    validated['total'],
+    validated['comentario'],
+    validated['con_envio'],
+    validated['id_direccion_entrega'],
+    validated['prioritario']  
+    ))
 
-    rows = run_query(
-        cur,
-        f"""
+    order = run_query(cur, f"""
         SELECT id, valor_total_pedido, estado, fecha_pedido
         FROM {ENV}.orden_venta
-        WHERE id_cliente = {validated['id_cliente']}
-          AND id_empleado = {validated['id_vendedor']}
+        WHERE id_cliente = %s
         ORDER BY id DESC
         LIMIT 1
-        """,
-    )
-    if not rows:
-        raise RuntimeError("No se pudo recuperar la orden recién creada.")
+    """, (validated['id_cliente'],))[0]
 
-    order = rows[0]
-    order["valor_total_pedido"] = float(order["valor_total_pedido"])
-    order["fecha_pedido"] = order["fecha_pedido"].isoformat()  # si viene como datetime
-    
-    # debo crearlo aca, ya que debo almacenar los productos pedidos, retorno el estado de la orden de prd, porque si hay una que queda pendiente, quiere decir que la orden de venta esta pendiente_supervision.
+    # Crear siempre las órdenes de producción
     estado_orden_produccion = create_production_orders(cur, order["id"], validated["productos"])
-        
-    # Determina el estado pero NO llames a la API aquí
-    if estado_orden_produccion == 'pendiente':
+
+    # Ajustar el estado de la venta
+    if validated.get("prioritario"):
+        nuevo_estado_venta = "en_supervision_por_urgencia"
+    elif estado_orden_produccion == "pendiente":
         nuevo_estado_venta = "pendiente_supervision"
     else:
         nuevo_estado_venta = "confirmada"
 
-
     order["estado"] = nuevo_estado_venta
-
-    # Devuelve la orden y el estado que se necesita actualizar
     return {"orden": order, "nuevo_estado": nuevo_estado_venta}
 
 
-def create_sale_order_from_payload(cur, raw_payload: Dict[str, Any]):
-    """Valida e inserta la orden completa."""
-    validated = validate_sale_order_payload(cur, raw_payload)
-    return insert_sale_order(cur, validated)
-
-
+# --- HANDLER ---
 def lambda_handler(event, context):
     logger.info("Evento recibido: %s", event)
-
     cors_headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
@@ -255,11 +232,7 @@ def lambda_handler(event, context):
     }
 
     if event.get("httpMethod") == "OPTIONS":
-        return {
-            "statusCode": 200,
-            "headers": cors_headers,
-            "body": ""
-        }
+        return {"statusCode": 200, "headers": cors_headers, "body": ""}
 
     body = event.get("body")
     payload = json.loads(body) if isinstance(body, str) else body
@@ -269,70 +242,48 @@ def lambda_handler(event, context):
         conn = get_connection()
         cur = conn.cursor()
 
-        # Aplicamos la logica de creacion de orden de venta
-        resultado_db = create_sale_order_from_payload(cur, payload)
+        resultado_db = insert_sale_order(cur, validate_sale_order_payload(cur, payload))
         conn.commit()
-        
-        # Gestionamos los valores del id de orden y el nuevo estado dependiendo los umbrales.
+
         orden_creada = resultado_db["orden"]
         nuevo_estado = resultado_db["nuevo_estado"]
-        
-        # Gestionamos la llamada a la api para el cambio de estado de la orden de venta a pendiente_supervision o confirmada
-        logger.info(f"La orden {orden_creada['id']} requiere actualización al estado '{nuevo_estado}'. Llamando a la API.")
-        
+
+        # Actualiza estado
         api_url = "https://eldzogehdj.execute-api.us-east-1.amazonaws.com/prd/crear-orden-venta/update-estado-orden-venta"
-        
-        api_payload = {
-            "id_pedido": orden_creada["id"],
-            "estado": nuevo_estado
-        }
-        
-        data = json.dumps(api_payload).encode('utf-8')
-        
-        req = urllib.request.Request(
-            api_url,
-            data=data,
-            headers={'Content-Type': 'application/json'}
-        )
-        
+        api_payload = {"id_pedido": orden_creada["id"], "estado": nuevo_estado}
+        data = json.dumps(api_payload).encode("utf-8")
+
+        req = urllib.request.Request(api_url, data=data, headers={'Content-Type': 'application/json'})
         try:
             with urllib.request.urlopen(req) as response:
-                logger.info(f"Llamada a la API exitosa. Status: {response.status}")
+                logger.info(f"API de actualización de estado OK ({response.status})")
         except urllib.error.URLError as e:
-            logger.error(f"Error al llamar a la API para actualizar el estado de la orden {orden_creada['id']}: {e}")
+            logger.error(f"Error al actualizar estado de la orden: {e}")
 
-        # llamo a la lambda que crea el pdf de factura y envia por mail
-        payload = {
-            "orden_venta_id": orden_creada["id"],
-        }
-
+        # Generar factura
         lambda_client.invoke(
             FunctionName="arn:aws:lambda:us-east-1:554074173959:function:envio-factura-cliente",
-            InvocationType="RequestResponse",  # usá "Event" si querés que sea async fire-and-forget
-            Payload=json.dumps(payload).encode("utf-8"),
+            InvocationType="Event",
+            Payload=json.dumps({"orden_venta_id": orden_creada["id"]}).encode("utf-8"),
         )
+
         return {
             "statusCode": 200,
             "headers": {**cors_headers, "Content-Type": "application/json"},
-            "body": json.dumps({"message": "Orden creada", "orden": orden_creada}),
+            "body": json.dumps({"message": "Orden creada", "orden": orden_creada}, default=str),
         }
+
     except ValidationError as exc:
         if conn:
             conn.rollback()
-        return {
-            "statusCode": 400,
-            "headers": {**cors_headers, "Content-Type": "application/json"},
-            "body": json.dumps({"error": str(exc)}),
-        }
+        return {"statusCode": 400, "headers": cors_headers, "body": json.dumps({"error": str(exc)})}
+
     except Exception as exc:
         if conn:
             conn.rollback()
         logger.exception("Fallo inesperado")
-        return {
-            "statusCode": 500,
-            "headers": {**cors_headers, "Content-Type": "application/json"},
-            "body": json.dumps({"error": "Error interno", "detail": str(exc)}),
-        }
+        return {"statusCode": 500, "headers": cors_headers, "body": json.dumps({"error": "Error interno", "detail": str(exc)})}
+
     finally:
         if conn:
             conn.close()

@@ -58,13 +58,13 @@ CREATE TYPE unidad_medida AS ENUM (
 --    'finalizada'
 --);
 
-DROP TYPE IF EXISTS zona;
-CREATE TYPE zona AS ENUM (
-    'zona norte',
-    'zona sur',
-    'zona este',
-    'zona oeste'
-);
+--DROP TYPE IF EXISTS zona;   --Ya no se usa
+--CREATE TYPE zona AS ENUM (
+--    'zona norte',
+--    'zona sur',
+--    'zona este',
+--    'zona oeste'
+--);
 
 DROP TYPE IF EXISTS estado_envio;
 CREATE TYPE estado_envio AS ENUM (
@@ -268,7 +268,7 @@ CREATE TABLE direccion (
   id SERIAL PRIMARY KEY,
   id_cliente INT NOT NULL REFERENCES cliente(id) ON DELETE CASCADE,
   direccion_text TEXT NOT NULL,
-  zona zona,
+  --zona zona, Ya no se usa
   latitud DECIMAL(10,6),
   longitud DECIMAL(10,6),
   es_principal BOOLEAN DEFAULT FALSE,
