@@ -36,13 +36,13 @@ const EnviosPage = () => {
         console.log("Consultando pedidos para DNI:", dniTransportista);
         try{
             const pedidosAsignadosResponse = await verPedidos(dniTransportista, "pendiente");
-            console.log(pedidosAsignadosResponse);
+            // console.log(pedidosAsignadosResponse);
             setPedidosAsignados(pedidosAsignadosResponse);
             // console.log("Pedidos Asignados:", pedidosAsignadosResponse);
             
             const pedidosDespachadosResponse = await verPedidos(dniTransportista, "despachado");
             setPedidosDespachados(pedidosDespachadosResponse);
-            // console.log("Pedidos Despachados:", pedidosDespachadosResponse);
+            console.log("Pedidos Despachados:", pedidosDespachadosResponse);
 
             const pedidosEntregadosResponse = await verPedidos(dniTransportista, "entregado");
             setPedidosEntregados(pedidosEntregadosResponse);
@@ -171,6 +171,7 @@ const EnviosPage = () => {
                                                     <div>
                                                         <p className="text-sm font-medium text-gray-800">Pedido #{pedido.id_orden_venta}</p>
                                                         <p className="text-xs text-gray-500">{pedido.razon_social}</p>
+                                                        <p className="text-xs text-gray-500">{pedido.direccion_entrega}</p>
                                                         {/* Dirección no disponible en el tipo de pedido; omitir campo */}
                                                     </div>
                                                     <div className="flex items-center gap-2">

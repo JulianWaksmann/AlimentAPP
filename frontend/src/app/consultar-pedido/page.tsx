@@ -43,7 +43,7 @@ const ConsultarPedidoPage = () => {
       {/* Aquí puedes agregar un formulario o funcionalidad para consultar el pedido */}
       <div className="rounded bg-gray-400 p-4 mt-4 w-1/2">
         <div>
-        <label className="block mb-2">Ingrese su DNI</label>
+        <label className="block mb-2">Ingrese su CUIL</label>
         <input type="text" id="dni" value={cuil} onChange={(e) => setCuil(e.target.value)} 
         className="w-full p-2 rounded border border-gray-300"/>
       </div>

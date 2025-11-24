@@ -175,6 +175,7 @@ export default function Calendario({ planificacion }: Props) {
                 events={events}
                 eventContent={renderEventContent}
                 weekends={false}
+                height="auto"
             />
 
             {modalOpen && selectedOrder && (
