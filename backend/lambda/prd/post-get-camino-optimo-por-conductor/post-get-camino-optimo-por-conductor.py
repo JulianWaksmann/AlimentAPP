@@ -169,7 +169,7 @@ def lambda_handler(event, context):
 
         # 1) Validar que el conductor exista
         cur.execute(f"""
-            SELECT id FROM {ENV}.empleado WHERE dni = %s AND activo = TRUE
+            SELECT id FROM {ENV}.vehiculo WHERE dni_conductor = %s
         """, (dni,))
         row = cur.fetchone()
         if not row:
