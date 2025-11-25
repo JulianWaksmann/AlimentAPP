@@ -9,9 +9,11 @@ interface RoleLoginProps {
   roleName: string;
   colorClass: string;
   redirectPath: string;
+  emailDemo: string;
+  passwordDemo: string;
 }
 
-const RoleLogin: React.FC<RoleLoginProps> = ({ roleName, colorClass, redirectPath }) => {
+const RoleLogin: React.FC<RoleLoginProps> = ({ roleName, colorClass, redirectPath, emailDemo, passwordDemo }) => {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -89,6 +91,12 @@ const RoleLogin: React.FC<RoleLoginProps> = ({ roleName, colorClass, redirectPat
         </button>
         <a href="../../../pages/recuperar-credenciales" className=" text-blue-500 underline ">Olvidé mis credenciales</a>
       </form>
+        <div className="mt-4 text-center">
+          <p className="text-gray-600 text-xs">acceso a demo: <br />
+            mail: {emailDemo}
+            <br />
+            contraseña: {passwordDemo}</p>
+        </div>
     </div>
   );
 };

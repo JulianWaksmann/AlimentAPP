@@ -19,7 +19,9 @@ export async function GetPedidosVenta(): Promise<PedidosVentas[]> {
     if (!response.ok) {
       throw new Error("Error fetching productos");
     }
+    
      const data = await response.json();
+     console.log(data)
   return data.data;
   }
 

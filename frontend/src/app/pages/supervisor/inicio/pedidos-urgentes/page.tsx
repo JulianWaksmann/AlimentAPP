@@ -17,7 +17,7 @@ const PedidosUrgentesPage = () => {
     const [loadingRetraso, setLoadingRetraso] = useState(false);
 
     async function aprobarPedido(id: number) {
-        // await updateEstadoSolicitudVenta(id,  "confirmada" );
+        await updateEstadoSolicitudVenta(id,  "confirmada" );
         console.log(`Pedido ${id} aprobado.`);
         setOpenModalRetraso(false);
         setPedido(null);

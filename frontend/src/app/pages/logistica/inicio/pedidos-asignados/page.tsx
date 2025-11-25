@@ -15,6 +15,7 @@ export type PedidosAsignadosResponse = {
     apellido_conductor: string;
     dni_conductor: string;
     envios: {
+        direccion_entrega: string;
         id_envio: number;
         estado_envio: string;
         id_orden_venta: number;

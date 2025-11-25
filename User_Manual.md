@@ -1,0 +1,309 @@
+# Manual de Usuario - AlimentAPP
+
+Este manual describe las funcionalidades disponibles en la aplicación web AlimentAPP, organizada por los diferentes roles de usuario.
+
+## Roles y Vistas
+
+### 1. Calidad (frontend/out/pages/calidad)
+    - **Login (frontend/out/pages/calidad/login/index.html)**
+        - **Descripción:** Página de inicio de sesión para los usuarios con rol de Calidad.
+        - **Funcionalidades:** Permite a los usuarios de Calidad autenticarse en el sistema mediante sus credenciales (email y contraseña).
+    - **Inicio (frontend/out/pages/calidad/inicio/index.html)**
+        - **Descripción:** Página principal o dashboard para el rol de Calidad.
+        - **Funcionalidades:** Esta página ofrece una visión general y acceso a las sub-secciones relevantes para el control de calidad. Desde aquí, los usuarios pueden navegar a las secciones de gestión de materia prima, productos y stock para realizar sus tareas específicas.
+        - **Sub-secciones:**
+            - **Materia Prima (frontend/out/pages/calidad/inicio/materia-prima/index.html)**
+                - **Descripción:** Esta sección está dedicada a la gestión y el control de la materia prima. Aquí, los usuarios de Calidad pueden registrar nuevos lotes de materia prima, verificar su estado (en cuarentena, disponible, vencido, rechazado) y gestionar su liberación o rechazo según los controles de calidad.
+                - **Funcionalidades:**
+                    - **Registrar Nuevos Lotes:** Ingresar información de nuevos lotes de materia prima recibidos, incluyendo proveedor, cantidad, fecha de ingreso y fecha de vencimiento. Los lotes se registran inicialmente en estado 'en_cuarentena'.
+                    - **Control de Calidad y Liberación:** Revisar lotes en estado 'en_cuarentena'. Tras la inspección, el encargado de Calidad puede cambiar el estado del lote a 'disponible' (liberado para uso en producción) o 'rechazado' (no apto para uso).
+                    - **Consulta y Trazabilidad de Lotes:** Visualizar detalles de cada lote (código, materia prima, proveedor, fechas, cantidad total, cantidad disponible). Esto permite una trazabilidad completa de la materia prima desde su ingreso hasta su consumo.
+                    - **Actualización de Estado de Lotes:** Gestionar los estados de los lotes según su ciclo de vida (por ejemplo, lotes 'agotado' automáticamente por el sistema, o lotes 'vencido' por procesos diarios).
+                    - **Gestión de Materias Primas:** Posiblemente, visualizar y mantener el catálogo de materias primas (nombres, unidades de medida, si son expirables).
+            - **Productos (frontend/out/pages/calidad/inicio/productos/index.html)**
+                - **Descripción:** Sección para la gestión y control de la calidad de los productos terminados, incluyendo la definición de sus componentes y especificaciones.
+                - **Funcionalidades:**
+                    - **Visualizar Catálogo de Productos:** Consultar la lista de todos los productos terminados, sus descripciones y pesos unitarios.
+                    - **Definición de Recetas (Materia Prima por Producto):** Establecer y modificar las materias primas y las cantidades unitarias requeridas para la elaboración de cada producto (tabla `materia_prima_por_producto`). Esto es crucial para la planificación de la producción y el cálculo de requerimientos de materia prima.
+                    - **Especificaciones de Calidad:** Posiblemente, registrar y consultar parámetros de calidad específicos para cada producto, asegurando que cumplan con los estándares establecidos.
+                    - **Historial de Calidad por Producto:** Acceder a registros de inspecciones o pruebas de calidad realizadas sobre lotes de productos terminados.
+            - **Stock (frontend/out/pages/calidad/inicio/stock/index.html)**
+                - **Descripción:** Permite la visualización y gestión del inventario, tanto de materias primas como de productos terminados, con un enfoque en la calidad y el estado de los lotes.
+                - **Funcionalidades:**
+                    - **Consulta de Niveles de Inventario:** Visualizar en tiempo real las cantidades disponibles de todas las materias primas y productos.
+                    - **Monitoreo de Lotes:** Identificar lotes de materia prima que están por vencer, vencidos, o en estado de cuarentena/rechazado.
+                    - **Alertas de Calidad:** Recibir notificaciones sobre stock crítico, como lotes vencidos o materias primas que no pasaron el control de calidad.
+                    - **Trazabilidad de Stock:** Rastrear el origen de las materias primas y el destino de los productos, facilitando auditorías de calidad.
+                    - **Informes de Inventario:** Generar reportes sobre el estado del stock, rotación, y posibles mermas por calidad.
+
+### 2. Gerente (frontend/out/pages/gerente)
+    - **Login (frontend/out/pages/gerente/login/index.html)**
+        - **Descripción:** Página de inicio de sesión para los usuarios con rol de Gerente.
+        - **Funcionalidades:** Permite a los gerentes autenticarse en el sistema mediante sus credenciales.
+    - **Inicio (frontend/out/pages/gerente/inicio/index.html)**
+        - **Descripción:** Página principal o dashboard para el rol de Gerente. Ofrece una visión consolidada de las operaciones y acceso a las herramientas de supervisión y toma de decisiones.
+        - **Funcionalidades:** Esta página sirve como punto central para que los gerentes monitoreen el estado general de la producción, revisen reportes clave y accedan a las funcionalidades de planificación avanzada.
+        **Sub-secciones:**
+            - **Finanzas (frontend/out/pages/gerente/inicio/finanzas/index.html)**
+                - **Descripción:** Gestión y análisis de la información financiera relevante para las operaciones. Esta sección proporciona herramientas para que los gerentes puedan evaluar la salud financiera de la empresa.
+                - **Funcionalidades:**
+                    - **Panel de Control Financiero:** Visualizar indicadores clave de rendimiento (KPIs) financieros como ingresos, costos, márgenes de beneficio, flujo de caja.
+                    - **Análisis de Costos:** Detalle de costos operativos, de materia prima y de producción para identificar áreas de mejora.
+                    - **Reportes de Rentabilidad:** Generar informes sobre la rentabilidad por producto, orden de venta o período.
+                    - **Presupuestos y Previsiones:** Herramientas para la creación y seguimiento de presupuestos, así como para la realización de previsiones financieras.
+                    - **Gestión de Facturación y Pagos:** Monitoreo del estado de las facturas emitidas y los pagos recibidos, así como de las obligaciones de pago a proveedores.
+            - **Pedidos (frontend/out/pages/gerente/inicio/pedidos/index.html)**
+                - **Descripción:** Supervisión y gestión de los pedidos de venta (órdenes de venta). Esta sección permite a los gerentes tener una visión completa de todas las órdenes de venta y su estado, facilitando la toma de decisiones estratégicas.
+                - **Funcionalidades:**
+                    - **Visualización General de Órdenes de Venta:** Acceder a un listado completo de todas las órdenes de venta, con filtros por estado (pendiente, confirmada, en producción, etc.), cliente y fecha.
+                    - **Aprobación de Órdenes Pendientes de Supervisión:** Revisar y aprobar o rechazar órdenes de venta que requieran supervisión debido a umbrales específicos o condiciones especiales (como se detalla en `03_flujo_orden_venta.txt`).
+                    - **Monitoreo del Estado de Órdenes:** Seguimiento del progreso de las órdenes de venta desde su creación hasta la entrega, incluyendo el estado de las órdenes de producción asociadas.
+                    - **Análisis de Pedidos:** Generación de reportes sobre volúmenes de ventas, productos más solicitados, rendimiento de vendedores y tendencias de mercado.
+                    - **Gestión de Excepciones:** Intervención manual en casos de cambios en pedidos, cancelaciones o problemas de suministro que afecten el cumplimiento.
+            - **Produccion (frontend/out/pages/gerente/inicio/produccion/index.html)**
+                - **Descripción:** Visión general y control de las operaciones de producción. Esta sección ofrece a los gerentes una perspectiva completa del funcionamiento de las líneas de producción y el cumplimiento de los planes.
+                - **Funcionalidades:**
+                    - **Monitoreo de Líneas de Producción:** Visualizar el estado actual de todas las líneas de producción, incluyendo su actividad, capacidad utilizada y disponibilidad.
+                    - **Seguimiento de Órdenes de Producción:** Acceder al estado de todas las órdenes de producción, su progreso y las tandas asignadas.
+                    - **Análisis de Eficiencia de Producción:** Generar reportes sobre la productividad, tiempos de ciclo, tasas de defectos y utilización de recursos en la producción.
+                    - **Simulación y Planificación Avanzada:** Utilizar herramientas de simulación (como el "Shadow Preview" y "Simulación de Órdenes de Venta Urgentes" descritas en `06_flujo_planificacion_lineas.txt`) para evaluar el impacto de decisiones y optimizar la planificación futura.
+                    - **Gestión de Capacidad:** Revisar y ajustar las capacidades de las líneas de producción o reasignar recursos para optimizar el flujo de trabajo.
+
+### 3. Logística (frontend/out/pages/logistica)
+    - **Login (frontend/out/pages/logistica/login/index.html)**
+        - **Descripción:** Página de inicio de sesión para los usuarios con rol de Logística.
+        - **Funcionalidades:** Permite a los usuarios de Logística autenticarse en el sistema.
+    - **Inicio (frontend/out/pages/logistica/inicio/index.html)**
+        - **Descripción:** Página principal o dashboard para el rol de Logística. Ofrece una vista integral de las operaciones logísticas y herramientas para la gestión de envíos y recursos de transporte.
+        - **Funcionalidades:** Esta página centraliza las funciones de logística, permitiendo a los usuarios coordinar la entrega de productos, optimizar rutas y gestionar la flota de vehículos.
+        **Sub-secciones:**
+            - **Envios (frontend/out/pages/logistica/inicio/envios/index.html)**
+                - **Descripción:** Gestión de los envíos de productos terminados. Esta sección permite a los usuarios de Logística crear, asignar y rastrear envíos para asegurar la entrega eficiente de los productos.
+                - **Funcionalidades:**
+                    - **Creación y Planificación de Envíos:** Generar nuevos envíos, agrupando órdenes de venta o productos a ser despachados.
+                    - **Asignación de Envíos a Vehículos y Rutas:** Distribuir los envíos entre los vehículos disponibles y asignarles rutas óptimas (en conjunto con la sección de Rutas).
+                    - **Seguimiento del Estado de Envíos:** Monitorear el progreso en tiempo real de los envíos (pendiente, despachado, en viaje, entregado, cancelado) y gestionar posibles incidencias.
+                    - **Confirmación de Entrega:** Registrar la entrega exitosa de los productos y actualizar el estado de los envíos.
+                    - **Documentación de Envío:** Generar manifiestos, guías de despacho y otra documentación necesaria para cada envío.
+            - **Flota (frontend/out/pages/logistica/inicio/flota/index.html)**
+                - **Descripción:** Gestión y supervisión de la flota de vehículos de transporte. Esta sección permite registrar, monitorear y asignar los vehículos disponibles para las operaciones de envío.
+                - **Funcionalidades:**
+                    - **Registro y Consulta de Vehículos:** Mantener un inventario detallado de la flota, incluyendo tipo de unidad, patente, capacidad de carga, modelo y estado (disponible/en mantenimiento).
+                    - **Asignación de Vehículos:** Vincular vehículos a envíos o rutas específicas, considerando su disponibilidad y capacidad.
+                    - **Monitoreo de la Flota:** Visualizar el estado actual de los vehículos y su ubicación (si se integra con sistemas de GPS).
+                    - **Gestión de Mantenimiento:** Programar y registrar el mantenimiento de los vehículos para asegurar su operatividad.
+                    - **Información del Conductor:** Asociar conductores a los vehículos y gestionar sus datos relevantes (nombre, DNI).
+            - **Pedidos Asignados (frontend/out/pages/logistica/inicio/pedidos-asignados/index.html)**
+                - **Descripción:** Visualización y gestión de pedidos de venta asignados para su despacho. Esta sección muestra un listado de órdenes de venta que ya han sido preparadas y están a la espera de ser cargadas en un vehículo para su entrega.
+                - **Funcionalidades:**
+                    - **Visualizar Pedidos Asignados:** Acceder a un listado de órdenes de venta que han sido agrupadas en un envío y están pendientes de despacho.
+                    - **Confirmar Carga de Pedido:** Marcar un pedido como "cargado" en un vehículo una vez que ha sido físicamente preparado para el transporte.
+                    - **Detalles del Envío Asociado:** Ver la información del envío al que pertenece cada pedido (ej. vehículo asignado, ruta).
+            - **Pedidos Despachados (frontend/out/pages/logistica/inicio/pedidos-despachados/index.html)**
+                - **Descripción:** Historial y seguimiento de pedidos de venta que ya han sido despachados. Esta sección proporciona información sobre los pedidos que ya han salido del centro de distribución, permitiendo a los usuarios de Logística verificar su estado final y cualquier eventualidad.
+                - **Funcionalidades:**
+                    - **Consulta de Pedidos Despachados:** Acceder a un registro de todos los pedidos de venta que han sido marcados como despachados.
+                    - **Detalles de Despacho:** Ver información como fecha y hora de despacho, vehículo utilizado y estado actual del envío (en tránsito, entregado, etc.).
+                    - **Historial de Entregas:** Consultar el histórico de entregas exitosas y no exitosas.
+                    - **Gestión de Incidencias:** Registrar y dar seguimiento a cualquier problema ocurrido durante el transporte o la entrega (ej. retrasos, daños, devoluciones).
+            - **Pedidos Retiro (frontend/out/pages/logistica/inicio/pedidos-retiro/index.html)**
+                - **Descripción:** Gestión de pedidos de venta preparados para ser retirados por el cliente. Esta sección facilita el proceso de entrega de pedidos que no requieren despacho a domicilio, sino que son recogidos directamente por el cliente.
+                - **Funcionalidades:**
+                    - **Visualizar Pedidos para Retiro:** Listar todos los pedidos de venta que están marcados para ser retirados por el cliente en el local o centro de distribución.
+                    - **Confirmar Retiro del Pedido:** Registrar cuando un cliente ha retirado exitosamente su pedido, actualizando su estado a 'entregado'.
+                    - **Información del Cliente y Pedido:** Acceder rápidamente a los detalles del cliente y del pedido para verificar la identidad y el contenido del pedido antes de la entrega.
+                    - **Gestión de Incidencias:** Documentar cualquier problema durante el proceso de retiro (ej. cliente no se presenta, pedido incompleto).
+
+### 4. Operario (frontend/out/pages/operario)
+    - **Login (frontend/out/pages/operario/login/index.html)**
+        - **Descripción:** Página de inicio de sesión para los usuarios con rol de Operario.
+        - **Funcionalidades:** Permite a los operarios autenticarse en el sistema.
+    - **Inicio (frontend/out/pages/operario/inicio/index.html)**
+        - **Descripción:** Página principal o dashboard para el rol de Operario. Ofrece una visión de las tareas de producción pendientes y herramientas para gestionar el avance del trabajo en las líneas.
+        **Sub-secciones:**
+            - **Generar Tanda (frontend/out/pages/operario/inicio/generar-tanda/index.html)**
+                - **Descripción:** Herramienta para generar manualmente una nueva tanda de producción, permitiendo al operario crear o ajustar planes de trabajo.
+                - **Funcionalidades:**
+                    - **Crear Nueva Tanda:** Ingresar datos para una nueva tanda de producción, incluyendo la orden de producción asociada, la línea de producción, la cantidad en kg y la secuencia.
+                    - **Asignar a Línea de Producción:** Seleccionar la línea de producción específica donde se ejecutará la tanda.
+                    - **Definir Cantidad:** Especificar la cantidad de producto a producir en esta tanda.
+                    - **Ajustar Secuencia:** Establecer el orden de ejecución de la tanda dentro de la línea de producción.
+            - **Historial de Tandas (frontend/out/pages/operario/inicio/historial-tandas/index.html)**
+                - **Descripción:** Registro y consulta de todas las tandas de producción ejecutadas. Esta sección permite al operario revisar el desempeño pasado y la trazabilidad de la producción.
+                - **Funcionalidades:**
+                    - **Consultar Historial:** Acceder a un listado cronológico de todas las tandas de producción, incluyendo su estado final (completada, cancelada).
+                    - **Detalles de Tanda:** Visualizar información detallada de cada tanda: orden de producción, línea, cantidad producida, fechas de inicio y fin (planificadas y reales), y cualquier observación.
+                    - **Análisis de Rendimiento:** Obtener métricas básicas sobre la eficiencia de las tandas pasadas.
+            - **Órdenes de Producción en Proceso (frontend/out/pages/operario/inicio/ordenes-produccion-en-proceso/index.html)**
+                - **Descripción:** Visualización de las órdenes de producción que actualmente se están ejecutando. Esta sección permite a los operarios monitorear el progreso de las órdenes activas.
+                - **Funcionalidades:**
+                    - **Consultar Órdenes Activas:** Ver un listado de todas las órdenes de producción cuyo estado es 'en_proceso'.
+                    - **Detalles de Orden:** Acceder a información específica de cada orden, como el producto, la cantidad total, el progreso, y las tandas asociadas.
+                    - **Actualización de Estado de Tandas:** Posibilidad de cambiar el estado de las tandas de producción de 'en_progreso' a 'completada' o 'cancelada' (si aplica).
+                    - **Reporte de Novedades:** Registrar cualquier incidente o desvío durante la ejecución de una orden de producción.
+            - **Órdenes de Producción Finalizadas (frontend/out/pages/operario/inicio/ordenes-produccion-finalizadas/index.html)**
+                - **Descripción:** Consulta de las órdenes de producción que han sido completadas. Esta sección proporciona una visión de las órdenes de producción que ya no requieren intervención y han concluido su ciclo.
+                - **Funcionalidades:**
+                    - **Visualizar Órdenes Completadas:** Acceder a un listado de todas las órdenes de producción cuyo estado es 'finalizada'.
+                    - **Detalles Post-Producción:** Revisar los detalles de las órdenes finalizadas, incluyendo las cantidades producidas, las fechas de finalización y las observaciones finales.
+                    - **Confirmación de Cierre:** Verificar el cierre administrativo de la orden de producción.
+            - **Órdenes de Producción Historial (frontend/out/pages/operario/inicio/ordenes-produccion-historial/index.html)**
+                - **Descripción:** Historial completo de todas las órdenes de producción, independientemente de su estado. Esta sección ofrece una visión detallada de todo el ciclo de vida de cada orden de producción.
+                - **Funcionalidades:**
+                    - **Acceso a Historial Completo:** Consultar un registro exhaustivo de todas las órdenes de producción, incluyendo aquellas pendientes, planificadas, en proceso, finalizadas, canceladas, etc.
+                    - **Filtros Avanzados:** Buscar órdenes por producto, fecha de creación, estado, o ID de orden de venta asociada.
+                    - **Auditoría de Cambios:** Visualizar el historial de cambios de estado y las intervenciones realizadas en cada orden.
+            - **Órdenes de Producción Listas para Producción (frontend/out/pages/operario/inicio/ordenes-produccion-listas-para-produccion/index.html)**
+                - **Descripción:** Listado de órdenes de producción que tienen la materia prima asignada y están listas para ser ejecutadas. Esta es una sección crítica para el operario, ya que le indica qué trabajo puede comenzar.
+                - **Funcionalidades:**
+                    - **Visualizar Órdenes Listas:** Acceder a un listado de órdenes de producción que han sido marcadas por el sistema como 'lista_para_produccion'.
+                    - **Iniciar Producción:** Seleccionar una orden y cambiar su estado a 'en_proceso' para comenzar la ejecución.
+                    - **Detalles de Materia Prima Asignada:** Consultar las materias primas y los lotes específicos que han sido asignados a la orden.
+                    - **Priorización de Órdenes:** Posibilidad de ver la prioridad de las órdenes o de seleccionar una orden específica para iniciarla.
+            - **Tandas en Proceso (frontend/out/pages/operario/inicio/tandas-en-proceso/index.html)**
+                - **Descripción:** Monitoreo en tiempo real de las tandas de producción que se están ejecutando. Esta sección permite al operario supervisar el progreso de las tareas asignadas a las líneas de producción.
+                - **Funcionalidades:**
+                    - **Visualizar Tandas Activas:** Ver un listado de todas las tandas de producción cuyo estado es 'en_progreso'.
+                    - **Detalles de Tanda:** Acceder a información específica de cada tanda, incluyendo la línea de producción, la cantidad objetivo, el progreso actual y los tiempos estimados.
+                    - **Actualización de Estado de Tanda:** Cambiar el estado de una tanda a 'completada' una vez que la producción ha terminado, o a 'cancelada' si ocurre algún incidente.
+                    - **Reporte de Incidencias:** Registrar problemas o interrupciones que afecten la ejecución de una tanda.
+            - **Tandas Sugeridas (frontend/out/pages/operario/inicio/tandas-sugeridas/index.html)**
+                - **Descripción:** Visualización de las próximas tandas de producción recomendadas por el sistema de planificación. Esta sección ayuda al operario a planificar y organizar su trabajo futuro.
+                - **Funcionalidades:**
+                    - **Consultar Sugerencias de Tandas:** Ver un listado de tandas de producción que el sistema de planificación ha programado y que están pendientes de ser ejecutadas.
+                    - **Priorización Automática:** Las tandas se muestran con una priorización basada en criterios como la fecha de entrega, urgencia y disponibilidad de recursos.
+                    - **Detalles de la Tanda Sugerida:** Acceder a la orden de producción asociada, la línea de producción sugerida, la cantidad y el tiempo estimado.
+
+### 5. Recuperar Credenciales (frontend/out/pages/recuperar-credenciales/index.html)**
+    - **index.html (frontend/out/pages/recuperar-credenciales/index.html)**
+        - **Descripción:** Página para que los usuarios puedan recuperar sus contraseñas.
+        - **Funcionalidades:** Permite a los usuarios solicitar un restablecimiento de contraseña, generalmente enviando un código de verificación a su email registrado.
+        - **Funcionalidades:**
+            - **Solicitar Código de Verificación:** Ingresar el email registrado para recibir un código de un solo uso.
+            - **Validar Código:** Introducir el código recibido para verificar la identidad.
+            - **Restablecer Contraseña:** Una vez validado el código, establecer una nueva contraseña para la cuenta.
+
+### 6. RRHH (frontend/out/pages/rrhh)
+    - **Login (frontend/out/pages/rrhh/login/index.html)**
+        - **Descripción:** Página de inicio de sesión para los usuarios con rol de Recursos Humanos.
+        - **Funcionalidades:** Permite a los usuarios de RRHH autenticarse en el sistema.
+    - **Inicio (frontend/out/pages/rrhh/inicio/index.html)**
+        - **Descripción:** Página principal o dashboard para el rol de Recursos Humanos. Ofrece una vista consolidada de la gestión de personal y las herramientas para la administración de empleados y roles.
+        **Sub-secciones:**
+            - **Gestion Empleados (frontend/out/pages/rrhh/inicio/gestion-empleados/index.html)**
+                - **Descripción:** Gestión y administración de la información de los empleados de la empresa. Esta sección permite a los usuarios de RRHH mantener actualizado el registro de personal.
+                - **Funcionalidades:**
+                    - **Visualizar Lista de Empleados:** Acceder a un listado completo de todos los empleados activos, con filtros y opciones de búsqueda.
+                    - **Editar Información de Empleados:** Modificar datos personales, de contacto, roles asignados y estado de actividad de un empleado existente.
+                    - **Consultar Historial de Empleados:** Acceder a un registro de cambios o eventos importantes relacionados con cada empleado.
+            - **Nuevo Empleado (frontend/out/pages/rrhh/inicio/nuevo-empleado/index.html)**
+                - **Descripción:** Proceso para registrar nuevos empleados en el sistema. Esta sección facilita la incorporación de nuevo personal a la base de datos de la empresa.
+                - **Funcionalidades:**
+                    - **Formulario de Registro de Empleado:** Ingresar datos del nuevo empleado como DNI, email, nombre, apellido, teléfono y asignar un rol inicial.
+                    - **Activación de Cuenta:** Crear credenciales iniciales o un proceso de activación de cuenta para el nuevo empleado.
+                    - **Validación de Datos:** Asegurar que la información ingresada cumpla con los requisitos del sistema.
+
+### 7. Supervisor (frontend/out/pages/supervisor)
+    - **Login (frontend/out/pages/supervisor/login/index.html)**
+        - **Descripción:** Página de inicio de sesión para los usuarios con rol de Supervisor.
+        - **Funcionalidades:** Permite a los supervisores autenticarse en el sistema.
+    - **Inicio (frontend/out/pages/supervisor/inicio/index.html)**
+        - **Descripción:** Página principal o dashboard para el rol de Supervisor. Ofrece una visión general de las operaciones, permitiendo supervisar y tomar decisiones críticas sobre producción, inventario y ventas.
+        **Sub-secciones:**
+            - **Lote Materia Prima (frontend/out/pages/supervisor/inicio/lote-materia-prima/index.html)**
+                - **Descripción:** Gestión y revisión de lotes de materia prima, con especial atención a su estado y trazabilidad. Esta sección permite al supervisor monitorear el estado de las materias primas y resolver posibles cuellos de botella.
+                - **Funcionalidades:**
+                    - **Visualizar Lotes:** Acceder a un listado de todos los lotes de materia prima, incluyendo su estado (disponible, en cuarentena, vencido, rechazado), fecha de vencimiento y cantidad disponible.
+                    - **Aprobación/Rechazo de Lotes:** Si es necesario, intervenir en el proceso de calidad para aprobar o rechazar lotes, especialmente en situaciones excepcionales.
+                    - **Trazabilidad Inversa:** Rastrear el uso de lotes específicos en órdenes de producción.
+                    - **Alertas de Vencimiento/Bajo Stock:** Recibir notificaciones sobre lotes próximos a vencer o con niveles de stock críticos.
+            - **Materia Prima (frontend/out/pages/supervisor/inicio/materia-prima/index.html)**
+                - **Descripción:** Supervisión general del inventario y estado de las materias primas. Esta sección proporciona una visión global de todas las materias primas utilizadas, incluyendo proveedores, precios y estado general del inventario.
+                - **Funcionalidades:**
+                    - **Consultar Catálogo de Materias Primas:** Ver un listado de todas las materias primas, sus propiedades (unidad de medida, si es experible) y los proveedores asociados.
+                    - **Análisis de Disponibilidad:** Evaluar la disponibilidad general de materias primas para la planificación a largo plazo.
+                    - **Informes de Proveedores:** Revisar el desempeño de los proveedores en cuanto a entrega y calidad.
+            - **Órdenes de Trabajo (frontend/out/pages/supervisor/inicio/ordenes-trabajo/index.html)**
+                - **Descripción:** Revisión y gestión de las órdenes de trabajo o producción. Esta sección centraliza la supervisión de todas las órdenes en curso o planificadas, permitiendo al supervisor una gestión proactiva.
+                - **Funcionalidades:**
+                    - **Visualizar Órdenes de Producción:** Acceder a un listado completo de órdenes de producción, filtrando por estado (pendiente, planificada, en proceso, finalizada).
+                    - **Modificar Prioridades:** Ajustar la prioridad de ejecución de órdenes de producción.
+                    - **Aprobar/Rechazar Órdenes:** Intervenir en el ciclo de vida de una orden de producción, por ejemplo, aprobando su inicio o cancelándola si las condiciones cambian.
+                    - **Detalles de Trazabilidad:** Consultar los detalles de materia prima asignada y las tandas de producción asociadas a cada orden.
+            - **Pedidos Urgentes (frontend/out/pages/supervisor/inicio/pedidos-urgentes/index.html)**
+                - **Descripción:** Gestión y priorización de pedidos de venta marcados como urgentes. Esta sección permite al supervisor identificar y actuar rápidamente sobre pedidos críticos que requieren atención inmediata.
+                - **Funcionalidades:**
+                    - **Visualizar Pedidos Urgentes:** Acceder a un listado de todas las órdenes de venta que han sido marcadas como urgentes.
+                    - **Revisar Detalles del Pedido:** Consultar información completa de los pedidos urgentes para entender su criticidad.
+                    - **Ajustar Prioridad de Producción/Envío:** Colaborar con otras áreas (producción, logística) para priorizar la ejecución y el despacho de estos pedidos.
+                    - **Autorización Especial:** Posibilidad de otorgar autorizaciones especiales para acelerar el procesamiento de pedidos urgentes.
+            - **Planificacion (frontend/out/pages/supervisor/inicio/planificacion/index.html)**
+                - **Descripción:** Revisión y ajuste de los planes de producción. Esta sección permite al supervisor monitorear la planificación de la producción y realizar ajustes estratégicos.
+                - **Funcionalidades:**
+                    - **Visualizar Planes de Producción:** Acceder a la planificación diaria o semanal de la producción, incluyendo las tandas y líneas asignadas.
+                    - **Simulación de Escenarios:** Utilizar herramientas de simulación (como el "Shadow Preview" y "Simulación de Órdenes de Venta Urgentes" descritas en `06_flujo_planificacion_lineas.txt`) para evaluar el impacto de decisiones y optimizar la planificación futura.
+                    - **Ajuste de Capacidad:** Modificar la capacidad de las líneas de producción o reasignar recursos para optimizar el plan.
+                    - **Aprobar Planes:** Dar el visto bueno final a los planes de producción generados automáticamente o ajustados manualmente.
+            - **Produccion (frontend/out/pages/supervisor/inicio/produccion/index.html)**
+                - **Descripción:** Monitoreo y control general de las operaciones de producción. Esta sección ofrece al supervisor una visión consolidada del rendimiento de las líneas de producción y el cumplimiento de los objetivos.
+                - **Funcionalidades:**
+                    - **Panel de Control de Producción:** Visualizar KPIs clave de producción como volumen producido, eficiencia de línea, tiempos de inactividad, y tasa de defectos.
+                    - **Seguimiento de Progreso:** Monitorear el avance de todas las órdenes y tandas de producción en tiempo real.
+                    - **Alertas y Notificaciones:** Recibir avisos sobre desviaciones significativas en la producción o problemas en las líneas.
+                    - **Reportes de Rendimiento:** Generar informes detallados sobre la eficiencia operativa, uso de recursos y cumplimiento de metas.
+            - **Stock Materia Prima (frontend/out/pages/supervisor/inicio/stock-materia-prima/index.html)**
+                - **Descripción:** Supervisión detallada del stock de materias primas. Esta sección proporciona al supervisor un control minucioso sobre los niveles y el estado del inventario de materias primas.
+                - **Funcionalidades:**
+                    - **Consultar Niveles de Stock:** Visualizar la cantidad disponible de cada materia prima en tiempo real.
+                    - **Alertas y Reaprovisionamiento:** Configurar alertas para niveles de stock mínimos y gestionar el proceso de reaprovisionamiento.
+                    - **Análisis de Rotación de Stock:** Estudiar la velocidad con la que se consumen las materias primas para optimizar pedidos a proveedores.
+                    - **Informes de Inventario:** Generar reportes sobre el valor del inventario, obsolescencia y mermas.
+            - **Ventas Pendientes de Aprobación (frontend/out/pages/supervisor/inicio/ventas-pendientes-aprobacion/index.html)**
+                - **Descripción:** Listado de órdenes de venta que requieren la aprobación del supervisor. Esta sección es crucial para el control de ventas que superan ciertos umbrales o tienen condiciones especiales.
+                - **Funcionalidades:**
+                    - **Visualizar Órdenes para Aprobación:** Acceder a un listado de órdenes de venta en estado 'pendiente_supervision' (según `03_flujo_orden_venta.txt`).
+                    - **Revisar Detalles de Venta:** Consultar información completa de cada orden (cliente, productos, valor total, etc.) para tomar una decisión informada.
+                    - **Aprobar o Rechazar Venta:** Cambiar el estado de la orden de venta a 'confirmada' o 'cancelada' según la decisión del supervisor.
+                    - **Registro de Decisiones:** Mantener un historial de las aprobaciones y rechazos, con comentarios opcionales del supervisor.
+
+### 8. Vendedor (frontend/out/pages/vendedor)
+    - **Login (frontend/out/pages/vendedor/login/index.html)**
+        - **Descripción:** Página de inicio de sesión para los usuarios con rol de Vendedor.
+        - **Funcionalidades:** Permite a los vendedores autenticarse en el sistema.
+    - **Inicio (frontend/out/pages/vendedor/inicio/index.html)**
+        - **Descripción:** Página principal o dashboard para el rol de Vendedor. Ofrece una visión general de las actividades de venta y acceso a herramientas clave para la gestión de clientes y pedidos.
+        **Sub-secciones:**
+            - **Administración Clientes (frontend/out/pages/vendedor/inicio/administracion-clientes/index.html)**
+                - **Descripción:** Gestión completa de la cartera de clientes, permitiendo al vendedor mantener la información actualizada y relevante.
+                - **Funcionalidades:**
+                    - **Visualizar Clientes:** Acceder a un listado de todos los clientes, con capacidad de búsqueda y filtrado.
+                    - **Crear Nuevo Cliente:** Registrar nuevos clientes, ingresando su razón social, email, CUIL, datos de contacto y dirección principal.
+                    - **Editar Información de Cliente:** Actualizar los datos de clientes existentes.
+                    - **Consultar Historial de Compras:** Acceder al historial de órdenes de venta realizadas por cada cliente para entender sus patrones de compra.
+                    - **Gestión de Direcciones:** Administrar múltiples direcciones para un cliente, incluyendo la designación de una dirección principal.
+            - **Gestión Ventas (frontend/out/pages/vendedor/inicio/gestion-ventas/index.html)**
+                - **Descripción:** Herramientas para la creación, seguimiento y gestión de todas las órdenes de venta. Esta es la sección principal para el día a día del vendedor.
+                - **Funcionalidades:**
+                    - **Crear Nuevas Órdenes de Venta:** Iniciar el proceso de registro de un nuevo pedido, seleccionando cliente, productos, cantidades y fechas de entrega solicitadas.
+                    - **Visualizar y Filtrar Órdenes de Venta:** Acceder a un listado de todas las órdenes de venta creadas, con opciones de filtro por estado (pendiente, confirmada, en producción, etc.), cliente, producto y rango de fechas.
+                    - **Editar Órdenes de Venta:** Modificar detalles de órdenes de venta existentes que aún no han sido confirmadas o procesadas.
+                    - **Seguimiento del Estado:** Monitorear el progreso de cada orden de venta a través de sus diferentes estados (ej. si requiere aprobación de supervisor, si está en producción, si fue despachada).
+                    - **Generar Cotizaciones/Facturas:** Posiblemente, generar documentos relacionados con la venta directamente desde la orden.
+            - **Nuevo (frontend/out/pages/vendedor/inicio/nuevo/index.html)**
+                - **Descripción:** Página para la creación de nuevas órdenes de venta o el registro de nuevos clientes. Esta sección ofrece un acceso rápido a las funcionalidades de alta de elementos clave para el proceso de ventas.
+                - **Funcionalidades:**
+                    - **Registrar Nueva Orden de Venta:** Iniciar un nuevo proceso de venta, permitiendo al vendedor crear una orden desde cero.
+                    - **Registrar Nuevo Cliente:** Acceder a un formulario simplificado para dar de alta rápidamente a un nuevo cliente.
+            - **Pedidos en Camino (frontend/out/pages/vendedor/inicio/pedidos-en-camino/index.html)**
+                - **Descripción:** Seguimiento de los pedidos de venta que se encuentran en proceso de entrega. Esta sección permite al vendedor mantener informados a los clientes sobre el estado de sus compras.
+                - **Funcionalidades:**
+                    - **Consultar Pedidos en Tránsito:** Acceder a un listado de órdenes de venta cuyo estado indica que están en alguna fase de envío o reparto (ej. 'despachado', 'en_viaje').
+                    - **Detalles del Envío:** Visualizar información de seguimiento del envío, como el estado actual, vehículo asignado y fecha estimada de entrega.
+                    - **Notificaciones al Cliente:** Posibilidad de enviar actualizaciones automáticas o manuales a los clientes sobre el estado de sus pedidos.
+            - **Pedidos Reprogramados (frontend/out/pages/vendedor/inicio/pedidos-reprogramados/index.html)**
+                - **Descripción:** Gestión de órdenes de venta cuya fecha de entrega ha sido modificada. Esta sección es fundamental para el vendedor para gestionar excepciones y mantener la comunicación con el cliente.
+                - **Funcionalidades:**
+                    - **Visualizar Pedidos con Fecha Reprogramada:** Acceder a un listado de órdenes de venta cuya `fecha_entrega_solicitada` ha sido cambiada por cualquier motivo (ej. problemas de producción, logística, cambios del cliente).
+                    - **Comunicación con Clientes:** Herramientas para notificar automáticamente o manualmente a los clientes sobre los cambios en la fecha de entrega de sus pedidos.
+                    - **Justificación de Reprogramación:** Registrar el motivo por el cual un pedido ha sido reprogramado.
+                    - **Seguimiento de Impacto:** Evaluar cómo los pedidos reprogramados afectan la satisfacción del cliente y otras métricas de venta.

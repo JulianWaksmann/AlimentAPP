@@ -76,6 +76,7 @@ def run_command(cur, sql: str):
     """INSERT/UPDATE/DELETE; no retorna filas."""
     cur.execute(sql)
 
+
 def lambda_handler(event, context):
     logger.info("Evento recibido: %s", event)
 
@@ -100,24 +101,27 @@ def lambda_handler(event, context):
         conn = get_connection()
         cur = conn.cursor()
 
+        # Consulta extendida con la columna "expirable"
         get_pedido_materia_prima_query = f"""
-        select 
+        SELECT 
             lmp.id, 
             lmp.id_materia_prima, 
-            mp.nombre as nombre_materia_prima, 
+            mp.nombre AS nombre_materia_prima, 
+            mp.expirabile AS expirable,  
             lmp.cantidad_total,
             lmp.id_proveedor, 
-            p.razon_social as razon_social_proveedor, 
-            p.telefono as telefono_proveedor,
-            p.email as email_proveedor,
-            CAST(lmp.fecha_generacion_pedido AS date)
-                from {ENV}.lote_materia_prima lmp 
-                    inner join {ENV}.proveedor p 
-                        on p.id = lmp.id_proveedor 
-                            inner join {ENV}.materia_prima mp 
-                                on mp.id = lmp.id_materia_prima 
-                                    where estado = 'pedido_generado'
+            p.razon_social AS razon_social_proveedor, 
+            p.telefono AS telefono_proveedor,
+            p.email AS email_proveedor,
+            CAST(lmp.fecha_generacion_pedido AS date) AS fecha_generacion_pedido
+        FROM {ENV}.lote_materia_prima lmp 
+        INNER JOIN {ENV}.proveedor p 
+            ON p.id = lmp.id_proveedor 
+        INNER JOIN {ENV}.materia_prima mp 
+            ON mp.id = lmp.id_materia_prima 
+        WHERE lmp.estado = 'pedido_generado';
         """
+
         pedido_materia_prima = run_query(cur, get_pedido_materia_prima_query)
 
         conn.commit()

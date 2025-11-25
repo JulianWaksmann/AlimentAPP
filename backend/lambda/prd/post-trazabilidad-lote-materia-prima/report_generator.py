@@ -25,11 +25,12 @@ PAGE_SIZE = LETTER
 MARGIN_MM = 18
 
 # --- Paleta de Colores ---
-VIOLETA_OSCURO = colors.HexColor('#32127A')
-VIOLETA_MEDIO = colors.HexColor('#7b2cbf')
-LAVANDA_FONDO = colors.HexColor('#F8F5FF')
-BORDE_SUAVE = colors.HexColor('#DCD0FF')
-GRIS_TEXTO = colors.HexColor('#636e72')
+VIOLETA_OSCURO = colors.HexColor('#221E5F')      # primary.DEFAULT
+VIOLETA_MEDIO = colors.HexColor('#8E01FB')       # primary.secondary
+LAVANDA_FONDO = colors.HexColor('#F3F4F6')       # neutral.gray-100
+BORDE_SUAVE = colors.HexColor('#CCCCCC')         # neutral.light
+GRIS_TEXTO = colors.HexColor('#111827')          # neutral.dark
+# Colores semánticos se mantienen
 COLOR_VERDE = colors.HexColor('#2f855a')
 COLOR_NARANJA = colors.HexColor('#dd6b20')
 COLOR_ROJO = colors.HexColor('#c53030')
@@ -80,7 +81,7 @@ class GradientLine(Flowable):
 
     def draw(self):
         inicio = VIOLETA_MEDIO
-        fin = colors.HexColor('#E5DAFF')
+        fin = BORDE_SUAVE # Usar el nuevo color de borde para consistencia
         pasos = 100
         for i in range(pasos):
             ratio = i / (pasos - 1)
@@ -129,7 +130,12 @@ def build_story(lote_materia_prima, ordenes_de_produccion):
     cantidad_disponible_actual = lote_materia_prima.get('cantidad_unitaria_disponible', Decimal('0.00'))
     vencido = lote_materia_prima.get('fecha_vencimiento') and lote_materia_prima['fecha_vencimiento'] < date.today()
     
-    estado_restante = f"<font color='{COLOR_ROJO}'>Vencido desde {formato_fecha(lote_materia_prima['fecha_vencimiento'])}</font>" if vencido else f"<font color='{COLOR_VERDE}'>Disponible</font>"
+    if cantidad_disponible_actual == 0:
+        estado_restante = f"<font color='{COLOR_ROJO}'>Agotado</font>"
+    elif vencido:
+        estado_restante = f"<font color='{COLOR_ROJO}'>Vencido desde {formato_fecha(lote_materia_prima['fecha_vencimiento'])}</font>"
+    else:
+        estado_restante = f"<font color='{COLOR_VERDE}'>Disponible</font>"
 
     resumen_data = [
         [Paragraph(f"<b>Total Consumido del Lote:</b> {total_consumido} {lote_materia_prima['unidad_medida']}", styles['Body'])],

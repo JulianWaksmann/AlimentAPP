@@ -93,7 +93,7 @@ export async function verPedidos(dni: string, estado: string): Promise<PedidosAs
         dni_conductor : dni,
         estado_envio: estado
     }
-    console.log(JSON.stringify(data));
+    // console.log(JSON.stringify(data));
     const response = await fetch(`${apiUrl}/gestion-envios/post-obtener-envios-por-estado-y-conductor`, {
         method: "POST",
         headers: {
@@ -105,6 +105,7 @@ export async function verPedidos(dni: string, estado: string): Promise<PedidosAs
         throw new Error("Error fetching pedidos para retiro");
     }
     const responseData = await response.json();
+   
     return responseData.vehiculo[0];
 }
 
@@ -138,11 +139,11 @@ export async function getRecorrido(dni: string): Promise<ApiData> {
             "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-        throw new Error("Error fetching recorrido del conductor");
     }
+)
+
     const responseData = await response.json();
-    console.log(responseData);
-    return responseData;
+    console.log("respuesta ordenes: " + responseData);
+    return responseData;;
+    
 }
