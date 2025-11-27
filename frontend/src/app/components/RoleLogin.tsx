@@ -25,7 +25,7 @@ const RoleLogin: React.FC<RoleLoginProps> = ({ roleName, colorClass, redirectPat
   }
 
   const handleLogin = async (event: React.FormEvent) => {
-      router.push(redirectPath);
+      // router.push(redirectPath);
 
     event.preventDefault();
     if (!validateEmail(username)) {
